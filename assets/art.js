@@ -373,10 +373,13 @@ function titleCase(s){
     return w.charAt(0)+w.slice(1).toLowerCase();
   }).join('');
 }
+let lastKartuSig='';
 function decorateKartu(game){
   const k=document.querySelector('#kartu .kartu');
   if(!k||k.dataset.aa)return;
   k.dataset.aa='1';
+  const sig=k.textContent.slice(0,160);
+  if(sig!==lastKartuSig){ lastKartuSig=sig; play('pop'); }
   k.setAttribute('role','dialog'); k.setAttribute('aria-modal','true');
   const kh=k.querySelector('.kh'), kt=k.querySelector('.kt');
   let title=kh?kh.textContent:'';
@@ -509,6 +512,53 @@ function openCreator(game,startFn){
   setTimeout(()=>{ try{ input.focus(); input.select(); }catch(e){} },30);
 }
 
+/* ================= EFEK SUARA (disintesis Web Audio, tanpa file) =================
+   Bisa dimatikan lewat tombol 🔊 di header game; pilihan disimpan di localStorage. */
+const SND_KEY='arsip_sound_v1';
+let actx=null;
+function soundOn(){ try{ return localStorage.getItem(SND_KEY)!=='off'; }catch(e){ return true; } }
+function audio(){
+  const C=window.AudioContext||window.webkitAudioContext; if(!C)return null;
+  if(!actx){ try{ actx=new C(); }catch(e){ return null; } }
+  if(actx.state==='suspended'){ try{ actx.resume(); }catch(e){} }
+  return actx;
+}
+function tone(f1,f2,at,dur,type,vol){
+  const a=audio(); if(!a)return;
+  const t=a.currentTime+at, o=a.createOscillator(), g=a.createGain();
+  o.type=type; o.frequency.setValueAtTime(f1,t); if(f2!==f1)o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.012); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+dur+0.03);
+}
+const SFX={
+  good:()=>{ tone(784,784,0,.13,'triangle',.07); tone(1175,1175,.09,.2,'triangle',.07); },     /* ting-ting naik */
+  bad:()=>{ tone(392,330,0,.16,'sine',.09); tone(294,220,.12,.24,'sine',.09); },              /* bong turun */
+  mixed:()=>{ tone(660,660,0,.1,'triangle',.05); tone(520,520,.08,.12,'triangle',.05); },
+  coin:()=>{ tone(988,988,0,.07,'square',.035); tone(1319,1319,.06,.18,'square',.035); },      /* bunyi koin */
+  pop:()=>{ tone(380,900,0,.12,'sine',.07); },                                                  /* pop-up muncul */
+  tap:()=>{ tone(600,420,0,.05,'triangle',.04); }                                               /* klik tombol */
+};
+function play(n){ if(!soundOn())return; try{ SFX[n]&&SFX[n](); }catch(e){} }
+function setSound(on){
+  try{ localStorage.setItem(SND_KEY,on?'on':'off'); }catch(e){}
+  document.querySelectorAll('.aa-sound').forEach(b=>{ b.textContent=on?'🔊':'🔇'; b.setAttribute('aria-pressed',on); b.title=on?'Suara: nyala (klik untuk matikan)':'Suara: mati (klik untuk nyalakan)'; });
+  if(on)play('tap');
+}
+function mountSoundBtn(){
+  const bar=document.querySelector('header .hdr-actions');
+  if(!bar||bar.querySelector('.aa-sound'))return;
+  const b=document.createElement('button');
+  b.type='button'; b.className='aa-sound'; b.setAttribute('aria-label','Efek suara');
+  bar.prepend(b);
+  b.addEventListener('click',e=>{ e.stopPropagation(); setSound(!soundOn()); });
+  setSound(soundOn());
+}
+/* bunyi klik untuk tombol-tombol permainan (sekali dipasang, lewat delegasi) */
+document.addEventListener('click',e=>{
+  if(e.target.closest('.aa-sound'))return;
+  if(e.target.closest('#acts button:not(:disabled), #kartu button, #nextBtn, #tabs button, .aa-creator button, #epilog button'))play('tap');
+},true);
+
 /* ================= ANGKA MELAYANG SAAT STAT BERUBAH ================= */
 const INVERT=new Set(['stres','sorotan hukum','sorotan ky/kpk','on-call fatigue']);
 let snap=null;
@@ -554,10 +604,12 @@ function flushDeltas(){
   if(!out.length)return;
   const t=tray();
   t.innerHTML='';                       /* gelombang baru menggantikan yang lama */
-  out.slice(0,7).forEach((d,i)=>{
+  const nGood=out.filter(d=>d.good).length, nBad=out.length-nGood, money=out.find(d=>d.lab==='Uang');
+  play(nBad===0?(money&&money.good?'coin':'good'):nGood===0?'bad':(nGood>=nBad?'good':'mixed'));
+  out.slice(0,5).forEach((d,i)=>{
     const c=document.createElement('span');
     c.className='aa-dchip '+(d.good?'good':'bad');
-    c.style.animationDelay=(i*70)+'ms';
+    c.style.animationDelay=(i*40)+'ms';
     c.innerHTML=img(d.k,'dimg')+'<b>'+esc(d.txt)+'</b><small>'+esc(d.lab)+'</small>';
     c.addEventListener('animationend',()=>c.remove());
     t.appendChild(c);
@@ -644,7 +696,7 @@ function watchEpilog(){
 }
 function update(game,P){
   last={game:game,P:P};
-  try{ decorateHeader(game); decorateH3(); avatar(game,P); decorateStats(); decorateTabs(game); decorateActs(game); watchKartu(game); watchEpilog(); trackDeltas(P); }
+  try{ decorateHeader(game); mountSoundBtn(); decorateH3(); avatar(game,P); decorateStats(); decorateTabs(game); decorateActs(game); watchKartu(game); watchEpilog(); trackDeltas(P); }
   catch(e){ console.error('ArsipArt',e); }
 }
 

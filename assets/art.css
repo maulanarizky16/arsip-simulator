@@ -115,24 +115,26 @@
 .aa-creator button:focus-visible{outline:3px solid #5ab4f0;outline-offset:2px}
 
 /* ---------- angka melayang saat stat berubah ---------- */
-#aaDeltas{position:fixed;left:50%;top:76px;transform:translateX(-50%);z-index:25;display:flex;flex-wrap:wrap;justify-content:center;
-  gap:6px;width:min(560px,94vw);pointer-events:none}
-.aa-dchip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px 5px 6px;border-radius:99px;background:#fff;
-  box-shadow:0 4px 0 rgba(0,0,0,.12),0 8px 18px rgba(0,0,0,.15);font:800 15px var(--disp,sans-serif);
-  opacity:0;animation:aaFloat 2.6s ease-out forwards}
-.aa-dchip .aa-dimg{width:24px;height:24px}
-.aa-dchip small{font:700 11.5px var(--type,sans-serif);color:var(--ink2,#8a7558)}
+/* ringkas: satu baris kecil di tepi atas layar, hilang dalam ±1,4 detik, tidak bisa diklik (tidak menghalangi) */
+#aaDeltas{position:fixed;left:50%;top:6px;transform:translateX(-50%);z-index:25;display:flex;flex-wrap:nowrap;justify-content:center;
+  gap:4px;max-width:96vw;pointer-events:none}
+.aa-dchip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px 2px 3px;border-radius:99px;background:rgba(255,255,255,.95);
+  box-shadow:0 2px 0 rgba(0,0,0,.1),0 4px 10px rgba(0,0,0,.12);font:800 13px var(--disp,sans-serif);white-space:nowrap;
+  opacity:0;animation:aaFloat 1.4s ease-out forwards}
+.aa-dchip .aa-dimg{width:18px;height:18px}
+.aa-dchip small{display:none}
 .aa-dchip.good b{color:#22a04a}
 .aa-dchip.bad b{color:#d9453b}
-@keyframes aaFloat{0%{opacity:0;transform:translateY(16px) scale(.8)}12%{opacity:1;transform:translateY(0) scale(1.06)}
-  22%{transform:scale(1)}75%{opacity:1;transform:translateY(-10px)}100%{opacity:0;transform:translateY(-34px)}}
+@keyframes aaFloat{0%{opacity:0;transform:translateY(-10px) scale(.85)}15%{opacity:1;transform:translateY(0) scale(1)}
+  70%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
 .stat.aa-bump .sbar{animation:aaBump .9s ease-out}
 .stat.aa-up .sbar{box-shadow:0 0 0 3px rgba(76,199,103,.45)}
 .stat.aa-down .sbar{box-shadow:0 0 0 3px rgba(240,100,90,.45)}
 @keyframes aaBump{0%{transform:scaleY(1)}25%{transform:scaleY(1.5)}100%{transform:scaleY(1)}}
-@media (max-width:640px){ #aaDeltas{top:58px} .aa-dchip small{display:none} }
-@media (prefers-reduced-motion:reduce){ .aa-dchip{animation:aaFade 2.6s forwards} .stat.aa-bump .sbar{animation:none}
-  @keyframes aaFade{0%,80%{opacity:1}100%{opacity:0}} }
+@media (prefers-reduced-motion:reduce){ .aa-dchip{animation:aaFade 1.4s forwards} .stat.aa-bump .sbar{animation:none}
+  @keyframes aaFade{0%,70%{opacity:1}100%{opacity:0}} }
+/* tombol suara di header game */
+.aa-sound{min-width:40px}
 
 /* ---------- kartu hasil untuk dibagikan (dirender di luar layar lalu ditangkap) ---------- */
 .aa-share{position:fixed;left:-10000px;top:0;width:420px;padding:18px 18px 14px;border-radius:0;font-family:var(--type,sans-serif);color:#3d2e1f;text-align:center}

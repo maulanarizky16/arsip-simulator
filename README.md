@@ -14,13 +14,14 @@ arsip/
 ├── hakim.html          # Simulator Hakim          (+ folder hakim/)
 ├── it.html             # Simulator Karier IT      (+ folder it/)
 ├── niaga.html          # Simulator Pengusaha      (+ folder niaga/)
+├── wni.html            # Simulator WNI (warga +62) (+ folder wni/)
 ├── platform.js         # Modul bersama (identitas, leaderboard, share, capture)
 ├── platform.css        # Style bersama (modal, dialog, share block)
 ├── donasi/data.js      # Config GoPay + daftar donatur
 └── README.md           # File ini
 ```
 
-**5 game**, tiap game = 1 shell HTML tipis + folder modul JS/CSS (`<nama>/js/00-core.js` … `09-boot.js`). Pure static, tanpa build step. html2canvas dimuat dari CDN saat dibutuhkan. Untuk detail arsitektur & cara nambah game, lihat `ARSIP_Project_Handoff.md`.
+**6 game**, tiap game = 1 shell HTML tipis + folder modul JS/CSS (`<nama>/js/00-core.js` … `09-boot.js`). Pure static, tanpa build step. html2canvas dimuat dari CDN saat dibutuhkan. Untuk detail arsitektur & cara nambah game, lihat `ARSIP_Project_Handoff.md`.
 
 ## Flow pemakai
 

@@ -1,6 +1,7 @@
 // Main semua game dengan DOM sungguhan (jsdom, window===global persis browser) + klik tombol.
 // Menangkap error runtime, exception event-handler, console.error. node _play_all.js
 'use strict';
+const SEED=require('./_seed');
 const fs=require('fs'), path=require('path'), vm=require('vm');
 const { JSDOM, VirtualConsole } = require('jsdom');
 const ROOT=path.join(__dirname,'..');
@@ -10,7 +11,7 @@ function loadGameJS(game){
   const dir=path.join(ROOT,game,'js');
   const artPath=path.join(ROOT,'assets','art.js');
   const art=fs.existsSync(artPath)?fs.readFileSync(artPath,'utf8')+'\n;\n':'';
-  return art+fs.readdirSync(dir).filter(f=>f.endsWith('.js')).sort()
+  return SEED+art+fs.readdirSync(dir).filter(f=>f.endsWith('.js')).sort()
     .map(f=>fs.readFileSync(path.join(dir,f),'utf8')).join('\n;\n');
 }
 function isLimitation(msg){ return /Not implemented|Could not load|getComputedStyle|html2canvas|navigation|Navigation|scrollTo|\.focus|canvas|HTMLCanvas/i.test(msg); }
@@ -98,7 +99,7 @@ function playHub(file){
 }
 
 /* ================= JALANKAN ================= */
-const GAMES=[['kehidupan','kehidupan.html'],['negara','negara.html'],['hakim','hakim.html'],['it','it.html'],['niaga','niaga.html']];
+const GAMES=[['kehidupan','kehidupan.html'],['negara','negara.html'],['hakim','hakim.html'],['it','it.html'],['niaga','niaga.html'],['wni','wni.html']];
 const HUBS=['index.html','leaderboard.html','donasi.html'];
 let totalErr=0;
 console.log('=== MAIN SEMUA GAME (DOM jsdom, klik tombol seperti pemain) ===\n');

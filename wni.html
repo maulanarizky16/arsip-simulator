@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARSIP WNI · Simulator Warga +62</title>
+<meta name="description" content="Bertahan hidup 36 bulan sebagai warga +62: gajian numpang lewat, THR, mudik, pinjol, kapan nikah, dan token listrik bunyi tengah malam.">
+<link rel="stylesheet" href="wni/style.css">
+<link rel="stylesheet" href="assets/art.css">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>ARSIP WNI</h1>
+  <span class="no" id="noArsip">NIK —</span>
+  <div class="hdr-actions">
+    <a href="index.html">« Beranda</a>
+    <button id="caraBtn">Cara Main</button>
+    <button id="restartBtn">Hidup Baru</button>
+  </div>
+</header>
+<main>
+  <section class="doc">
+    <div class="dochead">
+      <h2>Catatan Perjuangan Warga +62</h2>
+      <span class="now" id="hdrNow">—</span>
+    </div>
+    <div id="feed" aria-live="polite"></div>
+    <div id="kartu"></div>
+    <div class="meja">
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="panel"><div class="agrid" id="acts"></div></div>
+    </div>
+    <div class="bar">
+      <span class="actInfo" id="actInfo"></span>
+      <button id="nextBtn">Jalani Bulan +1 »</button>
+    </div>
+  </section>
+  <aside>
+    <div class="card">
+      <h3>KTP WARGA</h3>
+      <div class="idrow"><span class="lab">Nama</span><b id="iNama">—</b></div>
+      <div class="idrow"><span class="lab">Nasib lahir</span><b id="iLatar">—</b></div>
+      <div class="idrow"><span class="lab">Umur / Kota</span><b id="iUmur">—</b></div>
+      <div class="idrow"><span class="lab">Pekerjaan</span><b id="iKerja">—</b></div>
+      <div class="idrow"><span class="lab">Gaji</span><b id="iGaji">—</b></div>
+      <div class="idrow"><span class="lab">Saldo</span><b class="uang" id="iSaldo">—</b></div>
+      <div class="idrow"><span class="lab">Utang pinjol</span><b class="uang" id="iUtang">—</b></div>
+      <div id="stats" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h3>DOMPET & CICILAN</h3>
+      <div id="dompet"></div>
+      <div class="dompet-warn" id="dompetWarn"></div>
+    </div>
+    <div class="card">
+      <h3>KONDISI HIDUP</h3>
+      <div id="kondisi"></div>
+    </div>
+    <div class="card">
+      <h3>RIWAYAT</h3>
+      <div class="fam" id="riwayat"></div>
+    </div>
+    <div class="card">
+      <h3>TANDA JASA</h3>
+      <div class="chips" id="ach"><span class="muted">Belum ada.</span></div>
+    </div>
+  </aside>
+</main>
+</div>
+<div id="overlay" class="hidden"><div class="epilog" id="epilog"></div></div>
+<script src="assets/art.js"></script>
+<script src="wni/js/00-core.js"></script>
+<script src="wni/js/01-data.js"></script>
+<script src="wni/js/02-state.js"></script>
+<script src="wni/js/03-warga.js"></script>
+<script src="wni/js/04-events.js"></script>
+<script src="wni/js/05-epilog.js"></script>
+<script src="wni/js/06-actions.js"></script>
+<script src="wni/js/07-render.js"></script>
+<script src="wni/js/08-save.js"></script>
+<script src="wni/js/09-boot.js"></script>
+<script src="platform.js"></script>
+</body>
+</html>

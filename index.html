@@ -41,8 +41,8 @@
 <div class="arsip-update">
   <span class="upd-tag">PEMBARUAN</span>
   <div class="upd-body">
-    <b>Baru: Simulator Pengusaha.</b> Bangun kerajaan bisnis dari nol di 18 sektor (kuliner, ritel, properti, tambang, startup, manufaktur, fintech, dan lainnya). Tiap usaha punya simulasi untung-rugi sendiri yang dipengaruhi ekonomi makro; tiap tahun datang peluang yang harus kamu saring lewat due diligence sebelum tanam modal. Naik kelas dari kaki lima sampai konglomerasi yang IPO — atau ambil jalan gelap (suap tender, kartel, kemplang pajak) dengan risiko bangkrut dan razia aparat.
-    <span class="upd-more">Sebelumnya: Simulator Karier IT (8 spesialisasi, insiden produksi interaktif, jalur hacking topi putih–hitam), Simulator Kehidupan makin dalam (profesi negara, politik lokal, drama keluarga, aset antargenerasi), percabangan hidup &amp; negara baru, Simulator Hakim dengan gelar perkara interaktif, sistem APBN/APBD &amp; debat pemilu di Simulator Negara, plus halaman Donasi di tiap simulasi.</span>
+    <b>Baru: Simulator WNI.</b> Bertahan hidup 36 bulan sebagai warga +62: gajian yang numpang lewat, THR, mudik Lebaran, "kapan nikah?", token listrik bunyi tengah malam, pinjol, debt collector, sampai #KaburAjaDulu. Pilih profesi (karyawan UMR, ojol, guru honorer, outsourcing, freelancer, seller olshop) dan jaga dua hal paling langka: saldo dan kewarasan.
+    <span class="upd-more">Sebelumnya: buat karakter sendiri (nama, jenis kelamin, warna kulit), angka melayang & efek suara, kartu hasil untuk dibagikan, tampilan baru yang lebih berwarna, plus Simulator Pengusaha, Karier IT, Hakim, Negara, dan Kehidupan.</span>
   </div>
 </div>
 
@@ -184,6 +184,28 @@ const SIM=[
     ]
   },
   {
+    id:'wni', file:'wni.html', avail:true,
+    title:'Simulator WNI', subtitle:'Bertahan hidup sebagai warga +62',
+    teaser:'Gajian numpang lewat, THR, mudik, pinjol, token listrik bunyi tengah malam, dan pertanyaan "kapan nikah?". Bertahan 36 bulan tanpa bangkrut dan tanpa kehilangan kewarasan.',
+    badge:'Baru',
+    meta:['~15 menit/hidup','36 bulan','6 profesi','Skor ganda'],
+    persuasive: [
+      'Ini bukan simulator orang sukses. Ini simulator kamu, aku, dan kita semua: gaji UMR yang langsung habis buat kos, makan, bensin, kuota, dan cicilan. Tiap bulan adalah perjuangan dari gajian ke gajian.',
+      'Pilih jalan hidup: karyawan UMR, driver ojol, guru honorer, outsourcing, freelancer, atau seller olshop. Masing-masing punya nasib sendiri, dari THR yang cuma stiker ketupat sampai kontrak yang ditentukan HRD tiap Desember.',
+      'Hadapi semua yang terlalu relate: bos chat jam 10 malam, razia di pertigaan, undangan nikah tiap minggu, gas melon langka, tetangga karaoke jam 2 pagi, dan teman lama yang tiba-tiba menawarkan "peluang bisnis".',
+      'Di akhir, dua skor menilaimu: Dompet dan Kewarasan. Jadi Sultan Kecil-kecilan, Pejuang Tanggal Tua, atau berakhir dengan #KaburAjaDulu ke luar negeri.'
+    ],
+    fitur: [
+      '6 profesi dengan gaji, THR, dan risiko berbeda: karyawan, ojol, guru honorer (bisa ikut seleksi PPPK), outsourcing, freelancer, seller olshop',
+      'Kalender khas Indonesia: Ramadan & bukber, Lebaran (THR, mudik, salam tempel, "kapan nikah?"), UMR naik, lapor SPT, Agustusan, Harbolnas, musim banjir',
+      'Puluhan kejadian sehari-hari yang relatable dan satir, lengkap dengan pilihan yang menentukan nasibmu',
+      'Keuangan realistis: biaya hidup per kota, inflasi, cicilan motor & HP, paylater, KPR rumah subsidi, tabungan & emas',
+      'Sisi gelap: pinjol berbunga 5%/bulan, debt collector, investasi bodong, judi online, dan "damai di tempat"',
+      'Beberapa akhir cerita: bertahan 3 tahun, pulang kampung, dikejar debt collector, atau #KaburAjaDulu',
+      'Dua skor akhir (Dompet vs Kewarasan) plus ringkasan yang membanggakan & yang bikin ngelus dada'
+    ]
+  },
+  {
     id:'coming-startup', file:null, avail:false,
     title:'Simulator Startup', subtitle:'Segera hadir',
     teaser:'Bangun startup dari kost-kostan: cari co-founder, kejar pendanaan, lewati death valley. (Belum tersedia.)',
@@ -276,19 +298,19 @@ function topPreview(){
   const lb=Platform.getLB();
   const root=document.getElementById('topPreview');
   root.innerHTML='';
-  ['kehidupan','negara','hakim','it','niaga'].forEach(g=>{
+  ['kehidupan','negara','hakim','it','niaga','wni'].forEach(g=>{
     const list=(lb[g]||[]).slice(0,3);
     const card=document.createElement('div');
     card.className='arsip-card soon';
     card.style.opacity='1';
-    const title = g==='kehidupan'?'Simulator Kehidupan':g==='negara'?'Simulator Negara':g==='hakim'?'Simulator Hakim':g==='it'?'Simulator Karier IT':'Simulator Pengusaha';
+    const title = g==='kehidupan'?'Simulator Kehidupan':g==='negara'?'Simulator Negara':g==='hakim'?'Simulator Hakim':g==='it'?'Simulator Karier IT':g==='wni'?'Simulator WNI':'Simulator Pengusaha';
     let rows='';
     if(!list.length){
       rows='<p style="color:var(--ink2);font-style:italic;margin-top:8px">Belum ada catatan. Mulai sebuah simulasi untuk memulai papan peringkat.</p>';
     } else {
       list.forEach((e,i)=>{
-        const score = g==='kehidupan'?e.skor:g==='negara'?((e.skorRakyat||0)+(e.skorNegara||0)):g==='hakim'?((e.skorAdil||0)+(e.skorKarier||0)):g==='it'?((e.skorKarya||0)+(e.skorCuan||0)):((e.skorHarta||0)+(e.skorNama||0));
-        const sub = g==='kehidupan'?(e.julukan||'-'):g==='negara'?(e.julukanRakyat||'-'):g==='hakim'?(e.julukanAdil||'-'):g==='it'?(e.julukanKarya||'-'):(e.julukanHarta||'-');
+        const score = g==='kehidupan'?e.skor:g==='negara'?((e.skorRakyat||0)+(e.skorNegara||0)):g==='hakim'?((e.skorAdil||0)+(e.skorKarier||0)):g==='it'?((e.skorKarya||0)+(e.skorCuan||0)):g==='wni'?((e.skorDompet||0)+(e.skorWaras||0)):((e.skorHarta||0)+(e.skorNama||0));
+        const sub = g==='kehidupan'?(e.julukan||'-'):g==='negara'?(e.julukanRakyat||'-'):g==='hakim'?(e.julukanAdil||'-'):g==='it'?(e.julukanKarya||'-'):g==='wni'?(e.julukanDompet||'-'):(e.julukanHarta||'-');
         const h = e.handle?'@'+e.handle:'Anonim';
         rows+=`<div style="display:flex;justify-content:space-between;border-bottom:1px dotted var(--line);padding:6px 0;font-size:13px">
           <span><b style="color:${i===0?'var(--gold)':'var(--ink2)'}">${i+1}.</b> ${h}<br><span style="color:var(--ink2);font-size:11.5px;font-family:'Special Elite',monospace">${sub}</span></span>

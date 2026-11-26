@@ -1,8 +1,9 @@
 // Tes mendalam sistem insiden/diagnostic IT (headless). Validasi struktur + paksa tiap insiden lewat semua jalur.
 'use strict';
+const SEED=require('./_seed');
 const fs=require('fs'), path=require('path'), vm=require('vm');
 const dir=path.join(__dirname,'..','it','js');
-const code=fs.readdirSync(dir).filter(f=>f.endsWith('.js')).sort()
+const code=SEED+fs.readdirSync(dir).filter(f=>f.endsWith('.js')).sort()
   .map(f=>fs.readFileSync(path.join(dir,f),'utf8')).join('\n;\n');
 const store={};
 const ctx={ Math, JSON, Object, Array, console,

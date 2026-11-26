@@ -2,7 +2,7 @@
 'use strict';
 const { spawnSync } = require('child_process');
 const fs = require('fs'), path = require('path');
-const files = fs.readdirSync(__dirname).filter(f => f.endsWith('.js') && f !== 'run-all.js').sort();
+const files = fs.readdirSync(__dirname).filter(f => f.endsWith('.js') && f !== 'run-all.js' && !f.startsWith('_')).sort();
 let failed = [];
 for (const f of files) {
   console.log('\n######## ' + f);

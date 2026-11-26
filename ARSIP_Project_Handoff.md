@@ -117,6 +117,16 @@ Simulator pengusaha, bangun imperium bisnis dari nol. State `P` + `N` (`{tahun, 
 - P&L realistis (`labaUsaha` ikut kondisi ekonomi, musim, infrastruktur); **investor & utang/KUR**, **IPO**, **franchise**, **ekspor**, **akuisisi**; pajak (patuh/akali → `heat`/risiko); event makro (krisis 98, pandemi, preman, warisan).
 - ~30 aksi, 22 achievement. **Skor GANDA:** `legH` → **Harta & Imperium** + `legN` → **Nama & Warisan** (`nilaiAkhir`). `handleResult` key `niaga`, fields `skorHarta`+`skorNama`.
 
+### E2. ARSIP WNI (`wni.html` + folder `wni/`)
+Simulator warga +62 bertahan hidup **per bulan** (36 bulan, Jan 2026–Des 2028), nada satir lucu. State `P` + `N` (`{tahun, bulan, ke, harga}` = kalender & indeks harga). Layout modul identik dengan game lain (03 = `03-warga.js`).
+
+- **Nasib lahir acak** (`LATAR`, `acakLatar()`, berbobot): generasi sandwich, anak petani, keluarga menengah, anak PNS, anak pengusaha, anak pejabat, anak sultan, merantau sendirian. Menentukan modal awal, `P.kiriman` bulanan (+ dari ortu / − ke keluarga), `orangDalam` (lamar & naik gaji lebih mudah), stat awal, profesi khusus (`khusus:` staf titipan, penerus usaha, kreator; `pns` lewat event CPNS), dan kejadian khusus (OTT KPK, spill netizen, terusin usaha, usaha ortu bangkrut, adik sekolah, gagal panen, CPNS, lebaran di perantauan). **Skor Dompet adil-privilege:** `nilaiAkhir` mengurangi modal awal & kiriman ortu, uang yang dikirim ke keluarga dihargai 80%.
+- **6 profesi** (`PROFESI`): karyawan UMR, ojol, guru honorer (bisa lolos PPPK), outsourcing (kontrak 12 bulan), freelancer, seller olshop — beda gaji, variasi, THR, risiko PHK.
+- **Keuangan bulanan** (`bulanan()`): gajian → biaya hidup per kota (`KOTA.idx` × `N.harga` × gaya hidup) → cicilan (`P.cicilan`, `tambahCicilan`) → bunga pinjol 5%/bln (`P.utang`, `ambilPinjol`). Tabungan, emas, KPR subsidi, arisan.
+- **Kalender** (`kalender()`): UMR naik Januari, Ramadan/bukber, Lebaran (THR, mudik, salam tempel, "kapan nikah?") via `RAMADAN`/`LEBARAN`, SPT Maret, Agustusan, Harbolnas. **~40 kejadian acak** di `EVENTS` (`04-events.js`, tiap event punya bobot `w` & jeda `cd`).
+- **Stat:** Kewarasan, Kesehatan, Gengsi, Nrimo (meredam pukulan mental di `fx`), Relasi + Skill. **Akhir cerita** (`akhir(kind)`, `ENDING`): tahan 36 bulan, pulang (kewarasan 0), tumbang (kesehatan 0), dc (utang ≥ batas), diaspora (#KaburAjaDulu), tutup.
+- **Skor GANDA:** **Dompet** + **Kewarasan** (`nilaiAkhir`). `handleResult` key `wni`, fields `skorDompet`+`skorWaras`, `julukanDompet`/`gelarWaras`, `meta` (baris info kartu hasil). Tes: `tests/test-wni.js`.
+
 ### F. Dokumen Panduan (`ARSIP_NEGARA_Panduan.docx`)
 Word document strategi negara (variabel, rumus skor ganda, janji kampanye, jalur strategi, achievement). **Catatan:** dibuat sebelum revisi negara terakhir — sebagian detail (pemilu bisa kalah, card jabatan, pendidikan, dll) belum tercakup; update kalau perlu.
 

@@ -16,6 +16,8 @@ function makeCtx(){
 function run(c,code){ return vm.runInContext(code,c); }
 
 const c=makeCtx();
+/* angka acak ber-seed: hasil tes selalu sama di tiap mesin (tanpa ini tes cakupan kartu bisa gagal acak) */
+run(c, `(function(){ let a=20240611; Math.random=function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; })();`);
 run(c, loadGame('it'));
 run(c, `
   const __realAsk=ask; ask=function(d){ __SEEN.push(d.title||''); return __realAsk(d); };
@@ -44,6 +46,19 @@ run(c, `
     if(P&&P.ach)for(const k in P.ach)__ACH[k]=(__ACH[k]||0)+1;
   }
   for(let i=0;i<250;i++){ try{__sim()}catch(e){__ERRS.push('sim: '+e.message)} }
+`);
+
+/* 1b) skenario terarah: engineer berprestasi harus bisa ditawari promosi.
+   (Pemain acak jarang memenuhi syarat reputasi+skill, jadi cakupan kartu ini tidak boleh bergantung pada keberuntungan.) */
+run(c, `
+  for(let i=0;i<40 && __SEEN.indexOf('TAWARAN PROMOSI')<0;i++){
+    newGame(); __drain();
+    if(!P||!P.jab)continue;
+    P.tahunJab=6; P.reputasi=95; P.heat=0; P.tenure=5;
+    P.st.ngoding=P.st.sistem=P.st.jaringan=P.st.keamanan=P.st.soft=95;
+    try{ cekPromosi(); }catch(e){ __ERRS.push('cekPromosi: '+e.message); }
+    __drain();
+  }
 `);
 
 /* 2) targeted: tiap jenis INSIDEN, semua jalur diagnosa+perbaikan */

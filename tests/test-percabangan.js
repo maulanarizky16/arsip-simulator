@@ -1,13 +1,14 @@
 // Harness uji percabangan baru — kehidupan & negara (tanpa jsdom).
 // Pakai: node _test_percabangan.js  → target: 0 error + semua cabang baru terpicu.
 'use strict';
+const SEED=require('./_seed');
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const ROOT=path.join(__dirname,'..');
 
 function loadGame(game) {
   const dir = path.join(ROOT, game, 'js');
   const files = fs.readdirSync(dir).filter(f => f.endsWith('.js')).sort();
-  return files.map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n;\n');
+  return SEED+files.map(f => fs.readFileSync(path.join(dir, f), 'utf8')).join('\n;\n');
 }
 function makeCtx() {
   const store = {};

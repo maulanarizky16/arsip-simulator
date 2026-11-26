@@ -1,8 +1,9 @@
 // Harness uji ARSIP KEHIDUPAN — perbaikan logic & variabel baru. node _test_kehidupan.js
 'use strict';
+const SEED=require('./_seed');
 const fs=require('fs'), path=require('path'), vm=require('vm');
 const ROOT=path.join(__dirname,'..');
-function loadGame(game){ const dir=path.join(ROOT,game,'js'); return fs.readdirSync(dir).filter(f=>f.endsWith('.js')).sort().map(f=>fs.readFileSync(path.join(dir,f),'utf8')).join('\n;\n'); }
+function loadGame(game){ const dir=path.join(ROOT,game,'js'); return SEED+fs.readdirSync(dir).filter(f=>f.endsWith('.js')).sort().map(f=>fs.readFileSync(path.join(dir,f),'utf8')).join('\n;\n'); }
 function makeCtx(){ const store={}; const s={ window:{}, localStorage:{getItem:k=>k in store?store[k]:null,setItem:(k,v)=>{store[k]=String(v)},removeItem:k=>{delete store[k]}}, console, setTimeout, clearTimeout, __ERRS:[], __ENDED:0, __BAD:0, __ACH:{} }; s.globalThis=s; return vm.createContext(s); }
 function run(c,code){ return vm.runInContext(code,c); }
 

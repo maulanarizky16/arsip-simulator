@@ -1,11 +1,12 @@
 // Harness uji ARSIP NIAGA (simulator pengusaha) — tanpa jsdom. node _test_niaga.js
 'use strict';
+const SEED=require('./_seed');
 const fs=require('fs'), path=require('path'), vm=require('vm');
 const ROOT=path.join(__dirname,'..');
 function loadGame(game){
   const dir=path.join(ROOT,game,'js');
   const files=fs.readdirSync(dir).filter(f=>f.endsWith('.js')).sort();
-  return files.map(f=>fs.readFileSync(path.join(dir,f),'utf8')).join('\n;\n');
+  return SEED+files.map(f=>fs.readFileSync(path.join(dir,f),'utf8')).join('\n;\n');
 }
 function makeCtx(){
   const store={};

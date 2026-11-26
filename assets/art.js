@@ -41,7 +41,8 @@ const STAT={
   'coding & scripting':'laptop','server & cloud':'desktop-computer','jaringan & iot':'satellite-antenna',
   'keamanan siber':'shield','soft skill':'speech-balloon','on-call fatigue':'alarm-clock',
   'naluri bisnis':'light-bulb','operasional':'gear','pemasaran':'megaphone','finansial':'chart-increasing',
-  'kedekatan dgn anak':'baby-bottle'
+  'kedekatan dgn anak':'baby-bottle',
+  'kewarasan':'brain','gengsi':'smiling-face-with-sunglasses','nrimo':'person-in-lotus-position','skill':'books'
 };
 function statKey(label){
   const l=label.trim().toLowerCase();
@@ -55,7 +56,7 @@ const TAB={
   diri:'bust-in-silhouette', asmara:'two-hearts', karier:'briefcase', politik:'classical-building',
   usaha:'convenience-store', uang:'money-bag', hobi:'artist-palette', gerakan:'megaphone',
   kebijakan:'scroll', siasat:'chess-pawn', skill:'laptop', infra:'desktop-computer', siber:'shield',
-  ekspansi:'rocket', pribadi:'money-bag'
+  ekspansi:'rocket', pribadi:'money-bag', kerja:'briefcase', sosial:'people-hugging', warga:'identification-card'
 };
 const TAB_GAME={ hakim:{karier:'balance-scale'}, niaga:{usaha:'factory', siasat:'bank'} };
 
@@ -67,11 +68,12 @@ const H3={
   'hobi':'artist-palette','portofolio & aset':'chart-increasing','pencapaian':'trophy','tanda jasa':'sports-medal',
   'republik nusantara':'globe-showing-asia-australia','riwayat & keluarga':'scroll','riwayat':'scroll',
   'meja hakim':'balance-scale','wibawa peradilan':'classical-building','sistem & aset dikelola':'desktop-computer',
-  'skena & pasar teknologi':'globe-showing-asia-australia','portofolio usaha':'factory','ekonomi & pasar':'chart-increasing'
+  'skena & pasar teknologi':'globe-showing-asia-australia','portofolio usaha':'factory','ekonomi & pasar':'chart-increasing',
+  'ktp warga':'identification-card','dompet & cicilan':'credit-card','kondisi hidup':'house'
 };
 
 /* ---------- warna latar foto per game ---------- */
-const TINT={kehidupan:'#f2a37f',negara:'#e0625a',hakim:'#4fa293',it:'#6b84e6',niaga:'#f0b43c'};
+const TINT={kehidupan:'#f2a37f',negara:'#e0625a',hakim:'#4fa293',it:'#6b84e6',niaga:'#f0b43c',wni:'#ef6b6b'};
 
 /* ---------- komposisi thumbnail beranda ---------- */
 const SIM_ART={
@@ -80,6 +82,7 @@ const SIM_ART={
   hakim:    {bg:'linear-gradient(135deg,#8fd8c6 0%,#2f8a79 100%)', main:'woman-judge', left:'scroll', right:'balance-scale', deco:['hammer','gem-stone']},
   it:       {bg:'linear-gradient(135deg,#9fb2ff 0%,#4b5fd1 100%)', main:'man-technologist', left:'laptop', right:'shield', deco:['satellite-antenna','gear']},
   niaga:    {bg:'linear-gradient(135deg,#ffe08a 0%,#e29a1e 100%)', main:'man-office-worker', left:'money-bag', right:'chart-increasing', deco:['coin','factory']},
+  wni:      {bg:'linear-gradient(180deg,#ff8a80 0%,#f25c54 52%,#fff5f0 52%,#ffe4dc 100%)', main:'woman-raising-hand', left:'motorcycle', right:'shopping-cart', deco:['money-with-wings','light-bulb']},
   startup:  {bg:'linear-gradient(135deg,#d4b6ff 0%,#7b4fd0 100%)', main:'woman-technologist', left:'light-bulb', right:'rocket', deco:['sparkles','coin']},
   petani:   {bg:'linear-gradient(135deg,#c8ef9c 0%,#5aa83a 100%)', main:'man-farmer', left:'sheaf-of-rice', right:'tractor', deco:['seedling','sparkles']}
 };
@@ -176,6 +179,16 @@ const WHO={
     if(P.topi==='hitam')return {who:'ninja',role:role,badge:'anxious-face-with-sweat'};
     const badge=P.jab==='cto'?'crown':P.spes==='security'?'shield':P.spes==='iot'?'satellite-antenna':P.spes==='network'?'satellite-antenna':null;
     return {who:g+'-technologist',role:role,badge:badge};
+  },
+  wni:function(P){
+    const g=g2(P);
+    if(P.ending==='diaspora')return {who:g+'-technologist',role:'Diaspora',badge:'airplane'};
+    if(P.ending==='pulang')return {who:g,role:'Pulang kampung',badge:'house-with-garden'};
+    const by={karyawan:[g+'-office-worker',null],ojol:[g,'motorcycle'],guru:[g+'-teacher',P.pppk?'sports-medal':null],
+      outsourcing:[g+'-factory-worker',null],freelancer:[g+'-artist','laptop'],olshop:[g,'shopping-bags'],
+      staf:[g+'-in-tuxedo','briefcase'],penerus:[g+'-office-worker','factory'],kreator:[g+'-artist','video-camera'],pns:[g+'-office-worker','identification-card']}[P.profesi];
+    if(!by)return {who:'person-shrugging',role:'Pencari kerja',badge:'magnifying-glass-tilted-left'};
+    return {who:by[0],role:P.profesiN,badge:P.utang>0?'money-with-wings':by[1]};
   },
   niaga:function(P){
     const g=g2(P);
@@ -303,6 +316,37 @@ const KARTU_RULES=[
   [/bangkrut|resesi|krisis ekonomi|rugi|gulung tikar/, 'chart-decreasing'],
   [/serikat|buruh|phk massal|karyawan/, gv('factory-worker')],
   [/ekspansi|cabang|waralaba/, 'cityscape'],
+  /* wni: kehidupan sehari-hari warga +62 */
+  [/token listrik/, 'light-bulb'],
+  [/gas melon/, 'fire'],
+  [/razia|tilang/, gv('police-officer')],
+  [/ban motor|mudik/, 'motorcycle'],
+  [/bos chat|handle ini/, gv('office-worker')],
+  [/undangan nikah|kondangan/, 'wedding'],
+  [/peluang bisnis|robot trading/, 'money-with-wings'],
+  [/pinjam uang|saudara/, pick('man-raising-hand','woman-raising-hand')],
+  [/sinyal|kuota|grup wa|hoax/, 'mobile-phone'],
+  [/karaoke/, 'microphone'],
+  [/flexing/, 'beach-with-umbrella'],
+  [/hp jatuh|lcd/, 'mobile-phone'],
+  [/kapan nikah|kapan punya|dihalalkan|pertanyaan wajib/, pick('old-woman','old-man')],
+  [/bukber|ramadan/, 'hot-beverage'],
+  [/spt|pajak/, 'clipboard'],
+  [/lomba 17|agustus/, 'party-popper'],
+  [/harbolnas|flash sale/, 'shopping-bags'],
+  [/saldo minus/, 'money-with-wings'],
+  [/debt collector/, 'pouting-face'],
+  [/pppk/, selfv('teacher')],
+  [/klien/, 'laptop'],
+  [/harga kos/, 'house'],
+  [/transfer nyasar/, 'credit-card'],
+  [/kantor pelayanan/, 'identification-card'],
+  [/kaburajadulu/, 'airplane'],
+  [/nasib lahir/, c=>({k:(c.P&&c.P.gender==='P'?'woman':'man')+(c.P&&(c.P.latar==='pejabat'||c.P.latar==='sultan')?'-in-tuxedo':c.P&&c.P.latar==='petani'?'-farmer':''),self:true})],
+  [/kpk|ott|spill/, 'police-car-light'], [/orang dalam|om bisa bantu/, 'handshake'], [/terusin usaha|usaha keluarga/, 'factory'],
+  [/biaya sekolah/, pick('boy','girl')], [/rumah sakit/, gv('health-worker')], [/gagal panen/, gv('farmer')], [/cpns/, 'identification-card'],
+  [/perantauan|kota orang/, 'cityscape'],
+  [/pekerjaan sekarang/, c=>({k:(c.P&&c.P.gender==='P'?'woman':'man')+'-raising-hand',self:true})],
   /* kehidupan: hubungan */
   [/melamar|meminang|lamaran diterima|cincin/, c=>opp(c)],
   [/menikah|pernikahan|pesta nikah|resepsi/, 'wedding'],
@@ -327,6 +371,10 @@ const KARTU_RULES=[
   [/tak aman|kekerasan|ancaman/, 'warning']
 ];
 const ACT_RULES=[
+  [/rebahan/, 'bed'], [/scroll medsos/, 'mobile-phone'], [/meal prep|masak sendiri/, 'shopping-cart'], [/narik/, 'motorcycle'],
+  [/live jualan|bikin konten/, 'video-camera'], [/arisan/, 'coin'], [/video call/, 'mobile-phone'], [/kencan/, 'two-hearts'],
+  [/ktp|sim\/dokumen/, 'identification-card'], [/bpjs/, 'hospital'], [/jalan rusak/, 'video-camera'], [/bansos/, 'shopping-bags'],
+  [/kaburajadulu/, 'airplane'], [/kerja bakti|ronda/, 'people-hugging'], [/slot/, 'game-die'], [/kpr/, 'house'],
   [/umroh|haji|ibadah/, 'kaaba'], [/judi|taruhan/, 'game-die'], [/rokok|nikotin/, 'cigarette'],
   [/kucing|hewan/, 'cat'], [/olahraga|kebugaran|gym|lari/, 'person-running'],
   [/me time|istirahat|cuti|tidur/, 'person-in-lotus-position'], [/nongkrong|ngopi/, 'hot-beverage'],
@@ -415,7 +463,7 @@ function decorateActs(game){
     b.insertAdjacentHTML('afterbegin',img(k,'act'));
   });
 }
-const LOGO={kehidupan:'house-with-garden',negara:'classical-building',hakim:'balance-scale',it:'laptop',niaga:'money-bag'};
+const LOGO={kehidupan:'house-with-garden',negara:'classical-building',hakim:'balance-scale',it:'laptop',niaga:'money-bag',wni:'identification-card'};
 function decorateHeader(game){
   const h=document.querySelector('header h1');
   if(!h||h.querySelector('.aa-logo'))return;
@@ -428,9 +476,9 @@ function decorateHeader(game){
    newGame mengambil pilihan lewat ArsipArt.identity() → {gender, nama, skin}. */
 const PREF_KEY='arsip_identity_pref_v1';
 const CR_SUB={kehidupan:'Siapa yang akan lahir hari ini?',negara:'Siapa tokoh yang akan terjun ke politik?',
-  hakim:'Siapa hakim baru yang dilantik hari ini?',it:'Siapa engineer yang memulai karier hari ini?',niaga:'Siapa calon pengusaha kita?'};
+  hakim:'Siapa hakim baru yang dilantik hari ini?',it:'Siapa engineer yang memulai karier hari ini?',niaga:'Siapa calon pengusaha kita?',wni:'Siapa warga +62 yang akan berjuang bulan ini?'};
 const CR_WHO={kehidupan:g=>g==='L'?'boy':'girl',negara:g=>g==='L'?'man':'woman',hakim:g=>(g==='L'?'man':'woman')+'-judge',
-  it:g=>(g==='L'?'man':'woman')+'-technologist',niaga:g=>(g==='L'?'man':'woman')+'-office-worker'};
+  it:g=>(g==='L'?'man':'woman')+'-technologist',niaga:g=>(g==='L'?'man':'woman')+'-office-worker',wni:g=>(g==='L'?'man':'woman')+'-raising-hand'};
 let pendingId=null, creatorOpen=false;
 function loadPref(){ try{ return JSON.parse(localStorage.getItem(PREF_KEY))||{}; }catch(e){ return {}; } }
 function savePref(p){ try{ localStorage.setItem(PREF_KEY,JSON.stringify(p)); }catch(e){} }
@@ -637,17 +685,18 @@ function trackDeltas(P){
 }
 
 /* ================= KARTU HASIL UNTUK DIBAGIKAN ================= */
-const GAME_NAME={kehidupan:'Simulator Kehidupan',negara:'Simulator Karier Politik',hakim:'Simulator Hakim',it:'Simulator Karier IT',niaga:'Simulator Pengusaha'};
+const GAME_NAME={kehidupan:'Simulator Kehidupan',negara:'Simulator Karier Politik',hakim:'Simulator Hakim',it:'Simulator Karier IT',niaga:'Simulator Pengusaha',wni:'Simulator WNI'};
 const SCORES={
   kehidupan:r=>[{l:'Skor hidup',v:r.skor}],
   negara:r=>[{l:'Rakyat',v:r.skorRakyat},{l:'Negara',v:r.skorNegara}],
   hakim:r=>[{l:'Keadilan',v:r.skorAdil},{l:'Karier',v:r.skorKarier}],
   it:r=>[{l:'Karya',v:r.skorKarya},{l:'Cuan',v:r.skorCuan}],
-  niaga:r=>[{l:'Harta',v:r.skorHarta},{l:'Nama baik',v:r.skorNama}]
+  niaga:r=>[{l:'Harta',v:r.skorHarta},{l:'Nama baik',v:r.skorNama}],
+  wni:r=>[{l:'Dompet',v:r.skorDompet},{l:'Kewarasan',v:r.skorWaras}]
 };
 const TITLES={
   kehidupan:r=>[r.julukan,r.grade],negara:r=>[r.julukanRakyat,r.gelarNegara],hakim:r=>[r.julukanAdil,r.gelarKarier],
-  it:r=>[r.julukanKarya,r.gelarCuan],niaga:r=>[r.julukanHarta,r.gelarNama]
+  it:r=>[r.julukanKarya,r.gelarCuan],niaga:r=>[r.julukanHarta,r.gelarNama],wni:r=>[r.julukanDompet,r.gelarWaras]
 };
 function buildShareCard(result){
   const game=result&&result.game; if(!game||!SIM_ART[game])return null;
@@ -669,7 +718,7 @@ function buildShareCard(result){
     '<div class="aa-sh-paper">'+
       '<div class="aa-sh-photo" style="background:'+(TINT[game]||'#d6bd84')+'">'+img(w.who,'sh-who','',tone)+'</div>'+
       '<div class="aa-sh-name">'+esc(result.nama||'')+'</div>'+
-      '<div class="aa-sh-meta">'+[lahir!=null&&wafat!=null?lahir+'–'+wafat:'',result.kota||'',result.age!=null?'usia '+result.age:''].filter(Boolean).map(esc).join(' · ')+'</div>'+
+      '<div class="aa-sh-meta">'+esc(result.meta||[lahir!=null&&wafat!=null?lahir+'–'+wafat:'',result.kota||'',result.age!=null?'usia '+result.age:''].filter(Boolean).join(' · '))+'</div>'+
       (w.role?'<div class="aa-sh-role">'+esc(w.role)+'</div>':'')+
       (tt[0]?'<div class="aa-sh-jul">“'+esc(tt[0])+'”</div>':'')+
       (tt[1]&&tt[1]!==tt[0]?'<div class="aa-sh-jul2">'+esc(tt[1])+'</div>':'')+

@@ -29,6 +29,7 @@
   <button data-game="hakim"><img class="aa-lbtab" src="assets/fluent/woman-judge.webp" alt="">HAKIM</button>
   <button data-game="it"><img class="aa-lbtab" src="assets/fluent/man-technologist.webp" alt="">SIBER (IT)</button>
   <button data-game="niaga"><img class="aa-lbtab" src="assets/fluent/man-office-worker.webp" alt="">NIAGA</button>
+  <button data-game="wni"><img class="aa-lbtab" src="assets/fluent/woman-raising-hand.webp" alt="">WNI</button>
 </div>
 
 <div class="arsip-lb-table" id="board"></div>
@@ -136,6 +137,24 @@ function render(){
     });
     html+='</tbody></table>';
     board.innerHTML=html;
+  } else if(activeGame==='wni'){
+    let html='<table><thead><tr><th class="rank">#</th><th>Pemain</th><th>Dompet</th><th>Kewarasan</th><th>Total</th><th>Akhir cerita</th><th>Tgl</th></tr></thead><tbody>';
+    list.forEach((e,i)=>{
+      const r=i+1;
+      const handle = e.handle?'@'+escape(e.handle):'<span class="anon">Anonim</span>';
+      const total = (e.skorDompet||0)+(e.skorWaras||0);
+      html+=`<tr data-i="${i}" class="lbrow">
+        <td class="rank r${r<=3?r:''}">${r}</td>
+        <td class="handle">${handle}<br><span style="color:var(--ink2);font-size:11px">${escape(e.nama||'-')} · ${escape(e.latar||e.profesi||'-')}</span></td>
+        <td class="skor" style="color:var(--gold)">${e.skorDompet||0}<br><span style="font-size:11px;color:var(--ink2)">"${escape(e.julukanDompet||'-')}"</span></td>
+        <td class="skor" style="color:var(--green)">${e.skorWaras||0}<br><span style="font-size:11px;color:var(--ink2)">"${escape(e.gelarWaras||'-')}"</span></td>
+        <td class="skor"><b>${total}</b><br>${stars(total,200)}</td>
+        <td class="jul">${escape(e.ending||'-')}<br><span style="font-size:11px;color:var(--ink2)">${e.bulan||0} bulan</span></td>
+        <td style="font-size:11.5px;color:var(--ink2)">${fmtDate(e.date)}</td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    board.innerHTML=html;
   } else {
     let html='<table><thead><tr><th class="rank">#</th><th>Pemain</th><th>Harta & Imperium</th><th>Nama & Warisan</th><th>Total</th><th>Kekayaan</th><th>Tgl</th></tr></thead><tbody>';
     list.forEach((e,i)=>{
@@ -179,6 +198,8 @@ function openLBDetail(e,game){
     rows=row('Keadilan',e.skorAdil||0)+row('Karier & Kuasa',e.skorKarier||0)+row('Julukan','"'+escape(e.julukanAdil||'-')+'"')+row('Gelar',escape(e.gelarKarier||'-'))+row('Jabatan tertinggi',escape(e.jabatanTertinggi||'-'))+row('Perkara ditangani',e.perkara||0)+row('Putusan adil',e.adil||0)+row('Suap diterima',(e.suapTerima||0)+'×')+(e.vonis?row('Catatan','Pernah dipenjara'):'');
   } else if(game==='it'){
     rows=row('Karya & Integritas',e.skorKarya||0)+row('Cuan & Karier',e.skorCuan||0)+row('Julukan','"'+escape(e.julukanKarya||'-')+'"')+row('Gelar',escape(e.gelarCuan||'-'))+row('Spesialisasi',escape(e.spesialisasi||'-'))+row('Posisi tertinggi',escape(e.jabatanTertinggi||'-'))+row('Insiden ditangani',e.insiden||0)+row('Beres',e.beres||0)+row('Uptime akhir',(e.uptime||0)+'%')+row('Harta',rpShort(e.harta||0))+(e.gelapTotal?row('Uang gelap',rpShort(e.gelapTotal)):'')+(e.vonis?row('Catatan','Pernah dipenjara (kasus siber)'):'');
+  } else if(game==='wni'){
+    rows=row('Dompet',e.skorDompet||0)+row('Kewarasan',e.skorWaras||0)+row('Julukan','"'+escape(e.julukanDompet||'-')+'"')+row('Gelar','"'+escape(e.gelarWaras||'-')+'"')+row('Akhir cerita',escape(e.ending||'-'))+row('Nasib lahir',escape(e.latar||'-'))+row('Pekerjaan',escape(e.profesi||'-'))+row('Lama bertahan',(e.bulan||0)+' bulan')+row('Kota',escape(e.kota||'-'))+row('Kekayaan bersih',(e.kekayaan<0?'−':'')+rpShort(e.kekayaan||0))+row('Pernah pinjol',(e.pinjol||0)+'×');
   } else {
     rows=row('Harta & Imperium',e.skorHarta||0)+row('Nama & Warisan',e.skorNama||0)+row('Julukan','"'+escape(e.julukanHarta||'-')+'"')+row('Gelar',escape(e.gelarNama||'-'))+row('Latar',escape(e.latar||'-'))+row('Kekayaan bersih',rpShort(e.kekayaan||0))+row('Jumlah usaha',e.usaha||0)+row('Sektor digarap',e.sektor||0)+row('Karyawan',e.karyawan||0)+row('Skala tertinggi',escape(e.skalaTertinggi||'-'))+(e.gelapTotal?row('Uang gelap',rpShort(e.gelapTotal)):'')+(e.vonis?row('Catatan','Pernah dipenjara (pajak/korupsi)'):'');
   }

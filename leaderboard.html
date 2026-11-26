@@ -5,28 +5,29 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Papan Peringkat · ARSIP</title>
 <link rel="stylesheet" href="platform.css">
+<link rel="stylesheet" href="assets/art.css">
 </head>
 <body class="arsip-hub">
 <div class="arsip-page">
 
 <header class="arsip-hdr">
-  <a href="index.html" style="text-decoration:none"><span class="brand">ARSIP</span></a>
+  <a href="index.html" style="text-decoration:none"><span class="brand"><img class="aa-brand" src="assets/fluent/open-file-folder.webp" alt="">ARSIP</span></a>
   <span class="tag">Papan Peringkat</span>
   <a class="profile" href="index.html" style="text-decoration:none;color:#d8cfb8"><span class="dot"></span>« Beranda</a>
 </header>
 
 <section class="arsip-hero">
   <span class="rahasia">RAHASIA</span>
-  <h1>Papan Peringkat.</h1>
+  <h1><img class="aa-brand" src="assets/fluent/trophy.webp" alt="">Papan Peringkat.</h1>
   <p>Catatan disimpan lokal di browser ini; hapus cache atau ganti perangkat berarti mulai dari nol. Untuk versi global, butuh server (sedang dirancang).</p>
 </section>
 
 <div class="arsip-lb-tabs" id="tabs">
-  <button data-game="kehidupan" class="on">KEHIDUPAN</button>
-  <button data-game="negara">NEGARA</button>
-  <button data-game="hakim">HAKIM</button>
-  <button data-game="it">SIBER (IT)</button>
-  <button data-game="niaga">NIAGA</button>
+  <button data-game="kehidupan" class="on"><img class="aa-lbtab" src="assets/fluent/woman.webp" alt="">KEHIDUPAN</button>
+  <button data-game="negara"><img class="aa-lbtab" src="assets/fluent/man-in-tuxedo.webp" alt="">NEGARA</button>
+  <button data-game="hakim"><img class="aa-lbtab" src="assets/fluent/woman-judge.webp" alt="">HAKIM</button>
+  <button data-game="it"><img class="aa-lbtab" src="assets/fluent/man-technologist.webp" alt="">SIBER (IT)</button>
+  <button data-game="niaga"><img class="aa-lbtab" src="assets/fluent/man-office-worker.webp" alt="">NIAGA</button>
 </div>
 
 <div class="arsip-lb-table" id="board"></div>
@@ -40,6 +41,7 @@
 </div>
 <div id="modalRoot"></div>
 
+<script src="assets/art.js"></script>
 <script src="platform.js"></script>
 <script>
 let activeGame='kehidupan';

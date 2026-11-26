@@ -116,3 +116,12 @@ python3 -m http.server 8080
 Saya kasih ke kamu untuk dipakai sendiri. Tweak sesuka hati.
 
 — Disusun di Balikpapan, untuk Maulana.
+
+## Aset visual
+
+Ikon & karakter berwarna di `assets/fluent/` berasal dari [Microsoft Fluent Emoji](https://github.com/microsoft/fluentui-emoji) (versi 3D, warna kulit *Medium*), lisensi MIT — lihat `assets/fluent/LICENSE`. File asli 256px diperkecil jadi WebP 192px (total ±620 KB).
+
+- `assets/art.js` — modul bersama: thumbnail beranda, pasfoto karakter di kartu identitas (berubah sesuai umur, profesi/jabatan, dan suasana hati), ikon tab/stat/judul kartu, potret di layar akhir. Tiap game cukup memanggil `ArsipArt.update('<game>', P)` di akhir `render()`.
+- `assets/art.css` — gaya untuk semua elemen di atas.
+
+Untuk menambah aset baru: ambil PNG dari repo Fluent Emoji, perkecil ke WebP, simpan sebagai `assets/fluent/<nama-kebab>.webp`, lalu rujuk lewat `ArsipArt.img('<nama-kebab>')`.

@@ -97,6 +97,7 @@ function render(){
   $('acts').innerHTML=html;
   $('actInfo').textContent=G.over?'':(P.penjara>0?'Anda di dalam lapas — hanya bisa menjalani waktu.':(G.acted>5?'Tahun yang padat — stres merayap naik.':'Aksi bertanda ↻ bisa diulang dalam setahun; lainnya sekali per tahun.'));
   $('nextBtn').disabled=!!G.current||G.over;
+  if(window.ArsipArt)ArsipArt.update('hakim',P);
   renderKartu();
   saveGame();
 }

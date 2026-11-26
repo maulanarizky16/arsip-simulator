@@ -1,0 +1,81 @@
+/* ARSIP Art — gaya ikon & karakter berwarna (dipakai beranda + semua game) */
+
+/* ikon kecil di judul kartu, label stat, dan tab */
+.aa-h3{width:20px;height:20px;vertical-align:-5px;margin-right:7px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+.aa-st{width:15px;height:15px;vertical-align:-3px;margin-right:5px}
+.aa-tab{width:17px;height:17px;vertical-align:-4px;margin-right:5px;transition:transform .15s ease}
+#tabs button:hover .aa-tab,#tabs button.on .aa-tab{transform:scale(1.18) rotate(-6deg)}
+.stat .sl > span:first-child{display:inline-flex;align-items:center}
+
+/* ---------- pasfoto karakter di kartu identitas ---------- */
+.aa-id{display:flex;gap:12px;align-items:center;padding:4px 0 9px;margin-bottom:4px;border-bottom:1px dotted var(--line,#b9b09c)}
+.aa-photo{--aa-tint:#d6bd84;position:relative;flex:0 0 auto;width:92px;height:104px;border-radius:7px;
+  background:radial-gradient(circle at 50% 38%,rgba(255,255,255,.55),transparent 62%),
+             linear-gradient(160deg,color-mix(in srgb,var(--aa-tint) 55%,#fff) 0%,var(--aa-tint) 100%);
+  border:2px solid #fffaf0;box-shadow:0 0 0 1px rgba(0,0,0,.18),0 4px 10px rgba(0,0,0,.18);transform:rotate(-2deg)}
+.aa-photo::before{content:'';position:absolute;top:-7px;left:50%;width:34px;height:12px;margin-left:-17px;
+  background:rgba(255,248,220,.7);border:1px solid rgba(0,0,0,.08);transform:rotate(3deg)}
+.aa-who{position:absolute;left:50%;bottom:4px;width:84px;height:84px;margin-left:-42px;object-fit:contain;
+  filter:drop-shadow(0 3px 3px rgba(0,0,0,.25))}
+.aa-who:not([src]){visibility:hidden}
+.aa-pop{animation:aaPop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes aaPop{0%{transform:scale(.6);opacity:.2}100%{transform:scale(1);opacity:1}}
+.aa-badge,.aa-mood{position:absolute;width:32px;height:32px;border-radius:50%;background:#fffaf0;
+  box-shadow:0 2px 5px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center}
+.aa-badge{left:-9px;bottom:-8px}
+.aa-mood{right:-9px;top:-8px}
+.aa-badge img,.aa-mood img{width:24px;height:24px}
+.aa-badge[hidden]{display:none}
+.aa-cap{display:flex;flex-direction:column;gap:2px;min-width:0}
+.aa-lab{font:400 10px var(--type,monospace);letter-spacing:.14em;color:var(--ink2,#5f594f)}
+.aa-role{font:400 17px/1.1 var(--disp,sans-serif);letter-spacing:.05em;color:var(--ink,#2a2622);overflow-wrap:anywhere}
+.aa-feel{font-size:11.5px;color:var(--ink2,#5f594f)}
+@media (max-width:560px){
+  .aa-photo{width:76px;height:86px}
+  .aa-who{width:70px;height:70px;margin-left:-35px}
+  .aa-role{font-size:15px}
+}
+@media (prefers-reduced-motion:reduce){.aa-pop{animation:none}.aa-tab{transition:none}}
+
+/* ---------- thumbnail kartu beranda ---------- */
+.aa-thumb{position:absolute;inset:0;overflow:hidden}
+.aa-thumb .aa-ring{position:absolute;left:50%;top:58%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.5) 0%,rgba(255,255,255,.12) 60%,transparent 70%)}
+.aa-thumb::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(135deg,rgba(255,255,255,.07) 0 2px,transparent 2px 14px)}
+.aa-thumb img{position:absolute;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.25));transition:transform .25s ease}
+.aa-thumb .aa-hero{left:50%;bottom:-4px;width:118px;height:118px;margin-left:-59px;z-index:2}
+.aa-thumb .aa-side{bottom:10px;width:62px;height:62px;z-index:1}
+.aa-thumb .aa-side.l{left:calc(50% - 118px)}
+.aa-thumb .aa-side.r{left:calc(50% + 56px)}
+.aa-thumb .aa-deco{width:30px;height:30px;opacity:.9;z-index:1}
+.aa-thumb .aa-deco.d1{left:16px;top:14px;transform:rotate(-12deg)}
+.aa-thumb .aa-deco.d2{right:22px;top:40px;transform:rotate(10deg)}
+.arsip-card.avail:hover .aa-thumb .aa-hero{transform:translateY(-6px) scale(1.04)}
+.arsip-card.avail:hover .aa-thumb .aa-side.l{transform:translate(-4px,-3px) rotate(-8deg)}
+.arsip-card.avail:hover .aa-thumb .aa-side.r{transform:translate(4px,-3px) rotate(8deg)}
+.arsip-card.soon .aa-thumb{filter:saturate(.35) brightness(.95)}
+.arsip-card .thumb{height:150px}
+.arsip-card .thumb .badge{z-index:3}
+@media (prefers-reduced-motion:reduce){.aa-thumb img{transition:none}}
+
+/* ---------- hero beranda: deret karakter "satu hidup utuh" ---------- */
+.aa-cast{display:flex;align-items:flex-end;gap:2px;margin:14px 0 0 18px;flex-wrap:wrap}
+.aa-cast img{width:54px;height:54px;object-fit:contain;filter:drop-shadow(0 4px 4px rgba(0,0,0,.2));transition:transform .2s ease}
+.aa-cast img:nth-child(1){width:40px;height:40px}
+.aa-cast img:nth-child(2){width:46px;height:46px}
+.aa-cast img:hover{transform:translateY(-5px) scale(1.08)}
+.aa-cast .aa-arrow{font:400 18px var(--type,monospace);color:var(--ink2,#5f594f);align-self:center;margin:0 4px}
+.aa-brand{width:34px;height:34px;vertical-align:-4px;margin-right:8px}
+.aa-inline{width:18px;height:18px;vertical-align:-4px;margin-right:5px}
+.aa-lbtab{width:18px;height:18px;vertical-align:-4px;margin-right:5px}
+
+/* ---------- banner di modal detail beranda ---------- */
+.aa-mthumb{position:relative;height:150px;margin:-24px -26px 16px;border-radius:8px 8px 0 0;overflow:hidden}
+.arsip-modal .close{z-index:4;background:rgba(255,250,240,.85);border-radius:50%;width:34px;height:34px;line-height:30px}
+
+/* ---------- potret di layar akhir ---------- */
+.aa-epi{display:flex;justify-content:center;margin:2px 0 14px}
+.aa-epi .aa-photo{width:104px;height:116px;filter:grayscale(.55) sepia(.25)}
+.aa-epi .aa-who{width:96px;height:96px;margin-left:-48px}
+.aa-epi .aa-mood{filter:none}

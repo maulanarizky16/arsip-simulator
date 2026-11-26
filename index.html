@@ -6,12 +6,13 @@
 <title>ARSIP · Koleksi Simulator Hidup</title>
 <meta name="description" content="Koleksi simulator hidup berbahasa Indonesia: kehidupan, karier politik, dan banyak lagi.">
 <link rel="stylesheet" href="platform.css">
+<link rel="stylesheet" href="assets/art.css">
 </head>
 <body class="arsip-hub">
 <div class="arsip-page">
 
 <header class="arsip-hdr">
-  <span class="brand">ARSIP</span>
+  <span class="brand"><img class="aa-brand" src="assets/fluent/open-file-folder.webp" alt="">ARSIP</span>
   <span class="tag">Koleksi Simulator Hidup</span>
   <a class="profile donate" href="donasi.html" style="text-decoration:none" title="Donasi / Sedekah">
     <span class="dot"></span>
@@ -27,6 +28,13 @@
   <span class="rahasia">RAHASIA</span>
   <h1>Pilih jalan yang mau kamu jalani.</h1>
   <p>Tiap simulasi membawamu menjalani satu hidup utuh, dari titik nol sampai berkas ditutup. Kamu bikin pilihan, dunia bereaksi, dan di akhir cerita ada penilaian yang jujur. Jejakmu dicatat di papan peringkat, hasil akhirmu bisa dijadikan gambar untuk dipamerkan.</p>
+  <div class="aa-cast" aria-hidden="true">
+    <img src="assets/fluent/baby.webp" alt=""><img src="assets/fluent/girl.webp" alt=""><img src="assets/fluent/man-student.webp" alt="">
+    <span class="aa-arrow">»</span>
+    <img src="assets/fluent/woman-technologist.webp" alt=""><img src="assets/fluent/man-judge.webp" alt=""><img src="assets/fluent/woman-in-tuxedo.webp" alt=""><img src="assets/fluent/man-office-worker.webp" alt=""><img src="assets/fluent/woman-firefighter.webp" alt="">
+    <span class="aa-arrow">»</span>
+    <img src="assets/fluent/old-woman.webp" alt="">
+  </div>
 </section>
 
 <div class="arsip-update">
@@ -58,6 +66,7 @@
 <!-- DETAIL MODAL TEMPLATE -->
 <div id="modalRoot"></div>
 
+<script src="assets/art.js"></script>
 <script src="platform.js"></script>
 <script>
 const SIM=[
@@ -66,7 +75,7 @@ const SIM=[
     title:'Simulator Kehidupan', subtitle:'Dari lahir sampai berkas ditutup',
     teaser:'Mulai dari satu sel: pilih masa kecil, sekolah, karier, jodoh, anak, bisnis, sampai pensiun. Jadi polisi, tentara, atau intel, terjun ke politik dari Ketua RT sampai Bupati, atau hancurkan semuanya di tengah jalan.',
     badge:'Tersedia',
-    icon: lifeIcon(),
+   
     meta:['~15 menit/hidup','65+ aksi','25+ achievement','Generasi 1 sampai 3+'],
     persuasive: [
       'Ini bukan game yang menyuapi kamu jalan cerita. Kamu yang membangun hidupnya, dari pola belajar di SD, jurusan kuliah, pasangan hidup, sampai bisnis yang kamu rintis. Semuanya saling memengaruhi.',
@@ -91,7 +100,7 @@ const SIM=[
     title:'Simulator Karier Politik', subtitle:'Dari aktivis sampai presiden',
     teaser:'Pilih jalur: aktivis idealis, jurnalis investigasi, atau anak pejabat dengan nama besar. Naik dari DPRD sampai presiden, atau habis terbakar di tengah jalan.',
     badge:'Tersedia',
-    icon: stateIcon(),
+   
     meta:['~20 menit/karier','90+ aksi','28 achievement','Penilaian ganda'],
     persuasive: [
       'Di sini kamu tidak cuma bikin keputusan moral hitam-putih. Kamu hidup sebagai politisi sungguhan: maju pemilu, hadapi calon lawan di panggung debat, ucapkan janji yang menempel di kepala publik, bertahan dari OTT, sampai menyusun warisan.',
@@ -113,7 +122,7 @@ const SIM=[
     id:'hakim', file:'hakim.html', avail:true,
     title:'Simulator Hakim', subtitle:'Dari Hakim PN sampai Ketua MA',
     teaser:'Duduk di kursi hakim: timbang bukti, tahan tekanan dan suap, lalu ketuk palu. Tegakkan keadilan, atau jadi mafia peradilan berjubah hitam.',
-    badge:'Tersedia', icon: judgeIcon(),
+    badge:'Tersedia',
     meta:['~15 menit/karier','Perkara tak terbatas','19 achievement','Skor ganda'],
     persuasive: [
       'Setiap perkara adalah dilema. Bukti di satu sisi; tekanan orang kuat dan amplop "uang ketok" di sisi lain. Ketukan palumu menentukan nasib orang lain, dan nasibmu sendiri.',
@@ -133,7 +142,7 @@ const SIM=[
     id:'it', file:'it.html', avail:true,
     title:'Simulator Karier IT', subtitle:'Dari Junior sampai CTO (atau buronan siber)',
     teaser:'Pilih jalur: IT Support, Sysadmin, DevOps, Network, IoT, Security, Backend, atau Data. Padamkan insiden produksi, jaga armada aset, dan tahan godaan topi hitam. Naik jadi CTO, atau berakhir diburu tim siber.',
-    badge:'Baru', icon: itIcon(),
+    badge:'Baru',
     meta:['~15 menit/karier','8 spesialisasi','27 achievement','Skor ganda'],
     persuasive: [
       'Ini bukan game klik-klik. Tiap tahun pager-mu berbunyi: server tumbang, armada IoT offline massal, deploy gagal di produksi, database nyaris korup, atau sistem diretas. Kamu diagnosa dulu (baca log, cek monitoring, telusuri config), baru putuskan perbaikan. Diagnosa yang teliti bikin tebakanmu jadi keputusan.',
@@ -155,7 +164,7 @@ const SIM=[
     id:'niaga', file:'niaga.html', avail:true,
     title:'Simulator Pengusaha', subtitle:'Dari kaki lima sampai konglomerasi',
     teaser:'Bangun kerajaan bisnis dari nol di 18 sektor: kuliner, ritel, properti, tambang, startup, manufaktur, dan banyak lagi. Cium peluang lewat due diligence, besarkan usaha sampai IPO, atau jatuh bangkrut dan diburu kasus pajak.',
-    badge:'Baru', icon: bizIcon(),
+    badge:'Baru',
     meta:['~15 menit/karier','18 sektor usaha','30 achievement','Skor ganda'],
     persuasive: [
       'Mulai dari modal nekat (atau warisan juragan), pilih sektor, dan jalankan. Tiap usaha punya simulasi untung-rugi sendiri yang dipengaruhi skala, kinerja, merek, dan kondisi ekonomi makro — boom, resesi, inflasi, suku bunga, sampai krisis moneter dan pandemi yang menghantam sebagian sektor dan justru menguntungkan sebagian lainnya.',
@@ -177,7 +186,7 @@ const SIM=[
     id:'coming-startup', file:null, avail:false,
     title:'Simulator Startup', subtitle:'Segera hadir',
     teaser:'Bangun startup dari kost-kostan: cari co-founder, kejar pendanaan, lewati death valley. (Belum tersedia.)',
-    badge:'Segera', icon: startupIcon(),
+    badge:'Segera',
     meta:['Coming soon'],
     persuasive:['Sedang dalam perencanaan.'], fitur:[]
   },
@@ -185,20 +194,12 @@ const SIM=[
     id:'coming-petani', file:null, avail:false,
     title:'Simulator Petani', subtitle:'Segera hadir',
     teaser:'Tanah, musim, harga gabah, kebijakan pemerintah. Cerita yang jarang diceritakan. (Belum tersedia.)',
-    badge:'Segera', icon: farmIcon(),
+    badge:'Segera',
     meta:['Coming soon'],
     persuasive:['Sedang dalam perencanaan.'], fitur:[]
   }
 ];
 
-/* ===== INLINE SVG ICONS ===== */
-function lifeIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="28" r="11" fill="#f4efe1"/><path d="M30 80c0-16 9-28 20-28s20 12 20 28" fill="#f4efe1"/><path d="M22 78l8-4M78 78l-8-4M50 50v15M40 90h20"/></g></svg>`;}
-function stateIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M50 14L86 32v6H14v-6z" fill="#f4efe1"/><path d="M20 80h60v8H20zM24 38v40M40 38v40M60 38v40M76 38v40" fill="#f4efe1"/><path d="M14 88h72M50 8v6" stroke-width="2"/></g></svg>`;}
-function startupIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M50 12l16 16-16 50-16-50z" fill="#f4efe1"/><circle cx="50" cy="34" r="5" fill="#fff"/><path d="M34 62l-8 14 14-6M66 62l8 14-14-6"/></g></svg>`;}
-function farmIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 70l40-30 40 30v18H10z" fill="#f4efe1"/><path d="M38 88V70h24v18M50 14v14M44 22l6-8 6 8"/></g></svg>`;}
-function judgeIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M50 22v56M32 86h36"/><circle cx="50" cy="18" r="4" fill="#f4efe1"/><path d="M20 32h60"/><path d="M20 32l-9 20h18z" fill="#f4efe1"/><path d="M80 32l-9 20h18z" fill="#f4efe1"/></g></svg>`;}
-function itIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="22" width="68" height="44" rx="4" fill="#f4efe1"/><path d="M28 36l8 8-8 8M44 52h14"/><path d="M38 78h24M50 66v12M16 60h68"/></g></svg>`;}
-function bizIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 84V44l16-10 16 10v40" fill="#f4efe1"/><path d="M52 84V52l14-9 14 9v32" fill="#f4efe1"/><path d="M14 84h74M28 50v6M28 64v6M40 50v6M40 64v6M62 60v6M74 60v6M44 24l-8 10M44 24l8 10M44 18v6"/></g></svg>`;}
 
 /* ===== RENDER CARDS ===== */
 function renderCards(){
@@ -208,7 +209,7 @@ function renderCards(){
     const card=document.createElement('div');
     card.className='arsip-card '+(s.avail?'avail':'soon');
     card.innerHTML=`
-      <div class="thumb">${s.icon}<span class="badge ${s.avail?'':'soon'}">${s.badge}</span></div>
+      <div class="thumb">${ArsipArt.thumb(s.id.replace('coming-',''))}<span class="badge ${s.avail?'':'soon'}">${s.badge}</span></div>
       <div class="body">
         <div class="sub">${s.subtitle}</div>
         <h3>${s.title}</h3>
@@ -228,6 +229,7 @@ function openDetail(s){
   root.innerHTML=`
   <div class="arsip-modal" id="modal">
     <div class="box">
+      <div class="aa-mthumb">${ArsipArt.thumb(s.id)}</div>
       <button class="close" data-close>×</button>
       <h2>${s.title}</h2>
       <div class="meta-line">${s.subtitle} · ${s.meta.join(' · ')}</div>
@@ -279,7 +281,6 @@ function topPreview(){
     card.className='arsip-card soon';
     card.style.opacity='1';
     const title = g==='kehidupan'?'Simulator Kehidupan':g==='negara'?'Simulator Negara':g==='hakim'?'Simulator Hakim':g==='it'?'Simulator Karier IT':'Simulator Pengusaha';
-    const icon = g==='kehidupan'?lifeIcon():g==='negara'?stateIcon():g==='hakim'?judgeIcon():g==='it'?itIcon():bizIcon();
     let rows='';
     if(!list.length){
       rows='<p style="color:var(--ink2);font-style:italic;margin-top:8px">Belum ada catatan. Mulai sebuah simulasi untuk memulai papan peringkat.</p>';
@@ -295,7 +296,7 @@ function topPreview(){
       });
     }
     card.innerHTML = `
-      <div class="thumb">${icon}<span class="badge">TOP 3</span></div>
+      <div class="thumb">${ArsipArt.thumb(g)}<span class="badge">TOP 3</span></div>
       <div class="body">
         <h3>${title}</h3>
         ${rows}

@@ -120,6 +120,7 @@ function render(){
   $('actInfo').textContent=G.over?'':P.age<6?'Tekan "Jalani Umur +1" untuk tumbuh besar.':
     (G.acted>5?'Tahun yang sangat padat — badan mulai protes (stres naik).':'Aksi bertanda ↻ bisa diulang dalam setahun; lainnya sekali per tahun.');
   $('nextBtn').disabled=!!G.current||G.over;
+  if(window.ArsipArt)ArsipArt.update('kehidupan',P);
   renderKartu();
   saveGame();
 }

@@ -18,7 +18,7 @@ function newGame(){
     st:{waras:ri(62,74),sehat:ri(74,88),gengsi:ri(30,45),nrimo:ri(38,52),relasi:ri(45,60)},
     skill:40,
     saldo:Math.round((lt.saldo[0]+r()*(lt.saldo[1]-lt.saldo[0]))*10)*100e3, tabungan:0, emas:0, emasModal:0, utang:0, cicilan:[],
-    motor:false, rumah:false, pasangan:false, menikah:false,
+    motor:false, sim:false, rumah:false, pasangan:false, menikah:false, anggaran:{ingin:0,tabung:0},
     gaya:'normal', masakBulan:false,
     arisan:false, arisanDapat:0,
     judol:0, judolRugi:0,
@@ -52,9 +52,10 @@ function newGame(){
     opts:PROFESI.filter(p=>!p.khusus||p.khusus===lt.k).map(p=>({t:p.n,sub:p.d+' · '+(p.vari?'±':'')+rp(p.gaji)+'/bln',e:()=>{
       setProfesi(p.k,p.gaji,true);
       for(const k in p.st)P.st[k]=clamp(P.st[k]+p.st[k],0,100);
-      P.skill=p.skill; if(p.motor)P.motor=true;
+      P.skill=p.skill; if(p.motor){ P.motor=true; P.sim=r()<0.6; }
       if(p.k==='outsourcing')P.kontrakSisa=12;
       addLog('Kamu bekerja sebagai <b>'+p.n.toLowerCase()+'</b>. '+p.d,'sys');
+      aturAnggaran(true);
     }}))});
   render();
 }
@@ -167,6 +168,16 @@ function bulanan(){
   /* arisan */
   let arisanTxt='';
   if(P.arisan){ P.saldo-=300e3; if(N.ke===P.arisanDapat){ P.saldo+=3.6e6; arisanTxt=' Kocokan arisan keluar namamu: <b>+'+rp(3.6e6)+'</b>! Rasanya seperti menang undian padahal uang sendiri.'; } }
+  /* anggaran gaji: sebagian langsung ditabung, sebagian untuk jajan & senang-senang */
+  let angTxt='';
+  const ang=P.anggaran||{ingin:0,tabung:0};
+  if(masuk>0&&(ang.ingin||ang.tabung)){
+    const tab=Math.round(masuk*ang.tabung/100), jajan=Math.round(masuk*ang.ingin/100);
+    if(tab&&P.saldo>=tab){ P.saldo-=tab; P.tabungan+=tab; }
+    if(jajan){ P.saldo-=jajan; P.st.waras=clamp(P.st.waras+Math.min(6,Math.round(jajan/350e3)),0,100); P.st.gengsi=clamp(P.st.gengsi+1,0,100); }
+    angTxt=' Sesuai anggaran: '+(tab?'nabung '+rp(tab):'')+(tab&&jajan?', ':'')+(jajan?'jajan & senang-senang '+rp(jajan):'')+'.';
+    if(ang.tabung>=20&&ang.ingin<=30&&ang.ingin>=10)ach('anggaranRapi');
+  }
   /* kiriman keluarga: dari ortu (+) atau ke ortu (−) */
   let kirimTxt='';
   if(P.kiriman){
@@ -192,7 +203,7 @@ function bulanan(){
   const txt=masuk>0
     ?'Gajian '+rp(masuk)+' masuk, lalu numpang lewat: biaya hidup '+rp(biaya)+(cic?' + cicilan '+rp(cic):'')+'.'
     :'Tidak ada pemasukan bulan ini. Biaya hidup '+rp(biaya)+(cic?' + cicilan '+rp(cic):'')+' tetap jalan.';
-  addLog(txt+kirimTxt+arisanTxt,'sys');
+  addLog(txt+angTxt+kirimTxt+arisanTxt,'sys');
   P.masakBulan=false;
 }
 /* ================= DRIFT MENTAL & FISIK ================= */

@@ -9,7 +9,13 @@ const KARIER={
   ekonomi:[['Analis bank',90e6],['Akuntan',80e6],['Staf keuangan tambang',92e6]],
   hukum:[['Pengacara junior',88e6],['Legal officer',76e6]],
   pendidikan:[['Guru SMA',56e6],['Dosen muda',66e6]],
-  seni:[['Desainer grafis',66e6],['Ilustrator lepas',56e6],['Videografer agensi',62e6]]
+  seni:[['Desainer grafis',66e6],['Ilustrator lepas',56e6],['Videografer agensi',62e6]],
+  akuntansi:[['Akuntan publik junior',85e6],['Staf pajak perusahaan',78e6],['Auditor internal',88e6]],
+  psikologi:[['HRD rekrutmen',72e6],['Konselor sekolah',58e6],['Asesor psikologi',70e6]],
+  komunikasi:[['Social media specialist',70e6],['Reporter TV',68e6],['Staf humas perusahaan',80e6]],
+  farmasi:[['Apoteker',90e6],['Medical representative',95e6],['Staf QC pabrik obat',82e6]],
+  pertanian:[['Penyuluh pertanian',60e6],['Agronom perkebunan sawit',88e6],['Staf riset benih',75e6]],
+  sastra:[['Penerjemah',62e6],['Content writer',58e6],['Editor penerbitan',64e6]]
 };
 const LV=['','Senior ','Spesialis ','Kepala ','Direktur '];
 /* profesi negara/khusus dengan tugas dinas sendiri */
@@ -46,7 +52,13 @@ const JURUSAN=[
   {k:'ekonomi',n:'Ekonomi',min:50,lama:4,biaya:22e6},
   {k:'hukum',n:'Hukum',min:55,lama:4,biaya:22e6},
   {k:'pendidikan',n:'Pendidikan',min:45,lama:4,biaya:18e6},
-  {k:'seni',n:'Seni & Desain',min:40,lama:4,biaya:20e6}
+  {k:'seni',n:'Seni & Desain',min:40,lama:4,biaya:20e6},
+  {k:'akuntansi',n:'Akuntansi',min:50,lama:4,biaya:22e6},
+  {k:'psikologi',n:'Psikologi',min:55,lama:4,biaya:24e6},
+  {k:'komunikasi',n:'Ilmu Komunikasi',min:45,lama:4,biaya:22e6},
+  {k:'farmasi',n:'Farmasi',min:65,lama:4,biaya:30e6},
+  {k:'pertanian',n:'Pertanian',min:40,lama:4,biaya:15e6},
+  {k:'sastra',n:'Sastra',min:40,lama:4,biaya:16e6}
 ];
 /* usaha: [nama, modal, risk] — risk besar = untung & rugi makin liar */
 const USAHA=[
@@ -122,6 +134,8 @@ const ACH_DEF={
   mabrur:'Haji Mabrur', bos:'Bos Besar (20+ karyawan)', dinasti:'Dinasti 3 Generasi',
   supel:'Jaringan Luas', teladan:'Orang Tua Teladan',
   sahabat:'Sahabat Sejati', perantau:'Perantau Sukses', comeback:'Bangkit dari Jurang', waras:'Jiwa yang Tenang',
-  pejabat:'Wakil Rakyat', penguasa:'Orang Nomor Satu', negarawan:'Politikus Bersih', pengasuh:'Tangan Pengasuh'
+  pejabat:'Wakil Rakyat', penguasa:'Orang Nomor Satu', negarawan:'Politikus Bersih', pengasuh:'Tangan Pengasuh',
+  nilaiSempurna:'Nilai Ujian Sempurna', anakPTN:'Anak PTN', kuliahLN:'Kuliah di Luar Negeri', juaraLomba:'Juara Lomba Nasional',
+  aktivisKampus:'Aktivis Kampus', mahasiswaAbadi:'Mahasiswa Abadi', cumlaude:'Cumlaude', simResmi:'SIM Jalur Resmi', restuMertua:'Restu Mertua'
 };
 

@@ -36,7 +36,9 @@ function render(){
   if(P.retired)kj+='<div class="fr"><span>Status</span><span>Pensiunan ('+rp(Math.round(P.pensiun/12))+'/bln)</span></div>';
   else if(P.job){ const pk=pangkatNama(); const lbl=pk?pk+' · '+P.job.title.split(' (')[0]:LV[P.job.level]+P.job.title; kj+='<div class="fr"><span>'+lbl+'</span><span>'+rp(Math.round(P.job.g/12))+'/bln</span></div>';
     kj+='<div class="fr"><span class="muted" style="font-size:11px">· reputasi kerja</span><span style="font-size:11px">'+(P.reputasiKerja>=70?'bintang kantor':P.reputasiKerja>=50?'solid':P.reputasiKerja>=30?'biasa':'di ujung tanduk')+'</span></div>'; }
-  else if(P.kuliah)kj+='<div class="fr"><span>Mahasiswa</span><span>'+P.kuliah.n+'</span></div>';
+  else if(P.kuliah){ const kk=P.kuliah, ip=kk.ips&&kk.ips.length?kk.ips.reduce((x,y)=>x+y,0)/kk.ips.length:0;
+    kj+='<div class="fr"><span>Mahasiswa</span><span>'+kk.n+(PROGRAM&&PROGRAM[kk.program]?' · '+PROGRAM[kk.program].n:'')+'</span></div>';
+    kj+='<div class="fr"><span class="muted" style="font-size:11px">· semester '+(kk.sem||0)+' dari '+(kk.lama*2)+'</span><span style="font-size:11px">IPK '+(ip?ip.toFixed(2):'—')+'</span></div>'; }
   else if(P.age>=18)kj+='<div class="fr"><span>Status</span><span>Belum bekerja</span></div>';
   else kj+='<div class="fr"><span>Status</span><span>Pelajar / anak</span></div>';
   if(P.sert)kj+='<div class="fr"><span>Sertifikasi</span><span>'+P.sert+' sertifikat</span></div>';

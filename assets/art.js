@@ -316,6 +316,15 @@ const KARTU_RULES=[
   [/bangkrut|resesi|krisis ekonomi|rugi|gulung tikar/, 'chart-decreasing'],
   [/serikat|buruh|phk massal|karyawan/, gv('factory-worker')],
   [/ekspansi|cabang|waralaba/, 'cityscape'],
+  /* mini-game */
+  [/skd cpns|seleksi cpns|daftar cpns/, 'identification-card'], [/wawancara kerja/, gv('office-worker')], [/cek fakta/, 'mobile-phone'],
+  [/atur gaji|atur anggaran/, 'money-bag'], [/ujian teori sim|ujian praktik sim|gagal ujian sim/, gv('police-officer')],
+  [/tawar-menawar/, 'handshake'], [/calon mertua/, pick('old-man','old-woman')],
+  /* sekolah & kuliah */
+  [/latihan soal|uas semester|ujian|ebtanas|uasbn|usbn|unbk|asesmen nasional/, 'books'],
+  [/snbt|sbmptn|snmptn|spmb|umptn|utbk|jalur masuk|coba jalur|tes beasiswa/, 'graduation-cap'],
+  [/pilih jurusan/, selfv('student')], [/semester/, selfv('student')], [/ospek|orientasi kampus/, 'megaphone'],
+  [/kkn/, 'house-with-garden'], [/skripsi|sidang/, 'scroll'],
   /* wni: kehidupan sehari-hari warga +62 */
   [/token listrik/, 'light-bulb'],
   [/gas melon/, 'fire'],
@@ -371,6 +380,7 @@ const KARTU_RULES=[
   [/tak aman|kekerasan|ancaman/, 'warning']
 ];
 const ACT_RULES=[
+  [/seleksi cpns/, 'identification-card'], [/anggaran/, 'money-bag'], [/bikin sim/, 'identification-card'], [/motor bekas/, 'motorcycle'],
   [/rebahan/, 'bed'], [/scroll medsos/, 'mobile-phone'], [/meal prep|masak sendiri/, 'shopping-cart'], [/narik/, 'motorcycle'],
   [/live jualan|bikin konten/, 'video-camera'], [/arisan/, 'coin'], [/video call/, 'mobile-phone'], [/kencan/, 'two-hearts'],
   [/ktp|sim\/dokumen/, 'identification-card'], [/bpjs/, 'hospital'], [/jalan rusak/, 'video-camera'], [/bansos/, 'shopping-bags'],
@@ -412,7 +422,7 @@ function matchRule(rules,text,ctx){
   for(const r of rules){ if(r[0].test(text)){ return typeof r[1]==='function'?r[1](ctx):r[1]; } }
   return null;
 }
-const ACRO=/^(RT|RW|DPR|DPRD|KPK|KY|MA|PN|PT|IT|SD|SMP|SMA|KPR|KTA|ASN|PNS|TNI|POLRI|CTO|IPO|API|VPN|DNS|SSL|IOT|UKM|APBN|APBD|HAM|OTT|CEO|BUMN|SIP|PHK|ABK|S1|S2|S3|DDOS|LN|RI|MBG|IKN|NPL|SDM|UMKM|PKH|BPK|OJK|BI)$/;
+const ACRO=/^(RT|RW|DPR|DPRD|KPK|KY|MA|PN|PT|IT|SD|SMP|SMA|KPR|KTA|ASN|PNS|TNI|POLRI|CTO|IPO|API|VPN|DNS|SSL|IOT|UKM|APBN|APBD|HAM|OTT|CEO|BUMN|SIP|PHK|ABK|S1|S2|S3|DDOS|LN|RI|MBG|IKN|NPL|SDM|UMKM|PKH|BPK|OJK|BI|IPA|IPS|SMK|UAS|UTS|KKN|UTBK|SNBT|SNBP|SBMPTN|SNMPTN|SPMB|UMPTN|UNBK|USBN|UASBN|EBTANAS|UAN|PTN|PTS|D3|PKM|BEM|PPPK|KPK|NIK)$/;
 function titleCase(s){
   if(s!==s.toUpperCase())return s;
   return s.split(/(\s+|[—\-\/:])/).map(w=>{

@@ -57,6 +57,7 @@ const ACH_DEF={
   nrimo:'Nrimo Paripurna', healing:'Healing Garis Keras', naikKelas:'Naik Kelas', diaspora:'#KaburAjaDulu', tahan:'Bertahan 3 Tahun',
   rumah:'Akhirnya Punya Rumah', sadarJudol:'Sadar Judol', cuan:'Cuan Sampingan', nikah:'Sah!', damai:'Damai di Tempat',
   hemat:'Ratu/Raja Hemat', sultan:'Sultan Kecil-kecilan',
+  pemburuHoax:'Pemburu Hoax', jagoTawar:'Jago Tawar', simResmi:'SIM Jalur Resmi', simNembak:'SIM Nembak', anggaranRapi:'Anggaran Rapi',
   tolakOrangDalam:'Tolak Orang Dalam', tamatPrivilege:'Tamat Privilege', asn:'Akhirnya ASN', tulangPunggung:'Tulang Punggung Keluarga', mandiri:'Mandiri Sejati'
 };
 const PENYAKIT=['tifus karena makan sembarangan','DBD musim hujan','asam lambung kambuhan','tipes kelelahan','radang tenggorokan'];

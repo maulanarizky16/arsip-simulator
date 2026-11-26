@@ -3,7 +3,8 @@
 const TABS=[['diri','DIRI & SOSIAL'],['asmara','ASMARA'],['karier','KARIER'],['politik','POLITIK'],['usaha','USAHA'],['uang','UANG & ASET'],['hobi','HOBI']];
 const ACTS=[
 /* ---- DIRI & SOSIAL ---- */
-{k:'belajar',tab:'diri',lbl:'Belajar ekstra',sub:'Kecerdasan +3',min:6,e:()=>addLog('Anda belajar lebih giat tahun ini.'+fx({smart:+3,stress:+2}))},
+{k:'sim',tab:'diri',lbl:'Bikin SIM',sub:'Ujian teori & praktik',min:17,cond:()=>!P.sim,e:()=>bikinSimKeh()},
+{k:'belajar',tab:'diri',lbl:'Belajar ekstra',sub:'Kerjakan 3 soal latihan',min:6,e:()=>belajarSoal()},
 {k:'olahraga',tab:'diri',lbl:'Olahraga rutin',sub:'Kesehatan +3',min:6,e:()=>addLog('Anda rajin olahraga.'+fx({health:+3,happy:+1}))},
 {k:'meditasi',tab:'diri',lbl:'Me time / istirahat',sub:'Stres −7',min:13,e:()=>addLog('Anda mengambil jeda untuk diri sendiri.'+fx({stress:-7,happy:+2}))},
 {k:'nongkrong',tab:'diri',lbl:'Nongkrong',sub:'Karisma +3',min:13,e:()=>addLog('Anda memperluas pergaulan.'+fx({charm:+3,happy:+2,relasi:+5}))},
@@ -90,9 +91,12 @@ const ACTS=[
   P.money-=5e6;
   addLog('Hadiah kejutan untuk '+P.love.nama.split(' ')[0]+'. Matanya berbinar.'+fx({rel:+10,happy:+2}));}},
 {k:'lamar',tab:'asmara',lbl:'Lamar pasangan',sub:'Bawa hubungan ke jenjang serius',min:20,
-  cond:()=>P.gender==='L'&&!!P.love&&!P.love.married&&P.love.rel>=58&&P.love.thn>=1&&P.money>=30e6,e:()=>{
+  cond:()=>P.gender==='L'&&!!P.love&&!P.love.married&&P.love.rel>=58&&P.love.thn>=1&&P.money>=30e6,e:()=>{ const jalan=rs=>{
   const nm=P.love.nama.split(' ')[0];
-  const terima = P.love.rel>=70 || (P.love.rel>=60 && r()<0.7) || (P.love.rel>=58 && r()<0.4);
+  const relR=P.love.rel+(rs-0.5)*24;       /* restu calon mertua ikut menentukan */
+  if(rs>=0.8){ ach('restuMertua'); addLog('Calon mertua tersenyum lebar: "Kapan mau datang melamar resmi?"','good'); }
+  else if(rs<0.45)addLog('Calon mertua tampak kurang sreg. Suasana ruang tamu mendadak dingin.','bad');
+  const terima = relR>=70 || (relR>=60 && r()<0.7) || (relR>=58 && r()<0.4);
   if(!terima){ P.love.rel=clamp(P.love.rel-3,0,100);
     addLog('Anda memberanikan diri melamar, tapi '+nm+' merasa belum siap. "Aku sayang kamu, tapi beri aku waktu sedikit lagi, ya."'+fx({stress:+5,happy:-4}),'bad'); return; }
   addLog(nm+' menerima lamaranmu dengan haru. "Iya, aku mau!"','good');
@@ -101,7 +105,8 @@ const ACTS=[
     {t:'Pesta sedang',sub:'Biaya '+rp(80e6),cond:()=>P.money>=80e6,e:()=>nikah(80e6,10,2)},
     {t:'Pesta besar',sub:'Biaya '+rp(200e6),cond:()=>P.money>=200e6,e:()=>nikah(200e6,14,5)},
     {t:'Batal, belum siap',e:()=>{P.love.rel-=3;addLog('Anda mengurungkan niat di detik terakhir. '+nm+' tersenyum, tapi matanya berkata lain.'+fx({stress:+3}));}}
-  ]});}},
+  ]}); };
+  if(typeof Kuis!=='undefined')Kuis.mertua(P.love.nama.split(' ')[0],jalan); else jalan(0.6); }},
 {k:'doronk',tab:'asmara',lbl:'Bicarakan jenjang serius',sub:'Tanya kesiapan pasangan untuk menikah',min:20,cond:()=>P.gender==='P'&&!!P.love&&!P.love.married,e:()=>{
   const nm=P.love.nama.split(' ')[0];
   const income=P.love.income||(P.love.gajiBln||0)*12;

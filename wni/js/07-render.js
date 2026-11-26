@@ -67,6 +67,8 @@ function render(){
     '<div class="idrow"><span class="lab">Indeks harga</span><b>'+(N.harga>=1.005?'▲ ':'')+Math.round(N.harga*1000)/10+'%</b></div>'+
     '<div class="idrow"><span class="lab">Tempat tinggal</span><b>'+(P.rumah?'Rumah sendiri (KPR)':'Kos')+'</b></div>'+
     '<div class="idrow"><span class="lab">Kendaraan</span><b>'+(P.motor?'Motor':'Angkot & ojol')+'</b></div>'+
+    '<div class="idrow"><span class="lab">SIM</span><b>'+(P.sim?'Punya':'Belum punya')+'</b></div>'+
+    '<div class="idrow"><span class="lab">Anggaran gaji</span><b>'+(P.anggaran&&(P.anggaran.tabung||P.anggaran.ingin)?'nabung '+P.anggaran.tabung+'% · jajan '+P.anggaran.ingin+'%':'belum diatur')+'</b></div>'+
     '<div class="idrow"><span class="lab">Status</span><b>'+(P.menikah?'Menikah':P.pasangan?'Pacaran':'Jomblo')+'</b></div>';
   /* riwayat */
   const rw=P.riwayat.slice(-6).reverse();

@@ -47,6 +47,8 @@ Simulator hidup pribadi, BitLife-style versi Indonesia. State global di object `
 
 **Skor akhir:** `skor` (0–180+), grade D–S, julukan kontekstual.
 
+**Sekolah & kuliah (`03b-soal.js` + `03c-sekolah.js`):** bank soal `SOAL` per jenjang/jurusan + soal lucu (opsi benar ditulis pertama, diacak saat tampil; soal lucu punya tanggapan per opsi). `lembarSoal()` = form pilihan ganda **maks. 5 soal** dikumpulkan sekaligus (belajar ekstra 3, UAS 3, sidang 2, ujian akhir/tes masuk/beasiswa 5). Nama ujian & jalur sesuai era (`namaUjianAkhir`, `namaSeleksi`, `namaBeasiswa`, `namaKurikulum`; UN 2020 batal). Kuliah: `masukKuliah()` (rapor/tes/luar negeri/PTS/D3) → `pilihJurusan(prog)` (13 jurusan, `PROGRAM`) → `kuliahTahunan(a)` = dua `semesterKuliah()` per tahun (fokus + `uas`), KKN semester 6, skripsi semester akhir−1, `sidang` → `wisuda()` (IPK, predikat, peluang kerja). Tes: `tests/test-sekolah.js`.
+
 ### B. ARSIP NEGARA (`negara.html` + folder `negara/`)
 Simulator karier politik dari aktivis sampai presiden. State global di `P` (tokoh) + `N` (negara).
 
@@ -126,6 +128,9 @@ Simulator warga +62 bertahan hidup **per bulan** (36 bulan, Jan 2026–Des 2028)
 - **Kalender** (`kalender()`): UMR naik Januari, Ramadan/bukber, Lebaran (THR, mudik, salam tempel, "kapan nikah?") via `RAMADAN`/`LEBARAN`, SPT Maret, Agustusan, Harbolnas. **~40 kejadian acak** di `EVENTS` (`04-events.js`, tiap event punya bobot `w` & jeda `cd`).
 - **Stat:** Kewarasan, Kesehatan, Gengsi, Nrimo (meredam pukulan mental di `fx`), Relasi + Skill. **Akhir cerita** (`akhir(kind)`, `ENDING`): tahan 36 bulan, pulang (kewarasan 0), tumbang (kesehatan 0), dc (utang ≥ batas), diaspora (#KaburAjaDulu), tutup.
 - **Skor GANDA:** **Dompet** + **Kewarasan** (`nilaiAkhir`). `handleResult` key `wni`, fields `skorDompet`+`skorWaras`, `julukanDompet`/`gelarWaras`, `meta` (baris info kartu hasil). Tes: `tests/test-wni.js`.
+
+### E3. Mini-game bersama (`assets/kuis.js`)
+Dipakai WNI & Kehidupan (dimuat setelah `art.js`; di tes ikut dimuat lewat `tests/_seed.js`). Butuh global game `ask/addLog/rp/r/hasDoc`. `Kuis.lembar()` = form pilihan ganda maks. 5 soal (soal biasa `a`=indeks benar, soal berbobot `w`=poin per opsi). Mini-game: `skd` (TWK/TIU/TKP, ambang 3/5, 3/5, 18/25), `wawancara` (rasio → diterima/ditolak & gaji ×0,9–1,15), `hoax` (hoax/fakta), `simLengkap` (teori ≥4/5 → praktik → opsi "nembak"), `mertua` (rasio restu), `tawar` (harga batas tersembunyi + kesabaran penjual). WNI: CPNS, wawancara, cek fakta, atur anggaran (`P.anggaran`, slider), SIM, motor bekas, calon mertua. Kehidupan: PNS lewat SKD, wawancara (`wawancaraKerja`), SIM, calon mertua saat melamar. Tes: `tests/test-minigame.js` (`globalThis.__KUIS_PINTAR` = pemain yang selalu menjawab terbaik).
 
 ### F. Dokumen Panduan (`ARSIP_NEGARA_Panduan.docx`)
 Word document strategi negara (variabel, rumus skor ganda, janji kampanye, jalur strategi, achievement). **Catatan:** dibuat sebelum revisi negara terakhir — sebagian detail (pemilu bisa kalah, card jabatan, pendidikan, dll) belum tercakup; update kalau perlu.

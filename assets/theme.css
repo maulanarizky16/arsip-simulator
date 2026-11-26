@@ -208,3 +208,20 @@ html .arsip-donate-box h3{font:800 19px var(--disp);color:var(--ink);border-bott
 html .arsip-donate-box input,html .arsip-donate-box textarea{border:2px solid var(--line);border-radius:14px;font:600 14px var(--type)}
 html .arsip-gopay-nomor{font:800 26px var(--disp);border-radius:14px}
 html .arsip-hdr .profile{color:var(--ink)!important}
+
+/* ---------- lembar soal (form pilihan ganda) ---------- */
+html .kartu .kt .kz-intro{margin-bottom:10px}
+html .kartu .kz{display:flex;flex-direction:column;gap:10px;text-align:left}
+html .kartu .kz-q{background:#fff;border-radius:16px;padding:10px 12px;box-shadow:0 3px 0 var(--c-white-d)}
+html .kartu .kz-t{font:700 14px/1.45 var(--type);color:var(--ink);margin-bottom:6px}
+html .kartu .kz-o{display:flex;align-items:center;gap:8px;padding:6px 8px;margin:3px 0;border-radius:11px;cursor:pointer;font:600 13.5px/1.35 var(--type);color:#5b4a35;transition:background .1s}
+html .kartu .kz-o:hover{background:#fff6dc}
+html .kartu .kz-o input{width:18px;height:18px;accent-color:#3dbb63;flex:0 0 auto;margin:0}
+html .kartu .kz-o:has(input:checked){background:#e8f8ea;color:#1f6e3a;font-weight:800}
+
+/* ---------- atur anggaran (slider) ---------- */
+html .kartu .ang{display:flex;flex-direction:column;gap:10px;margin-top:12px;text-align:left}
+html .kartu .ang-row{display:block;background:#fff;border-radius:14px;padding:9px 12px;box-shadow:0 3px 0 var(--c-white-d);font:700 13.5px var(--type)}
+html .kartu .ang-row span{display:flex;justify-content:space-between}
+html .kartu .ang-row b{color:#2f9e50}
+html .kartu .ang-row input[type=range]{width:100%;margin-top:6px;accent-color:#3dbb63}

@@ -34,6 +34,7 @@ const ACTS=[
   const x=Math.round(ri(5,20)*100e3*(0.8+P.skill/200));
   addLog(pick(['Kamu buka jastip dari mal ke mal.','Kamu mengajar les privat anak SD yang lebih jago main HP darimu.','Kamu ambil proyek desain logo, revisi 11 kali, "bikin yang simpel tapi mewah ya kak".'])+' Hasilnya '+rp(x)+'.'+fx({saldo:x,waras:-4}),'good');
   if(P.sideKali>=5)ach('cuan'); }},
+{k:'cpns',tab:'kerja',lbl:'Ikut seleksi CPNS',sub:'SKD: TWK, TIU, TKP',cond:()=>P.profesi!=='pns'&&N.ke-(P.cpnsTerakhir||-99)>=12,e:()=>ikutCPNS()},
 {k:'kursus',tab:'kerja',lbl:'Ikut kursus online / pelatihan',sub:'Skill +6',e:()=>addLog('Kamu ikut pelatihan online, dapat sertifikat PDF, dan mencantumkannya di LinkedIn dengan bangga.'+fx({skill:+6,waras:-1}),'good')},
 {k:'naikGaji',tab:'kerja',lbl:'Minta naik gaji',sub:'Berani bicara',cond:()=>punyaKerjaTetap()&&P.bulanKerja>=6&&N.ke-P.naikGajiTerakhir>=6,e:()=>{ P.naikGajiTerakhir=N.ke;
   if(r()<0.2+P.skill/250+(P.orangDalam?0.3:0)){ const n=Math.round(P.gaji*ri(7,15)/100); P.gaji+=n; ach('naikKelas'); milestone('Naik gaji '+rp(n));
@@ -83,6 +84,8 @@ const ACTS=[
   addLog('Kamu bayar utang '+rp(x)+'. Sisa utang: '+rp(P.utang)+'.'+fx({waras:+3}),'good'); if(P.utang<=0)lunasSemua(); }},
 {k:'pinjol',tab:'uang',lbl:'Ajukan pinjol',sub:'Cair cepat, bunga 5%/bulan',multi:true,e:()=>ask({title:'AJUKAN PINJOL',text:'Aplikasi menawarkan limit menggiurkan. Bunga 5% per bulan "sudah termasuk biaya layanan".',opts:[
   {t:'Rp 2 jt',e:()=>ambilPinjol(2e6)},{t:'Rp 5 jt',e:()=>ambilPinjol(5e6)},{t:'Rp 10 jt',e:()=>ambilPinjol(10e6)},{t:'Batal',e:()=>{}}]})},
+{k:'anggaran',tab:'uang',lbl:'Atur anggaran gaji',sub:'Bagi gaji: tabungan & jajan',multi:true,e:()=>aturAnggaran(false)},
+{k:'motorBekas',tab:'uang',lbl:'Beli motor bekas',sub:'Tawar-menawar dengan penjual',cond:()=>!P.motor&&P.saldo>=6e6,e:()=>beliMotorBekas()},
 {k:'kreditMotor',tab:'uang',lbl:'Kredit motor',sub:'DP Rp 2 jt, cicilan 24 bulan',cond:()=>!P.motor&&P.saldo>=2e6,e:()=>{ P.saldo-=2e6; P.motor=true; tambahCicilan('Kredit motor',18e6,24,true);
   addLog('Motor baru! Leasing tersenyum. Ongkos transport turun, cicilan naik. Matematika hidup memang aneh.'+fx({gengsi:+5,waras:+4}),'good'); milestone('Kredit motor'); }},
 {k:'kpr',tab:'uang',lbl:'Ambil KPR rumah subsidi',sub:'DP Rp 10 jt, tidak perlu bayar kos lagi',cond:()=>!P.rumah&&punyaKerjaTetap()&&P.saldo+P.tabungan>=10e6,e:()=>{
@@ -99,6 +102,7 @@ const ACTS=[
 {k:'dokumen',tab:'warga',lbl:'Urus KTP/SIM/dokumen',sub:'Siapkan mental',e:()=>ask({title:'KANTOR PELAYANAN',text:'Kamu datang jam 7 pagi. Petugas: "Sistemnya lagi offline, Mas/Mbak. Bisa balik besok. Atau... bisa dibantu."',opts:[
   {t:'Balik besok, ikut prosedur',e:()=>addLog('Kamu bolak-balik 3 hari. Dokumen jadi. Kamu jadi lebih tua dan lebih bijak.'+fx({waras:-4,nrimo:+4}),'good')},
   {t:'"Dibantu" saja',sub:'Rp 150 rb',e:()=>addLog('Dokumen jadi dalam 15 menit. Cepat, efisien, dan sedikit menyedihkan.'+fx({saldo:-150e3,nrimo:-2}),'bad')}]})},
+{k:'sim',tab:'warga',lbl:'Bikin SIM',sub:'Ujian teori & praktik',cond:()=>!P.sim,e:()=>bikinSIM()},
 {k:'bpjs',tab:'warga',lbl:'Berobat pakai BPJS',sub:'Antre dari subuh',cond:()=>P.st.sehat<70,e:()=>{ ach('bpjs');
   addLog('Faskes 1, rujukan, antre poli, antre apotek. Total 7 jam. Obat gratis, sehat pulih, betis pegal.'+fx({sehat:+12,waras:-3,nrimo:+2}),'good'); }},
 {k:'lapor',tab:'warga',lbl:'Lapor jalan rusak di medsos',sub:'Siapa tahu viral',e:()=>{

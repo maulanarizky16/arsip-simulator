@@ -11,11 +11,11 @@ const EVENTS=[
   {t:'Keliling sampai dapat',e:()=>addLog('Warung ketujuh akhirnya punya. Kamu pulang membawa tabung hijau seperti piala.'+fx({waras:-3,sehat:-1}))},
   {t:'Beli yang non-subsidi',sub:'Lebih mahal',e:()=>addLog('Tabung biru 5,5 kg, harga dua kali lipat. Masakanmu tidak jadi lebih enak.'+fx({saldo:-Math.round(140e3*N.harga)}))},
   {t:'Beli makan di luar saja',e:()=>addLog('Nasi padang dibungkus. Masalah selesai, masalah dompet dimulai.'+fx({saldo:-Math.round(60e3*N.harga),waras:+1}))}]})},
-{k:'tilang',w:2,cd:8,cond:()=>P.motor,run:()=>ask({title:'RAZIA DI PERTIGAAN',text:'"Selamat pagi. Bisa lihat SIM dan STNK-nya?" Pajak motormu ternyata telat 2 bulan.',opts:[
+{k:'tilang',w:2,cd:8,cond:()=>P.motor,run:()=>{ if(!P.sim)addLog('Petugas juga meminta SIM. Kamu belum punya. Masalah bertambah.'+fx({saldo:-250e3,waras:-2}),'bad'); ask({title:'RAZIA DI PERTIGAAN',text:'"Selamat pagi. Bisa lihat SIM dan STNK-nya?" Pajak motormu ternyata telat 2 bulan.',opts:[
   {t:'Terima tilang, ikut sidang',sub:'Resmi, tapi ribet',e:()=>addLog('Kamu ikut sidang tilang, antre 3 jam, bayar denda resmi. Warga negara taat, waktu terbuang.'+fx({saldo:-Math.round(150e3*N.harga),waras:-4,nrimo:+2}))},
   {t:'"Damai di tempat aja, Pak"',sub:'Cepat, tapi...',e:()=>{ ach('damai'); addLog('Selembar uang berpindah tangan dengan gerakan secepat sulap. Kamu lanjut jalan, dengan rasa bersalah kecil yang ikut membonceng.'+fx({saldo:-200e3,nrimo:-3}),'bad'); }},
   {t:'Rekam & unggah ke medsos',e:()=>{ if(r()<0.3){ P.viralKali++; ach('viral'); addLog('Videomu viral! Komentar netizen membela kamu, dan kamu dilepas dengan senyum. Tapi tilang tetap jalan.'+fx({gengsi:+8,waras:+3,saldo:-150e3}),'good'); }
-    else addLog('Videomu ditonton 37 orang, 12 di antaranya bot. Tilang tetap jalan, ditambah tatapan tidak ramah.'+fx({saldo:-150e3,waras:-3}),'bad'); }}]})},
+    else addLog('Videomu ditonton 37 orang, 12 di antaranya bot. Tilang tetap jalan, ditambah tatapan tidak ramah.'+fx({saldo:-150e3,waras:-3}),'bad'); }}]}); }},
 {k:'ban',w:2,cd:5,cond:()=>P.motor,run:()=>addLog('Ban motor bocor kena paku di jalan yang "baru diaspal". Tambal ban '+rp(25e3)+', telat masuk kerja, dan tukang tambal yang lokasinya "kebetulan" persis setelah tempat paku bertebaran.'+fx({saldo:-25e3,waras:-2}),'bad')},
 {k:'bos',w:3,cd:3,cond:kerjaKantor,run:()=>ask({title:'BOS CHAT JAM 10 MALAM',text:'"Maaf ganggu malam-malam, tolong revisi sedikit ya, besok pagi dipakai." Kata "sedikit" di sini mengandung 40 slide.',opts:[
   {t:'Kerjakan sampai subuh',e:()=>addLog('Revisi beres jam 3 pagi. Bos membalas "ok" tanpa kapital. Begitulah penghargaan.'+fx({waras:-6,sehat:-2,skill:+2}))},
@@ -57,9 +57,10 @@ const EVENTS=[
   {t:'Like, lalu lanjut hidup',e:()=>addLog('Kamu kasih love dan lanjut scroll. Hidup bukan lomba. Setidaknya begitu katamu.'+fx({nrimo:+3}))},
   {t:'Liburan juga, pakai paylater',sub:'Cicilan 12 bulan',e:()=>{ const x=Math.round(ri(6,10)*1e6*N.harga); tambahCicilan('Paylater liburan',x,12,true); addLog('Kamu liburan ke Bali, cicilan '+rp(x)+' selama 12 bulan. Foto-fotonya bagus. Tagihannya juga "bagus".'+fx({gengsi:+12,waras:+6}),'bad'); }},
   {t:'Iri diam-diam',e:()=>addLog('Kamu stalking akunnya sampai foto tahun 2017. Tidak ada yang membaik.'+fx({waras:-4,gengsi:+2}),'bad')}]})},
-{k:'hoax',w:2,cd:6,run:()=>ask({title:'HOAX DI GRUP WA KELUARGA',text:'Om di grup keluarga share: "VIRAL!!! Minum air rebusan sandal jepit bisa sembuhkan kolesterol, SEBARKAN sebelum dihapus!!!"',opts:[
-  {t:'Luruskan dengan sopan',e:()=>{ if(r()<0.4)addLog('Om membalas "oh iya ya, makasih". Sejarah tercipta.'+fx({relasi:+3,waras:+2}),'good'); else addLog('Om membalas "anak muda sekarang sok pintar" dan keluar grup. Masuk lagi 2 jam kemudian.'+fx({relasi:-4,waras:-2})); }},
-  {t:'Diam & mute grup',e:()=>addLog('Kamu mute grup selama 8 jam. Lalu 1 minggu. Lalu selamanya.'+fx({nrimo:+2,relasi:-1}))}]})},
+{k:'hoax',w:3,cd:5,run:()=>Kuis.hoax((b,n)=>{
+  if(b===n){ addLog('Kamu meluruskan semuanya dengan tautan sumber resmi. Grup hening sejenak, lalu Om membalas "oh gitu, makasih". Kemenangan langka.'+fx({relasi:+3,waras:+4}),'good'); ach('pemburuHoax'); }
+  else if(b>=n-1)addLog('Hampir semua berhasil kamu cek. Satu hoax lolos dan sudah keburu disebar Tante ke 12 grup.'+fx({waras:+1}));
+  else addLog('Kamu ikut termakan beberapa hoax, bahkan sempat meneruskannya. Malu sendiri setelah ada yang membalas dengan link cek fakta.'+fx({waras:-3,gengsi:-3}),'bad'); })},
 {k:'kuota',w:2,cd:4,run:()=>ask({title:'KUOTA HABIS DI TANGGAL TUA',text:'Kuota internetmu habis, padahal masih tanggal 20. Hidup tanpa internet terasa seperti zaman batu.',opts:[
   {t:'Beli paket darurat',sub:'Rp 50 rb',e:()=>addLog('Paket 5 GB berlaku 3 hari. Mahal per GB-nya, tapi kamu hidup kembali.'+fx({saldo:-Math.round(50e3*N.harga)}))},
   {t:'Numpang wifi warkop',e:()=>addLog('Kamu pesan es teh paling murah dan duduk 4 jam demi wifi. Pemilik warkop menatap. Kamu pura-pura sibuk.'+fx({saldo:-8e3,gengsi:-2}))}]})},
@@ -86,10 +87,13 @@ const EVENTS=[
 {k:'judolKambuh',w:5,cd:1,cond:()=>P.judol>=20,run:()=>ask({title:'"SEKALI LAGI, PASTI BALIK MODAL"',text:'Jarimu gatal membuka aplikasi itu lagi. Kerugian sejauh ini: <b>'+rp(P.judolRugi)+'</b>. Bisikan di kepala bilang kali ini pasti menang.',opts:[
   {t:'Main lagi',e:()=>{ const x=Math.min(Math.max(P.saldo,0),Math.round(ri(3,15)*100e3)); P.saldo-=x; P.judolRugi+=x; P.judol=clamp(P.judol+12,0,100); addLog('Kamu deposit '+rp(x)+'. Hilang dalam 9 menit. Bisikan itu menyuruhmu "sekali lagi".'+fx({waras:-7}),'bad'); P.burukKali++; }},
   {t:'Hapus aplikasi, cerita ke orang terdekat',e:()=>{ P.judol=clamp(P.judol-25,0,100); addLog('Kamu menghapus aplikasinya dan cerita ke sahabat. Malu, tapi kamu tidak sendirian lagi.'+fx({waras:+4,relasi:+3}),'good'); if(P.judol<=0)ach('sadarJudol'); }}]})},
-{k:'nikahDesak',w:4,cd:6,cond:()=>P.pasangan&&!P.menikah&&N.ke-(P.pacaranSejak||0)>=8,run:()=>ask({title:'"KAPAN DIHALALKAN?"',text:'Keluarga pasanganmu mulai bertanya serius. Calon mertua menyebut angka resepsi yang membuatmu ingin pingsan sopan.',opts:[
+{k:'nikahDesak',w:4,cd:6,cond:()=>P.pasangan&&!P.menikah&&N.ke-(P.pacaranSejak||0)>=8,run:()=>Kuis.mertua('pasanganmu',rs=>{
+  if(rs<0.5){ addLog('Calon mertua tersenyum tipis lalu bilang "nanti kami pikirkan dulu". Restu belum turun. Pasanganmu menghela napas panjang.'+fx({relasi:-4,waras:-5}),'bad'); return; }
+  addLog(rs>=0.85?'Calon mertua tertawa lepas dan menepuk pundakmu: "Kapan mau dilamar resmi?"':'Calon mertua mengangguk pelan. Restu turun, walau dengan beberapa catatan.','good');
+  ask({title:'"KAPAN DIHALALKAN?"',text:'Keluarga pasanganmu mulai bertanya serius. Calon mertua menyebut angka resepsi yang membuatmu ingin pingsan sopan.',opts:[
   {t:'Nikah sederhana di KUA',sub:'±Rp 3 jt · syukuran kecil',e:()=>nikah(3e6,'Akad di KUA, syukuran nasi kotak. Sah! Tetangga bilang "kok sepi", kamu bilang "yang penting berkah".',-4)},
   {t:'Resepsi meriah (dicicil)',sub:'Rp 60 jt · cicilan 24 bulan',e:()=>{ tambahCicilan('Cicilan resepsi',60e6,24,true); nikah(0,'Resepsi 800 tamu, tiga kali ganti baju, katering lengkap. Gengsi terselamatkan. Dompet dicicil 2 tahun.',+12); }},
-  {t:'Tunda dulu, belum siap',e:()=>addLog('"Belum siap" diterjemahkan keluarganya sebagai "tidak serius". Suasana mendingin.'+fx({relasi:-6,waras:-3}),'bad')}]})},
+  {t:'Tunda dulu, belum siap',e:()=>addLog('"Belum siap" diterjemahkan keluarganya sebagai "tidak serius". Suasana mendingin.'+fx({relasi:-6,waras:-3}),'bad')}]}); })},
 {k:'transferNyasar',w:1,cd:20,run:()=>ask({title:'TRANSFER NYASAR Rp 2 JT',text:'Tiba-tiba ada transfer 2 juta dari nama yang tidak kamu kenal. Lalu WA masuk: "Maaf kak, salah transfer, mohon dikembalikan ya."',opts:[
   {t:'Kembalikan',e:()=>addLog('Kamu kembalikan lewat bank, tidak lewat link yang dia kirim. Jujur dan waspada sekaligus.'+fx({nrimo:+4,relasi:+1}),'good')},
   {t:'Pura-pura tidak tahu',e:()=>{ P.saldo+=2e6; if(r()<0.6){ P.saldo-=2e6; addLog('Bank memblokir dana itu karena laporan salah transfer. Kamu malah harus datang ke kantor cabang untuk klarifikasi.'+fx({waras:-5}),'bad'); }
@@ -126,9 +130,7 @@ const EVENTS=[
   {t:'Kirim Rp 2 jt untuk modal tanam ulang',cond:()=>P.saldo>=2e6,e:()=>{ P.kirimanTotal-=2e6; addLog('Kamu kirim modal tanam ulang. Bulan depan bapak kirim foto padi yang mulai menghijau.'+fx({saldo:-2e6,relasi:+8,nrimo:+2}),'good'); }},
   {t:'Kirim seadanya',e:()=>{ P.kirimanTotal-=500e3; addLog('Kamu kirim 500 ribu dan doa. Kadang hanya itu yang bisa.'+fx({saldo:-500e3,relasi:+3,waras:-3})); }}]})},
 {k:'cpns',w:3,cd:12,cond:()=>P.latar==='pns'&&P.profesi!=='pns',run:()=>ask({title:'"DAFTAR CPNS, NAK"',text:'Pendaftaran CPNS dibuka. Bapak sudah menyiapkan map berisi fotokopi ijazah yang dilegalisir 10 rangkap. "Ini kesempatan, Nak. Kerja beneran."',opts:[
-  {t:'Ikut tes CPNS',e:()=>{ if(r()<0.2+P.skill/250){ setProfesi('pns',4.8e6*N.harga); ach('asn'); stamp('LOLOS CPNS','green');
-    addLog('<b>KAMU LOLOS CPNS!</b> Bapak menangis haru dan mengumumkannya di tiga grup WA. Akhirnya kamu "kerja beneran".'+fx({relasi:+12,gengsi:+10,waras:+8}),'good'); }
-    else addLog('Kamu gagal di tes kompetensi bidang, selisih 3 poin. Bapak bilang "tahun depan coba lagi" dengan nada yang sangat serius.'+fx({waras:-6,relasi:-2,skill:+2}),'bad'); }},
+  {t:'Ikut tes CPNS',e:()=>ikutCPNS()},
   {t:'Tolak, bukan jalanku',e:()=>addLog('"Terus mau jadi apa kamu?" Pertanyaan itu menggema sampai lebaran berikutnya.'+fx({relasi:-8,waras:+2}),'bad')}]})},
 {k:'krl',w:3,cd:99,cond:()=>P.latar==='sultan',run:()=>addLog('Untuk konten, kamu naik KRL pertama kalinya di jam sibuk. Kamu terdorong, terjepit, kehilangan satu sepatu, dan untuk pertama kalinya benar-benar paham kenapa orang-orang terlihat lelah. Kontennya viral: "Anak sultan coba jadi rakyat jelata".'+fx({waras:-5,nrimo:+6,gengsi:+5}))},
 {k:'traktir',w:2,cd:5,cond:()=>P.latar==='sultan'||P.latar==='pejabat',run:()=>{ const x=Math.round(ri(10,30)*100e3); addLog('Teman-teman "kebetulan" selalu lupa bawa dompet tiap kalian makan bareng. Kamu traktir lagi '+rp(x)+'. Kamu mulai curiga siapa teman sungguhan.'+fx({saldo:-x,relasi:+2,waras:-2})); }},
@@ -166,9 +168,15 @@ function tawaranKerja(pengantar){
     if(r()<0.6||k==='ojol'||k==='staf'){ const p=PROF[k]; const g=Math.round(p.gaji*N.harga*(0.9+P.skill/250)); opsi.push({k,g}); }
   }
   ask({title:'PANGGILAN KERJA',text:pengantar+' Pilihannya (syarat-syarat absurd sudah kamu abaikan, seperti "maks. 25 tahun, pengalaman 5 tahun"):',
-    opts:opsi.map(o=>({t:PROF[o.k].n,sub:'±'+rp(o.g)+'/bulan',e:()=>{
-      setProfesi(o.k,o.g); if(PROF[o.k].motor&&o.k==='ojol'&&!P.motor)addLog('Catatan: jadi ojol tanpa motor sendiri berarti sewa motor, pendapatan bersih jauh lebih kecil.','sys');
-      addLog('Kamu diterima sebagai <b>'+PROF[o.k].n.toLowerCase()+'</b>. Akhirnya, slip gaji lagi.'+fx({waras:+10,gengsi:+4}),'good'); stamp('DITERIMA KERJA','green'); }}))
+    opts:opsi.map(o=>({t:PROF[o.k].n,sub:'±'+rp(o.g)+'/bulan'+(o.k==='staf'?' · tanpa wawancara':' · lanjut wawancara'),e:()=>{
+      const terima=g=>{ setProfesi(o.k,g); if(o.k==='ojol'&&!P.motor)addLog('Catatan: jadi ojol tanpa motor sendiri berarti sewa motor, pendapatan bersih jauh lebih kecil.','sys');
+        addLog('Kamu diterima sebagai <b>'+PROF[o.k].n.toLowerCase()+'</b> dengan gaji '+rp(g)+'/bulan. Akhirnya, slip gaji lagi.'+fx({waras:+10,gengsi:+4}),'good'); stamp('DITERIMA KERJA','green'); };
+      if(o.k==='staf'){ addLog('"Tidak perlu wawancara, Om sudah atur semuanya."','sys'); terima(o.g); return; }
+      Kuis.wawancara(PROF[o.k].n,rs=>{
+        if(rs<0.4&&r()<0.65){ addLog('Seminggu kemudian email masuk: "Terima kasih atas minat Anda, namun saat ini kami belum dapat melanjutkan..."'+fx({waras:-5}),'bad'); return; }
+        const g=Math.round(o.g*(0.9+rs*0.25));
+        if(rs>=0.85)addLog('Pewawancara terkesan: "Jawaban Anda paling meyakinkan hari ini." Tawaran gajinya dinaikkan.','good');
+        terima(g); }); }}))
       .concat([{t:'Tolak semua, tunggu yang lebih baik',e:()=>addLog('Kamu menolak. Idealisme masih ada, saldo makin tipis.'+fx({waras:-2}))}])});
 }
 function events(){

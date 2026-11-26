@@ -147,3 +147,62 @@ function utangCek(){
   }
 }
 function lunasSemua(){ addLog('Semua utang pinjol <b>LUNAS</b>. Kamu menghapus aplikasinya dengan tangan gemetar.','good'); stamp('BEBAS UTANG','green'); milestone('Lunas utang pinjol'); ach('lunas'); }
+
+/* ================= MINI-GAME (assets/kuis.js) ================= */
+/* 4. Atur gaji bulanan: geser persentase jajan & tabungan, sisanya untuk kebutuhan pokok */
+let angId=0;
+function aturAnggaran(awal){
+  const id='ang'+(++angId), a=P.anggaran||{ingin:0,tabung:0};
+  const gaji=P.gaji||0, biaya=biayaPokok();
+  const pokokPct=gaji?Math.round(biaya/gaji*100):0;
+  const slider=(k,lbl,v)=>'<label class="ang-row"><span>'+lbl+' <b id="'+id+k+'v">'+v+'%</b></span>'+
+    '<input type="range" min="0" max="50" step="5" value="'+v+'" id="'+id+k+'" oninput="document.getElementById(\''+id+k+'v\').textContent=this.value+\'%\'"></label>';
+  ask({title:awal?'ATUR GAJI PERTAMA':'ATUR ANGGARAN GAJI',text:'Gaji sekitar <b>'+(gaji?rp(gaji):'(belum ada)')+'</b>/bulan. Biaya pokok (kos, makan, transport) sekitar <b>'+rp(biaya)+'</b>'+(gaji?' = '+pokokPct+'% gaji':'')+'.<br>'+
+      'Bagi sisanya: berapa persen gaji langsung <b>ditabung</b>, berapa untuk <b>jajan & senang-senang</b>? (Prinsip populer: 50% kebutuhan, 30% keinginan, 20% tabungan.)'+
+      '<div class="ang">'+slider('t','Tabungan otomatis',a.tabung)+slider('i','Jajan & senang-senang',a.ingin)+'</div>',
+    opts:[
+      {t:'Simpan anggaran',e:()=>{
+        let t=a.tabung,i=a.ingin;
+        if(hasDoc){ const et=document.getElementById(id+'t'), ei=document.getElementById(id+'i'); if(et)t=+et.value; if(ei)i=+ei.value; }
+        else { t=pick([0,10,20,30]); i=pick([0,10,20,30]); }
+        simpanAnggaran(t,i); }},
+      {t:'Pakai 50/30/20',sub:'Tabung 20%, jajan 30%',e:()=>simpanAnggaran(20,30)},
+      {t:'Mode bertahan hidup',sub:'Tidak ada tabungan & jajan otomatis',e:()=>simpanAnggaran(0,0)}
+    ]});
+}
+function simpanAnggaran(t,i){
+  P.anggaran={tabung:t,ingin:i};
+  const sisa=100-t-i;
+  addLog('Anggaran diatur: tabungan '+t+'%, jajan '+i+'%, sisanya '+sisa+'% untuk kebutuhan pokok.'+(P.gaji&&sisa/100*P.gaji<biayaPokok()?' <b>Hati-hati:</b> porsi kebutuhan pokok lebih kecil dari biaya hidup.':''),'sys');
+}
+/* 1. Seleksi CPNS lewat SKD */
+function ikutCPNS(){
+  P.cpnsTerakhir=N.ke;
+  addLog('Kamu mendaftar CPNS: unggah berkas, swafoto dengan KTP, dan begadang menunggu pengumuman administrasi. Lolos!','sys');
+  Kuis.skd(h=>{
+    if(!h.lolos){ addLog('Gagal di SKD. Tahun depan, kata semua orang, "pasti bisa".'+fx({waras:-5,skill:+2}),'bad'); return; }
+    if(r()<0.45+P.skill/250){
+      setProfesi('pns',4.8e6*N.harga); ach('asn'); stamp('LOLOS CPNS','green');
+      addLog('<b>KAMU LOLOS CPNS!</b> Lolos SKD, lolos SKB, NIP keluar. Keluarga besar mengumumkannya di semua grup WA.'+fx({relasi:+12,gengsi:+10,waras:+8}),'good');
+    } else addLog('Kamu lolos ambang batas SKD, tapi kalah peringkat di SKB. Rasanya seperti kalah adu penalti.'+fx({waras:-6,skill:+3}),'bad');
+  });
+}
+/* 6. Beli motor bekas dengan tawar-menawar */
+function beliMotorBekas(){
+  const buka=Math.round(ri(10,14)*1e6*N.harga/50e3)*50e3;
+  Kuis.tawar('motor bekas',buka,h=>{
+    if(h==null)return;
+    if(P.saldo<h){ addLog('Deal sudah di tangan, tapi saldomu ternyata kurang. Penjual memandangmu iba. Batal.'+fx({gengsi:-4}),'bad'); return; }
+    P.saldo-=h; P.motor=true; milestone('Beli motor bekas '+rp(h));
+    if(h<=buka*0.8)ach('jagoTawar');
+    addLog('Motor bekas resmi jadi milikmu. Ongkos transport turun.'+(P.sim?'':' Tapi SIM-mu belum ada, jadi hati-hati kalau ada razia.')+fx({waras:+4}),'good');
+  });
+}
+/* 5. Bikin SIM */
+function bikinSIM(){
+  Kuis.simLengkap(P.st.sehat,hasil=>{
+    if(hasil==='resmi'){ P.sim=true; ach('simResmi'); milestone('Punya SIM (jalur resmi)'); addLog('SIM resmi di dompet. Razia tidak lagi menakutkan.'+fx({waras:+3,nrimo:+2}),'good'); }
+    else if(hasil==='nembak'){ P.sim=true; ach('simNembak'); milestone('Punya SIM (jalur nembak)'); addLog('Biaya "jasa" '+rp(650e3)+'. SIM jadi, hati agak mengganjal.'+fx({saldo:-650e3,nrimo:-3}),'bad'); }
+    else addLog('Belum dapat SIM bulan ini.'+fx({waras:-3}));
+  });
+}

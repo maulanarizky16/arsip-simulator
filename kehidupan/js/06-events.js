@@ -64,6 +64,7 @@ function events(){
     ]});
   }
   if(a===12){
+    ujianAkhir('SD');
     P.eduLevel=1; P.edu='SMP'; addLog('Anda lulus SD dan masuk SMP. Masa puber dimulai.','good'); milestone('Lulus SD');
     ask({title:'JATI DIRI REMAJA',text:'Di SMP, semua orang mencari identitas. Anda tipe yang mana?',opts:[
       {t:'Kutu buku',e:()=>addLog('Perpustakaan jadi rumah kedua.'+fx({smart:+8,charm:-3}))},
@@ -80,6 +81,7 @@ function events(){
     ]});
   }
   if(a===15){
+    ujianAkhir('SMP');
     P.eduLevel=2; addLog('Lulus SMP. Saatnya memilih sekolah lanjutan.','good'); milestone('Lulus SMP');
     ask({title:'SEKOLAH LANJUTAN',text:'Pilihan ini menentukan arah hidup Anda:',opts:[
       {t:'SMA jurusan IPA',sub:'Butuh otak encer',cond:()=>P.st.smart>=55,e:()=>{P.track='ipa';P.edu='SMA IPA';
@@ -101,47 +103,21 @@ function events(){
     ]});
   }
   if(a===18){
+    ujianAkhir('SMA');
     P.eduLevel=3; P.edu='Lulus '+(P.track==='smk'?'SMK':'SMA');
     stamp('LULUS SMA/SMK'); milestone('Lulus '+(P.track==='smk'?'SMK':'SMA'));
     addLog('Toga abu-abu dilempar ke udara. Sekarang: dunia nyata. Meja Aksi terbuka penuh — atur hidup Anda dari sana.');
-    const bisaKuliah=P.kelas!=='miskin'||P.st.smart>=78;
+    const bisaKuliah=P.kelas!=='miskin'||P.st.smart>=60;   /* anak kurang mampu bisa lewat beasiswa (Bidikmisi/KIP Kuliah) */
     ask({title:'PERSIMPANGAN BESAR',text:'Inilah keputusan terbesar pertama dalam hidup Anda:',opts:[
-      {t:'Kuliah',sub:bisaKuliah?'Orang tua sanggup / ada jalur beasiswa':'',cond:()=>bisaKuliah,e:()=>pilihJurusan()},
+      {t:'Kuliah',sub:bisaKuliah?'Ikut seleksi masuk perguruan tinggi':'',cond:()=>bisaKuliah,e:()=>masukKuliah()},
       {t:'Langsung kerja',e:()=>jobOffers(P.track==='smk'?POOL_SMK:POOL_UMUM,3)},
       {t:'Buka usaha',e:()=>bukaUsahaCard()},
       {t:'Gap year — istirahat dulu',e:()=>addLog('Anda rebahan setahun "mencari jati diri". Orang tua mulai menyindir.'+fx({happy:+6,stress:-6}))}
     ]});
   }
-  function pilihJurusan(){
-    const beasiswa=P.st.smart>=78;
-    ask({title:'PILIH JURUSAN',text:beasiswa?'Nilai Anda tinggi — beasiswa penuh tersedia untuk semua jurusan!':'Pilih sesuai kemampuan otak dan dompet keluarga:',
-      opts:JURUSAN.map(j=>({t:j.n,sub:'Min. kecerdasan '+j.min+' · '+j.lama+' tahun · '+rp(j.biaya)+'/thn'+(beasiswa?' (GRATIS — beasiswa)':''),
-        cond:()=>P.st.smart>=j.min&&(beasiswa||P.kelas==='kaya'||(P.kelas==='menengah'&&j.k!=='kedokteran')),
-        e:()=>{
-          P.kuliah={jur:j.k,n:j.n,mulai:18,lama:j.lama,biaya:j.biaya,beasiswa};
-          P.edu='Mahasiswa '+j.n;
-          addLog('Anda diterima di jurusan <b>'+j.n+'</b>'+(beasiswa?' dengan beasiswa penuh. Orang tua menangis bangga.':'.'),'good');
-          milestone('Kuliah '+j.n+(beasiswa?' (beasiswa)':''));
-        }}))});
-  }
-  if(P.kuliah&&a===P.kuliah.mulai+2){
-    ask({title:'MASA KULIAH',text:'Semester pertengahan. Mau diisi apa waktu luang Anda?',opts:[
-      {t:'Aktif organisasi kampus',e:()=>{P.kuliah.org=true;addLog('Anda jadi pengurus BEM. Rapat sampai malam, relasi di mana-mana.'+fx({charm:+8,stress:+5}));}},
-      {t:'Magang & cari pengalaman',e:()=>{P.kuliah.rajin=true;addLog('CV Anda mulai terisi. Dosen pun kenal nama Anda.'+fx({smart:+6,money:+6e6}));}},
-      {t:'Santai, nikmati masa muda',e:()=>{P.kuliah.santai=true;addLog('Nongkrong, game, tidur siang. IPK? Urusan nanti.'+fx({happy:+8,smart:-3}));}}
-    ]});
-  }
-  if(P.kuliah&&a===P.kuliah.mulai+P.kuliah.lama){
-    let ipk=2.1+P.st.smart/100*1.7+(P.kuliah.rajin?0.15:0)-(P.kuliah.santai?0.25:0);
-    ipk=clamp(ipk,2.0,4.0);
-    P.ipk=+ipk.toFixed(2);   /* kualitas kuliah disimpan — memengaruhi gaji & promosi */
-    P.eduLevel=4; P.jur=P.kuliah.jur;
-    P.edu='S1 '+P.kuliah.n+' (IPK '+ipk.toFixed(2)+')';
-    stamp('WISUDA'); milestone('Wisuda S1 '+P.kuliah.n+' — IPK '+ipk.toFixed(2));
-    addLog('Setelah skripsi yang penuh air mata, Anda resmi sarjana!','good');
-    const jur=P.kuliah.jur; P.kuliah=null;
-    jobOffers(KARIER[jur].concat([['Staf admin kantor',48e6]]),3);
-  }
+  /* kuliah: semester demi semester (lihat 03c-sekolah.js) */
+  if(P.gapKuliah&&!P.kuliah&&!P.job&&a<=20){ P.gapKuliah=false; masukKuliah(); }
+  if(P.kuliah)kuliahTahunan(a);
   if(a>=58&&P.job&&!P.retired){
     const pesangon=Math.round(P.job.g*1.5);
     P.pensiun=Math.round(P.job.g*0.3); P.retired=true;

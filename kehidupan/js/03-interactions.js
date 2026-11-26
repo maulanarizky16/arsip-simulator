@@ -18,6 +18,14 @@ function daftarProfesi(){
       e:()=>{
         if(P.st.health<p.minH||P.st.smart<p.minS){ addLog('Anda ikut seleksi '+p.n+', tapi gagal di tahap syarat dasar. Kurang siap.'+fx({stress:+4,happy:-3}),'bad'); return; }
         if(p.biaya)P.money-=p.biaya;
+        if(p.k==='pns'&&typeof Kuis!=='undefined'){   /* PNS: lewat SKD sungguhan (TWK, TIU, TKP) */
+          Kuis.skd(h=>{
+            if(h.lolos&&r()<0.5+P.st.smart/300){ P.job={title:p.n,g:salaryAdj(p.g),level:0,bidang:p.k}; P.perf=0;
+              addLog('SELAMAT! Lolos SKD & SKB. Anda resmi menjadi <b>'+p.n+'</b>.'+fx({happy:+12,stress:+5}),'good'); stamp('LOLOS CPNS','green'); milestone('Diterima sebagai '+p.n); }
+            else addLog(h.lolos?'Lolos SKD, tapi kalah peringkat di SKB. Coba lagi tahun depan.'+fx({stress:+5,happy:-3}):'Tidak lolos ambang batas SKD. Coba lagi tahun depan.'+fx({stress:+6,happy:-4}),'bad');
+          });
+          return;
+        }
         const peluang=0.35+(P.st.health-p.minH)/200+(P.st.smart-p.minS)/200+P.st.relasi/400;
         if(r()<clamp(peluang,0.15,0.9)){
           P.job={title:p.n,g:salaryAdj(p.g),level:0,bidang:p.k}; P.perf=0;
@@ -74,7 +82,7 @@ function jobOffers(pool,n,mult){
   const list=pool.slice().sort(()=>r()-0.5).slice(0,n);
   ask({title:'PANGGILAN KERJA',text:'Beberapa lamaran Anda berbuah. Pilih satu:',
     opts:list.map(j=>{const g=Math.round(salaryAdj(j[1])*mult);
-      return {t:j[0],sub:'Gaji '+rp(Math.round(g/12))+'/bulan',e:()=>setJob(j[0],g)};})
+      return {t:j[0],sub:'Gaji '+rp(Math.round(g/12))+'/bulan · lanjut wawancara',e:()=>wawancaraKerja(j[0],g)};})
       .concat([{t:'Tolak semua, cari yang lebih baik',e:()=>addLog('Anda menolak semua tawaran. Semoga keputusan tepat.'+fx({stress:+4}))}])});
 }
 
@@ -240,3 +248,21 @@ function tekuni(k){
   hobiPerk(h);
 }
 
+
+/* ================= MINI-GAME (assets/kuis.js) ================= */
+function wawancaraKerja(t,g){
+  if(typeof Kuis==='undefined'){ setJob(t,g); return; }
+  Kuis.wawancara(t,rs=>{
+    if(rs<0.4&&r()<0.6){ addLog('Seminggu kemudian email masuk: "Terima kasih atas minat Anda, namun kami belum dapat melanjutkan..."'+fx({stress:+4,happy:-3}),'bad'); return; }
+    if(rs>=0.85)addLog('Pewawancara terkesan: "Jawaban Anda paling meyakinkan hari ini." Tawaran gaji dinaikkan.','good');
+    setJob(t,Math.round(g*(0.9+rs*0.25)));
+  });
+}
+function bikinSimKeh(){
+  if(typeof Kuis==='undefined')return;
+  Kuis.simLengkap(P.st.health,h=>{
+    if(h==='resmi'){ P.sim=true; ach('simResmi'); milestone('Punya SIM'); addLog('SIM resmi di dompet, siap berkendara.'+fx({happy:+3}),'good'); }
+    else if(h==='nembak'){ P.sim=true; P.integritas=clamp((P.integritas||60)-5,0,100); milestone('Punya SIM (jalur nembak)'); addLog('Biaya "jasa" '+rp(1e6)+'. SIM jadi, hati agak mengganjal.'+fx({money:-1e6}),'bad'); }
+    else addLog('Belum dapat SIM tahun ini.'+fx({stress:+3}));
+  });
+}

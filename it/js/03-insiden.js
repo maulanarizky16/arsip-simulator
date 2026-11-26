@@ -159,6 +159,7 @@ function terapkan(c,opt){
   else p=0.2;
   p+=teliti*0.08 + (sk-50)/280 - parahPen + certBonus(c) - (P.lembur||0)/400;
   if(c.jenis.sec)p+=(P.bluTeam||0)/300;
+  p+=((P.budaya!=null?P.budaya:50)-50)/400;   /* tim yang saling percaya lebih cepat menemukan akar masalah */
   p=clamp(p,0.05,0.95);
   /* tambalan cepat/hotfix meninggalkan utang teknis di aset itu */
   if(opt&&opt.quick&&c.target)c.target.debt=clamp((c.target.debt||0)+ri(4,8),0,100);
@@ -186,6 +187,7 @@ function terapkan(c,opt){
       if(c.jenis.sec){ P.dataHilang++; addLog('Lebih buruk: dalam kekacauan, data sensitif ikut bocor.'+fx({heat:+5}),'bad'); }
     }
   }
+  if(c.parah==='besar')postmortem(c,sukses);
 }
 function eskalasi(c){
   P.eskalasi++;

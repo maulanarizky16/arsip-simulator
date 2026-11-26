@@ -372,5 +372,8 @@ const ACH_DEF={
   sultanTech:'Sultan Tech', fire:'Pensiun Dini (FIRE)', exit:'Cuan dari Exit Startup',
   ossLegend:'Maintainer Open Source', mentor:'Mentor Para Junior', iotMaster:'Penjaga Armada',
   sertifikat:'Kolektor Sertifikat', burnoutSurvivor:'Selamat dari Burnout', polyglot:'Full-Stack Sejati',
-  legend:'Engineer Legendaris', antiAI:'Bertahan dari Gelombang AI'
+  legend:'Engineer Legendaris', antiAI:'Bertahan dari Gelombang AI',
+  lulusSertif:'Lulus Ujian Sertifikasi', ctfSempurna:'CTF Sempurna', wawancaraAce:'Wawancara Teknis Sempurna', gajiDolar:'Gaji Dolar',
+  guruNgoding:'Guru Ngoding', techInfluencer:'Tech Influencer', blameless:'Budaya Blameless', exceeds:'Exceeds Expectations',
+  lolosPIP:'Lolos PIP', tukangServis:'Teknisi Satu RT'
 };

@@ -16,20 +16,12 @@ const ACTS=[
   ]});}},
 
 /* ---- SKILL & KARIER ---- */
-{k:'belajar',tab:'skill',lbl:'Belajar & upskill',sub:'Lawan keusangan skill',cond:()=>!P.retired,e:()=>{
-  ask({title:'FOKUS BELAJAR TAHUN INI',text:'Teknologi bergerak cepat. Mau perdalam yang mana?',opts:[
-    {t:'Coding & scripting',e:()=>{P.usedSkill.ngoding=true;addLog('Anda mendalami bahasa & pola baru, mengasah refleks ngoding.'+fx({ngoding:+5,stres:+2}),'good');}},
-    {t:'Server, cloud & container',e:()=>{P.usedSkill.sistem=true;addLog('Anda menyelami arsitektur cloud, K8s, dan otomasi infra.'+fx({sistem:+5,stres:+2}),'good');}},
-    {t:'Jaringan & IoT',e:()=>{P.usedSkill.jaringan=true;addLog('Anda mengulik protokol jaringan, routing, dan telemetry perangkat.'+fx({jaringan:+5,stres:+2}),'good');}},
-    {t:'Keamanan siber',e:()=>{P.usedSkill.keamanan=true;addLog('Anda berlatih di lab keamanan: hardening, forensik, eksploitasi defensif.'+fx({keamanan:+5,stres:+2}),'good');}}
-  ]});}},
+{k:'belajar',tab:'skill',lbl:'Belajar & upskill',sub:'Kerjakan 3 soal latihan',cond:()=>!P.retired,e:()=>belajarTeknis()},
 {k:'homelab',tab:'skill',lbl:'Bangun homelab',sub:'Rp 15 jt · ngoding & sistem',cond:()=>!P.retired&&P.money>=15e6,e:()=>{P.money-=15e6;
   addLog('Rak server bekas, mini-PC, dan kabel di pojok kamar. Lab pribadi tempat Anda merusak & memperbaiki tanpa takut produksi.'+fx({sistem:+4,ngoding:+3,jaringan:+2}),'good');}},
 {k:'sertifikasi',tab:'skill',lbl:'Ambil sertifikasi',sub:'Tingkatkan skill & nilai jual',cond:()=>!P.retired&&P.money>=12e6&&SERT.some(s=>!sertPunya(s.k)),e:()=>{
-  ask({title:'AMBIL SERTIFIKASI',text:'Sertifikasi mana yang mau dikejar tahun ini?',opts:SERT.filter(s=>!sertPunya(s.k)).map(s=>({t:s.n,sub:'Biaya '+rp(s.biaya),cond:()=>P.money>=s.biaya,e:()=>{
-    P.money-=s.biaya; P.sertifikat.push(s.k);
-    addLog('Anda lulus ujian <b>'+s.n+'</b>. Satu baris baru di LinkedIn, satu lonjakan kemampuan.'+fx(Object.assign({reputasi:+2},s.st)),'good');
-    milestone('Sertifikasi: '+s.n); if(P.sertifikat.length>=4)ach('sertifikat');
+  ask({title:'AMBIL SERTIFIKASI',text:'Sertifikasi mana yang mau dikejar tahun ini?',opts:SERT.filter(s=>!sertPunya(s.k)).map(s=>({t:s.n,sub:'Biaya ujian '+rp(s.biaya)+' · 5 soal',cond:()=>P.money>=s.biaya,e:()=>{
+    ujianSertifikasi(s);   /* 5 soal, lulus jika ≥ 4 benar; gagal = biaya hangus */
   }}))});}},
 {k:'sidepro',tab:'skill',lbl:'Bangun produk sampingan (SaaS)',sub:'Cuan lepas + MRR yang menumpuk',multi:true,cond:()=>!P.retired&&P.st.ngoding>=40,e:()=>{
   const u=ri(8,30)*1e6; P.usedSkill.ngoding=true; P.usedSkill.saas=true;
@@ -37,6 +29,20 @@ const ACTS=[
   addLog('Anda menggarap & merawat produk SaaS sampingan di akhir pekan. Sekali pakai cuan '+rp(u)+' masuk, plus langganan bulanan (MRR ~'+rp(P.saasMRR)+'/bln) yang menumpuk selama dirawat.'+fx({money:+u,ngoding:+1,stres:+4}));}},
 {k:'networking',tab:'skill',lbl:'Personal branding & relasi',sub:'Rp 5 jt · reputasi naik',multi:true,cond:()=>!P.retired&&P.money>=5e6,e:()=>{P.money-=5e6;
   addLog('Anda rajin menulis blog teknis, aktif di komunitas, dan hadir di meetup. Nama Anda mulai diingat.'+fx({reputasi:+4,soft:+1}),'good');leg(1,1);}},
+{k:'remoteLN',tab:'skill',lbl:'Lamar remote ke perusahaan luar negeri',sub:'Gaji dolar · wawancara teknis',cond:()=>!P.retired&&!P.dipecat&&P.tempat!=='remote'&&P.st.soft>=40&&(P.st.ngoding>=55||P.st.sistem>=55||P.st.keamanan>=55),e:()=>lamarRemoteLN()},
+{k:'freelance',tab:'skill',lbl:'Ambil proyek freelance global',sub:'Klien luar negeri lewat platform',cond:()=>!P.retired&&(P.st.ngoding>=45||P.st.sistem>=45),e:()=>{
+  if(r()<0.2){ addLog('Klien menghilang setelah kamu mengirim hasil akhir. Invoice tak terbayar, rating bintang satu menyusul.'+fx({stres:+6}),'bad'); return; }
+  const u=ri(15,60)*1e6; addLog('Proyek freelance untuk klien luar negeri selesai. Bayaran '+rp(u)+' masuk setelah dipotong fee platform.'+fx({money:+u,stres:+5,reputasi:+1}),'good');}},
+{k:'ajarBootcamp',tab:'skill',lbl:'Mengajar di bootcamp',sub:'Berbagi ilmu ke calon engineer',cond:()=>!P.retired&&lvNow()>=3,e:()=>{
+  P.ajarKali=(P.ajarKali||0)+1; const u=ri(8,25)*1e6;
+  addLog('Kamu mengajar kelas malam di bootcamp. Ada murid yang bertanya "Kak, bedanya Java dan JavaScript apa?" dan kamu menjawab dengan sabar.'+fx({money:+u,soft:+3,reputasi:+2,stres:+2}),'good');
+  if(P.ajarKali>=3)ach('guruNgoding'); leg(2,1);}},
+{k:'kontenTech',tab:'skill',lbl:'Bikin konten teknologi',sub:'YouTube, TikTok, blog',cond:()=>!P.retired&&P.st.soft>=35,e:()=>{
+  if(r()<0.25+P.reputasi/300){ const u=ri(10,40)*1e6; P.kontenViral=(P.kontenViral||0)+1;
+    addLog('Video "Belajar Linux dalam 10 menit" meledak. Adsense dan endorse masuk '+rp(u)+'.'+fx({money:+u,reputasi:+4,soft:+2}),'good'); if(P.kontenViral>=2)ach('techInfluencer'); }
+  else if(r()<0.3)addLog('Kontenmu memicu perang komentar "tab vs spasi". Engagement naik, kewarasan turun.'+fx({stres:+5,reputasi:+1}));
+  else addLog('Kontenmu ditonton 87 orang. Pelan-pelan, katanya.'+fx({soft:+1,stres:+1}));}},
+{k:'oneOnOne',tab:'skill',lbl:'Minta 1-on-1 dengan manajer',sub:'Bahas gaji, beban kerja, atau karier',cond:()=>!P.retired&&!P.dipecat&&!!P.jab,e:()=>satuSatu()},
 {k:'pivot',tab:'skill',lbl:'Pivot spesialisasi',sub:'Ganti jalur karier · reputasi tergerus',cond:()=>!P.retired&&P.maxLv<=4,e:()=>{
   ask({title:'PIVOT KE JALUR BARU',text:'Pindah spesialisasi berarti mulai agak dari bawah, tapi membuka pintu baru. Pilih jalur baru:',opts:SPES.filter(s=>s.k!==P.spes).map(s=>({t:s.n,sub:s.short,e:()=>{
     P.spes=s.k; P.spesN=s.short;
@@ -65,12 +71,7 @@ const ACTS=[
   addLog('Anda menyisihkan waktu merapikan kode spageti warisan. Atasan tak melihat hasilnya, tapi utang teknis turun dan engineer berikutnya akan berterima kasih.'+ix(app,+ri(5,10))+fx({ngoding:+2,stres:+2}),'good');leg(1,0);}},
 
 /* ---- SIBER & SIASAT ---- */
-{k:'ctf',tab:'siber',lbl:'Ikut kompetisi CTF',sub:'Asah keamanan · reputasi (topi putih)',multi:true,cond:()=>!P.retired&&P.st.keamanan>=38,e:()=>{
-  P.usedSkill.keamanan=true;
-  const menang=r()<clamp(0.3+P.st.keamanan/200,0.2,0.85);
-  if(menang){P.ctfMenang++;P.hackWhite++;const u=ri(5,20)*1e6;
-    addLog('Tim Anda naik podium CTF! Flag demi flag direbut semalaman.'+fx({keamanan:+4,reputasi:+4,money:+u}),'good');ach('ctfJuara');leg(2,1);}
-  else {P.hackWhite++;addLog('Anda tak menang, tapi banyak teknik baru terserap dari soal-soal CTF.'+fx({keamanan:+3,stres:+2}),'sys');leg(1,0);}}},
+{k:'ctf',tab:'siber',lbl:'Ikut kompetisi CTF',sub:'3 tantangan · reputasi (topi putih)',multi:true,cond:()=>!P.retired&&P.st.keamanan>=38,e:()=>ctfMain()},
 {k:'bugbounty',tab:'siber',lbl:'Berburu bug bounty',sub:'Cuan bersih dari celah · topi putih',multi:true,cond:()=>!P.retired&&P.st.keamanan>=45,e:()=>{
   P.usedSkill.keamanan=true;
   if(r()<clamp(0.35+P.st.keamanan/220,0.2,0.85)){const u=ri(20,120)*1e6;P.bugBounty++;P.hackWhite++;

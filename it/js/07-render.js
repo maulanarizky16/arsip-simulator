@@ -64,11 +64,12 @@ function render(){
   $('iNama').textContent=P.nama;
   $('iUmur').textContent=P.age+' th / '+N.tahun;
   $('iSpes').textContent=P.spesN||'—';
+  $('iLatar').textContent=P.latarN||'—';
   $('iJab').textContent=jabLabel();
   const u=$('iUang'); u.textContent=rp(P.money)+(P.saham>0?(' (+'+rp(P.saham)+' saham)'):'')+((P.saasMRR||0)>0?(' · MRR '+rp(P.saasMRR)+'/bln'):''); u.classList.toggle('neg',P.money<0);
   $('iGelap').textContent=P.gelap>0?rp(P.gelap):'—';
   $('stats').innerHTML=bar('Coding & Scripting',P.st.ngoding)+bar('Server & Cloud',P.st.sistem)+
-    bar('Jaringan & IoT',P.st.jaringan)+bar('Keamanan Siber',P.st.keamanan)+bar('Soft Skill',P.st.soft)+
+    bar('Jaringan & IoT',P.st.jaringan)+bar('Keamanan Siber',P.st.keamanan)+bar('Soft Skill',P.st.soft)+bar('Budaya tim',P.budaya!=null?P.budaya:50)+
     bar('Reputasi teknis',P.reputasi)+bar('Kesehatan',P.st.kesehatan)+
     bar('Stres',P.st.stres,true)+bar('On-call fatigue',P.lembur||0,true)+bar('Sorotan hukum',P.heat,true);
   /* sistem & aset (utang teknis ditampilkan) */

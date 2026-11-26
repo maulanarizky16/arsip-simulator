@@ -28,6 +28,7 @@ function newGame(){
     pelatihanAI:false,
     tenure:0, jobHops:0, coverUps:0, uptimeStreak:0, saasMRR:0, bluTeam:0, usedSkill:{},
     evAkuisisi:false, evMoonlight:false, evCounterOffer:false,
+    latar:null, latarN:'—', budaya:50, pip:0, cd:{},
     riwayat:[], ach:{}, used:{}
   };
   if(ID.nama)P.nama=ID.nama;
@@ -40,9 +41,10 @@ function newGame(){
     $('noArsip').textContent=P.arsipNo;
   }
   yearHeader();
-  addLog('Tahun '+N.tahun+', di '+P.kota+'. <b>'+P.nama+'</b> ('+P.age+' th) baru lulus dan menatap layar terminal yang berkedip. Karier di dunia IT dimulai dari nol.');
-  milestone('Fresh graduate, mulai dari nol');
+  addLog('Tahun '+N.tahun+', di '+P.kota+'. <b>'+P.nama+'</b> menatap layar terminal yang berkedip. Karier di dunia IT dimulai dari nol.');
+  milestone('Mulai karier IT dari nol');
   arahanSiber();
+  terapkanLatarIT();   /* latar belakang acak (03b-teknis.js) */
   /* pilih spesialisasi */
   ask({title:'PILIH JALUR (SPESIALISASI)',text:'Dunia IT luas. Dari mana Anda memulai? Pilihan ini menentukan skill awal dan jenis masalah yang akan Anda hadapi tiap hari:',
     opts:SPES.map(s=>({t:s.n,sub:s.d,e:()=>{

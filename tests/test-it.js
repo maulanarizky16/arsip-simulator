@@ -16,8 +16,8 @@ function makeCtx(){
 function run(c,code){ return vm.runInContext(code,c); }
 
 const c=makeCtx();
-/* angka acak ber-seed: hasil tes selalu sama di tiap mesin (tanpa ini tes cakupan kartu bisa gagal acak) */
-run(c, `(function(){ let a=20240611; Math.random=function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; })();`);
+/* angka acak ber-seed + mesin mini-game bersama (assets/kuis.js), sama seperti tes lain */
+run(c, require('./_seed'));
 run(c, loadGame('it'));
 run(c, `
   const __realAsk=ask; ask=function(d){ __SEEN.push(d.title||''); return __realAsk(d); };

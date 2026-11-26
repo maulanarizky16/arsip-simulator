@@ -41,7 +41,7 @@ const STAT={
   'coding & scripting':'laptop','server & cloud':'desktop-computer','jaringan & iot':'satellite-antenna',
   'keamanan siber':'shield','soft skill':'speech-balloon','on-call fatigue':'alarm-clock',
   'naluri bisnis':'light-bulb','operasional':'gear','pemasaran':'megaphone','finansial':'chart-increasing',
-  'kedekatan dgn anak':'baby-bottle',
+  'kedekatan dgn anak':'baby-bottle', 'budaya tim':'people-hugging',
   'kewarasan':'brain','gengsi':'smiling-face-with-sunglasses','nrimo':'person-in-lotus-position','skill':'books'
 };
 function statKey(label){
@@ -281,6 +281,12 @@ const selfv=base=>c=>({k:(c.P&&c.P.gender==='P'?'woman-':'man-')+base,self:true}
 const KARTU_RULES=[
   [/cara main|selamat datang|panduan/, c=>({k:(c.P&&c.P.gender==='P'?'woman':'man')+'-tipping-hand',self:true})],
   [/berkas lama|lanjutkan|tersimpan/, 'open-file-folder'],
+  /* simulator IT */
+  [/latar belakang/, c=>({k:(c.P&&c.P.gender==='P'?'woman':'man')+'-technologist',self:true})],
+  [/kompetisi ctf/, 'lady-beetle'], [/wawancara teknis/, gv('technologist')], [/postmortem/, 'clipboard'],
+  [/penilaian kinerja|performance improvement/, 'chart-increasing'], [/1-on-1/, gv('office-worker')],
+  [/anak it/, gv('mechanic')], [/deploy jumat/, 'rocket'], [/production down/, 'fire'], [/logonya/, 'artist-palette'],
+  [/pakai ai/, 'robot'], [/kode warisan/, 'scroll'], [/hack ig/, 'ninja'], [/minimal s1/, 'graduation-cap'], [/impostor/, 'thinking-face'],
   [/haji|umroh|ibadah/, 'kaaba'],
   [/judi|slot|taruhan/, 'game-die'],
   [/pinjol|kredit tanpa agunan|rentenir|debt collector/, 'money-with-wings'],
@@ -380,6 +386,7 @@ const KARTU_RULES=[
   [/tak aman|kekerasan|ancaman/, 'warning']
 ];
 const ACT_RULES=[
+  [/freelance global/, 'laptop'], [/mengajar di bootcamp/, 'speech-balloon'], [/1-on-1/, 'speech-balloon'], [/upskill/, 'books'],
   [/seleksi cpns/, 'identification-card'], [/anggaran/, 'money-bag'], [/bikin sim/, 'identification-card'], [/motor bekas/, 'motorcycle'],
   [/rebahan/, 'bed'], [/scroll medsos/, 'mobile-phone'], [/meal prep|masak sendiri/, 'shopping-cart'], [/narik/, 'motorcycle'],
   [/live jualan|bikin konten/, 'video-camera'], [/arisan/, 'coin'], [/video call/, 'mobile-phone'], [/kencan/, 'two-hearts'],

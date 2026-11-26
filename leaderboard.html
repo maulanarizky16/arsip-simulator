@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Papan Peringkat · ARSIP</title>
+<link rel="stylesheet" href="platform.css">
+</head>
+<body class="arsip-hub">
+<div class="arsip-page">
+
+<header class="arsip-hdr">
+  <a href="index.html" style="text-decoration:none"><span class="brand">ARSIP</span></a>
+  <span class="tag">Papan Peringkat</span>
+  <a class="profile" href="index.html" style="text-decoration:none;color:#d8cfb8"><span class="dot"></span>« Beranda</a>
+</header>
+
+<section class="arsip-hero">
+  <span class="rahasia">RAHASIA</span>
+  <h1>Papan Peringkat.</h1>
+  <p>Catatan disimpan lokal di browser ini; hapus cache atau ganti perangkat berarti mulai dari nol. Untuk versi global, butuh server (sedang dirancang).</p>
+</section>
+
+<div class="arsip-lb-tabs" id="tabs">
+  <button data-game="kehidupan" class="on">KEHIDUPAN</button>
+  <button data-game="negara">NEGARA</button>
+  <button data-game="hakim">HAKIM</button>
+  <button data-game="it">SIBER (IT)</button>
+  <button data-game="niaga">NIAGA</button>
+</div>
+
+<div class="arsip-lb-table" id="board"></div>
+
+<div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap">
+  <button class="arsip-btn ghost" id="clearBtn">Hapus papan peringkat ini</button>
+  <button class="arsip-btn ghost" id="exportBtn">Unduh data (JSON)</button>
+</div>
+
+<footer class="arsip-foot">v1 · localStorage-only · klik nama pemain untuk lihat detail</footer>
+</div>
+<div id="modalRoot"></div>
+
+<script src="platform.js"></script>
+<script>
+let activeGame='kehidupan';
+
+function stars(score, max){
+  const ratio = Math.max(0, Math.min(1, score/max));
+  const filled = Math.round(ratio*5);
+  return '<span class="arsip-stars">'+'★'.repeat(filled)+'<span>'+'★'.repeat(5-filled)+'</span></span>';
+}
+
+function fmtDate(d){
+  if(!d) return '-';
+  return d.split('-').reverse().join('/');
+}
+
+function render(){
+  const lb = Platform.getLB();
+  const list = lb[activeGame] || [];
+  const board = document.getElementById('board');
+  if(!list.length){
+    board.innerHTML='<div class="empty" style="color:var(--ink2);font-style:italic;text-align:center;padding:36px 10px">Belum ada catatan. Selesaikan satu simulasi untuk membuka papan peringkat.</div>';
+    return;
+  }
+  if(activeGame==='kehidupan'){
+    let html='<table><thead><tr><th class="rank">#</th><th>Pemain</th><th>Skor</th><th>Bintang</th><th>Julukan</th><th>Tgl</th></tr></thead><tbody>';
+    list.forEach((e,i)=>{
+      const r=i+1;
+      const handle = e.handle?'@'+escape(e.handle):'<span class="anon">Anonim</span>';
+      html+=`<tr data-i="${i}" class="lbrow">
+        <td class="rank r${r<=3?r:''}">${r}</td>
+        <td class="handle">${handle}<br><span style="color:var(--ink2);font-size:11px">${escape(e.nama||'-')}</span></td>
+        <td class="skor">${e.skor||0}<br><span style="font-size:11px;color:var(--ink2);font-family:'Special Elite',monospace">${escape((e.grade||'-').split(' — ')[0])}</span></td>
+        <td>${stars(e.skor||0,180)}</td>
+        <td class="jul">"${escape(e.julukan||'-')}"<br><span style="font-size:11px;color:var(--ink2)">${e.gen?'Gen '+e.gen:''} ${e.maxNet?'· '+rpShort(e.maxNet):''}</span></td>
+        <td style="font-size:11.5px;color:var(--ink2);font-family:'Special Elite',monospace">${fmtDate(e.date)}</td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    board.innerHTML=html;
+  } else if(activeGame==='negara'){
+    let html='<table><thead><tr><th class="rank">#</th><th>Pemain</th><th>Skor Rakyat</th><th>Catatan Negara</th><th>Total</th><th>Jabatan</th><th>Tgl</th></tr></thead><tbody>';
+    list.forEach((e,i)=>{
+      const r=i+1;
+      const handle = e.handle?'@'+escape(e.handle):'<span class="anon">Anonim</span>';
+      const total = (e.skorRakyat||0)+(e.skorNegara||0);
+      html+=`<tr data-i="${i}" class="lbrow">
+        <td class="rank r${r<=3?r:''}">${r}</td>
+        <td class="handle">${handle}<br><span style="color:var(--ink2);font-size:11px">${escape(e.nama||'-')}</span></td>
+        <td class="skor" style="color:var(--green)">${e.skorRakyat||0}<br><span style="font-size:11px;font-family:'Special Elite',monospace;color:var(--ink2)">"${escape(e.julukanRakyat||'-')}"</span></td>
+        <td class="skor" style="color:var(--navy)">${e.skorNegara||0}<br><span style="font-size:11px;font-family:'Special Elite',monospace;color:var(--ink2)">"${escape(e.gelarNegara||'-')}"</span></td>
+        <td class="skor"><b>${total}</b><br>${stars(total,200)}</td>
+        <td class="jul">${escape(e.jabatanTertinggi||'-')}</td>
+        <td style="font-size:11.5px;color:var(--ink2);font-family:'Special Elite',monospace">${fmtDate(e.date)}</td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    board.innerHTML=html;
+  } else if(activeGame==='hakim'){
+    let html='<table><thead><tr><th class="rank">#</th><th>Pemain</th><th>Keadilan</th><th>Karier & Kuasa</th><th>Total</th><th>Jabatan</th><th>Tgl</th></tr></thead><tbody>';
+    list.forEach((e,i)=>{
+      const r=i+1;
+      const handle = e.handle?'@'+escape(e.handle):'<span class="anon">Anonim</span>';
+      const total = (e.skorAdil||0)+(e.skorKarier||0);
+      html+=`<tr data-i="${i}" class="lbrow">
+        <td class="rank r${r<=3?r:''}">${r}</td>
+        <td class="handle">${handle}<br><span style="color:var(--ink2);font-size:11px">${escape(e.nama||'-')}</span></td>
+        <td class="skor" style="color:var(--green)">${e.skorAdil||0}<br><span style="font-size:11px;font-family:'Special Elite',monospace;color:var(--ink2)">"${escape(e.julukanAdil||'-')}"</span></td>
+        <td class="skor" style="color:var(--navy)">${e.skorKarier||0}<br><span style="font-size:11px;font-family:'Special Elite',monospace;color:var(--ink2)">"${escape(e.gelarKarier||'-')}"</span></td>
+        <td class="skor"><b>${total}</b><br>${stars(total,200)}</td>
+        <td class="jul">${escape(e.jabatanTertinggi||'-')}</td>
+        <td style="font-size:11.5px;color:var(--ink2);font-family:'Special Elite',monospace">${fmtDate(e.date)}</td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    board.innerHTML=html;
+  } else if(activeGame==='it'){
+    let html='<table><thead><tr><th class="rank">#</th><th>Pemain</th><th>Karya & Integritas</th><th>Cuan & Karier</th><th>Total</th><th>Posisi</th><th>Tgl</th></tr></thead><tbody>';
+    list.forEach((e,i)=>{
+      const r=i+1;
+      const handle = e.handle?'@'+escape(e.handle):'<span class="anon">Anonim</span>';
+      const total = (e.skorKarya||0)+(e.skorCuan||0);
+      html+=`<tr data-i="${i}" class="lbrow">
+        <td class="rank r${r<=3?r:''}">${r}</td>
+        <td class="handle">${handle}<br><span style="color:var(--ink2);font-size:11px">${escape(e.nama||'-')}</span></td>
+        <td class="skor" style="color:var(--green)">${e.skorKarya||0}<br><span style="font-size:11px;font-family:'Special Elite',monospace;color:var(--ink2)">"${escape(e.julukanKarya||'-')}"</span></td>
+        <td class="skor" style="color:var(--navy)">${e.skorCuan||0}<br><span style="font-size:11px;font-family:'Special Elite',monospace;color:var(--ink2)">"${escape(e.gelarCuan||'-')}"</span></td>
+        <td class="skor"><b>${total}</b><br>${stars(total,200)}</td>
+        <td class="jul">${escape(e.jabatanTertinggi||'-')}</td>
+        <td style="font-size:11.5px;color:var(--ink2);font-family:'Special Elite',monospace">${fmtDate(e.date)}</td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    board.innerHTML=html;
+  } else {
+    let html='<table><thead><tr><th class="rank">#</th><th>Pemain</th><th>Harta & Imperium</th><th>Nama & Warisan</th><th>Total</th><th>Kekayaan</th><th>Tgl</th></tr></thead><tbody>';
+    list.forEach((e,i)=>{
+      const r=i+1;
+      const handle = e.handle?'@'+escape(e.handle):'<span class="anon">Anonim</span>';
+      const total = (e.skorHarta||0)+(e.skorNama||0);
+      html+=`<tr data-i="${i}" class="lbrow">
+        <td class="rank r${r<=3?r:''}">${r}</td>
+        <td class="handle">${handle}<br><span style="color:var(--ink2);font-size:11px">${escape(e.nama||'-')}</span></td>
+        <td class="skor" style="color:var(--gold)">${e.skorHarta||0}<br><span style="font-size:11px;font-family:'Special Elite',monospace;color:var(--ink2)">"${escape(e.julukanHarta||'-')}"</span></td>
+        <td class="skor" style="color:var(--green)">${e.skorNama||0}<br><span style="font-size:11px;font-family:'Special Elite',monospace;color:var(--ink2)">"${escape(e.gelarNama||'-')}"</span></td>
+        <td class="skor"><b>${total}</b><br>${stars(total,200)}</td>
+        <td class="jul">${rpShort(e.kekayaan||0)}</td>
+        <td style="font-size:11.5px;color:var(--ink2);font-family:'Special Elite',monospace">${fmtDate(e.date)}</td>
+      </tr>`;
+    });
+    html+='</tbody></table>';
+    board.innerHTML=html;
+  }
+}
+
+function escape(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);}
+function rpShort(n){
+  n=Math.abs(Math.round(n));
+  if(n>=1e12)return 'Rp '+(n/1e12).toFixed(1).replace('.',',')+' T';
+  if(n>=1e9)return 'Rp '+(n/1e9).toFixed(1).replace('.',',')+' M';
+  if(n>=1e6)return 'Rp '+Math.round(n/1e6)+' jt';
+  return 'Rp '+n.toLocaleString('id-ID');
+}
+
+function openLBDetail(e,game){
+  const root=document.getElementById('modalRoot');
+  const handle=e.handle?'@'+escape(e.handle):'Anonim';
+  const row=(l,v)=>'<div style="display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted var(--line);padding:5px 0"><span style="color:var(--ink2)">'+l+'</span><b style="text-align:right">'+v+'</b></div>';
+  let rows='';
+  if(game==='kehidupan'){
+    rows=row('Skor',e.skor||0)+row('Julukan','"'+escape(e.julukan||'-')+'"')+row('Grade',escape(e.grade||'-'))+row('Usia wafat',(e.age||'-')+' th'+(e.sebab?' ('+escape(e.sebab)+')':''))+row('Kota',escape(e.kota||'-'))+row('Generasi',e.gen||1)+row('Kekayaan puncak',rpShort(e.maxNet||0))+row('Anak / cucu',(e.kids||0)+' / '+(e.cucu||0));
+  } else if(game==='negara'){
+    rows=row('Mata Rakyat',e.skorRakyat||0)+row('Catatan Negara',e.skorNegara||0)+row('Julukan Rakyat','"'+escape(e.julukanRakyat||'-')+'"')+row('Gelar Negara','"'+escape(e.gelarNegara||'-')+'"')+row('Jabatan tertinggi',escape(e.jabatanTertinggi||'-'))+row('Usia wafat',(e.age||'-')+' th')+row('Uang gelap',rpShort(e.gelapTotal||0))+(e.vonis?row('Catatan','Pernah divonis korupsi'):'');
+  } else if(game==='hakim'){
+    rows=row('Keadilan',e.skorAdil||0)+row('Karier & Kuasa',e.skorKarier||0)+row('Julukan','"'+escape(e.julukanAdil||'-')+'"')+row('Gelar',escape(e.gelarKarier||'-'))+row('Jabatan tertinggi',escape(e.jabatanTertinggi||'-'))+row('Perkara ditangani',e.perkara||0)+row('Putusan adil',e.adil||0)+row('Suap diterima',(e.suapTerima||0)+'×')+(e.vonis?row('Catatan','Pernah dipenjara'):'');
+  } else if(game==='it'){
+    rows=row('Karya & Integritas',e.skorKarya||0)+row('Cuan & Karier',e.skorCuan||0)+row('Julukan','"'+escape(e.julukanKarya||'-')+'"')+row('Gelar',escape(e.gelarCuan||'-'))+row('Spesialisasi',escape(e.spesialisasi||'-'))+row('Posisi tertinggi',escape(e.jabatanTertinggi||'-'))+row('Insiden ditangani',e.insiden||0)+row('Beres',e.beres||0)+row('Uptime akhir',(e.uptime||0)+'%')+row('Harta',rpShort(e.harta||0))+(e.gelapTotal?row('Uang gelap',rpShort(e.gelapTotal)):'')+(e.vonis?row('Catatan','Pernah dipenjara (kasus siber)'):'');
+  } else {
+    rows=row('Harta & Imperium',e.skorHarta||0)+row('Nama & Warisan',e.skorNama||0)+row('Julukan','"'+escape(e.julukanHarta||'-')+'"')+row('Gelar',escape(e.gelarNama||'-'))+row('Latar',escape(e.latar||'-'))+row('Kekayaan bersih',rpShort(e.kekayaan||0))+row('Jumlah usaha',e.usaha||0)+row('Sektor digarap',e.sektor||0)+row('Karyawan',e.karyawan||0)+row('Skala tertinggi',escape(e.skalaTertinggi||'-'))+(e.gelapTotal?row('Uang gelap',rpShort(e.gelapTotal)):'')+(e.vonis?row('Catatan','Pernah dipenjara (pajak/korupsi)'):'');
+  }
+  const ach=(e.achievements||[]).map(a=>'<span style="display:inline-block;margin:2px;padding:2px 9px;border:1px solid var(--line);border-radius:99px;font-size:11px;background:var(--paper3)">'+escape(a)+'</span>').join('')||'<span style="color:var(--ink2);font-style:italic">Belum ada</span>';
+  root.innerHTML='<div class="arsip-modal" id="lbmodal"><div class="box"><button class="close" data-close>×</button>'+
+    '<h2>'+handle+'</h2><div class="meta-line">'+escape(e.nama||'-')+' · '+fmtDate(e.date)+'</div>'+
+    '<div style="margin:10px 0">'+rows+'</div>'+
+    '<h4>TANDA JASA</h4><div style="margin:6px 0 4px">'+ach+'</div>'+
+    '<div class="row"><button class="arsip-btn primary" data-close>Tutup</button></div></div></div>';
+  root.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>root.innerHTML=''));
+  root.querySelector('#lbmodal').addEventListener('click',ev=>{if(ev.target.id==='lbmodal')root.innerHTML='';});
+}
+document.getElementById('board').addEventListener('click', e=>{
+  const tr=e.target.closest('tr[data-i]'); if(!tr)return;
+  const list=Platform.getLB()[activeGame]||[];
+  const it=list[+tr.dataset.i]; if(it)openLBDetail(it,activeGame);
+});
+document.getElementById('tabs').addEventListener('click', e=>{
+  const b=e.target.closest('button[data-game]'); if(!b)return;
+  document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  activeGame=b.dataset.game;
+  render();
+});
+
+document.getElementById('clearBtn').addEventListener('click', ()=>{
+  if(!confirm('Hapus semua catatan papan peringkat "'+activeGame+'"? Tindakan ini tidak bisa dibatalkan.')) return;
+  const lb=Platform.getLB(); lb[activeGame]=[];
+  localStorage.setItem('arsip_leaderboard_v1', JSON.stringify(lb));
+  render();
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const lb=Platform.getLB();
+  const blob=new Blob([JSON.stringify(lb,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='arsip-leaderboard.json';
+  document.body.appendChild(a); a.click(); a.remove();
+});
+
+render();
+</script>
+</body>
+</html>

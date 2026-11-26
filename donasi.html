@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Donasi / Sedekah · ARSIP</title>
+<meta name="description" content="Dukung pengembangan ARSIP. Donatur bisa request simulasi berikutnya.">
+<link rel="stylesheet" href="platform.css">
+</head>
+<body class="arsip-hub">
+<div class="arsip-page">
+
+<header class="arsip-hdr">
+  <span class="brand">ARSIP</span>
+  <span class="tag">Donasi &amp; Sedekah</span>
+  <a class="profile" href="index.html" style="text-decoration:none">« Beranda</a>
+</header>
+
+<section class="arsip-hero">
+  <span class="rahasia">TERIMA KASIH</span>
+  <h1>Dukung ARSIP biar terus tumbuh.</h1>
+  <p>Semua simulator di sini gratis dan tanpa iklan. Kalau kamu terhibur dan mau bantu, donasi sekecil apa pun sangat berarti, buat ngopi sambil ngoding simulator berikutnya. <b>Bonus: donatur boleh request mau dibuat simulasi apa.</b> Yang nge-top di papan bawah dapat gelar <b>Donatur Sultan</b>.</p>
+</section>
+
+<div class="arsip-donate-grid">
+
+  <!-- GOPAY -->
+  <div class="arsip-donate-box">
+    <h3>TRANSFER GOPAY</h3>
+    <img id="qr" class="arsip-qr" alt="QR GoPay" onerror="this.style.display='none'">
+    <div class="arsip-gopay-nama" id="gopayNama"></div>
+    <div class="arsip-gopay-nomor" id="gopayNomor"></div>
+    <button class="arsip-btn primary" id="copyNomor" type="button">Salin nomor</button>
+    <p class="arsip-donate-hint">Buka aplikasi Gojek/GoPay → Transfer → tempel nomor di atas. Pastikan nama penerima cocok.</p>
+  </div>
+
+  <!-- REQUEST -->
+  <div class="arsip-donate-box">
+    <h3>REQUEST SIMULASI</h3>
+    <p class="arsip-donate-hint" style="margin-top:0">Sudah / mau donasi? Titip request simulasi yang kamu pengen, biar aku tahu mau bikin apa berikutnya.</p>
+    <input type="text" id="reqHandle" placeholder="nama / handle kamu (opsional)" maxlength="40" autocomplete="off">
+    <input type="text" id="reqNominal" placeholder="nominal donasi (opsional, contoh: 25.000)" maxlength="20" autocomplete="off">
+    <textarea id="reqText" rows="3" placeholder="Mau simulasi apa? contoh: Simulator Nelayan / Simulator Dosen PTN..."></textarea>
+    <div class="arsip-donate-actions">
+      <button class="arsip-btn primary" id="sendWa" type="button">Kirim via WhatsApp</button>
+      <button class="arsip-btn" id="sendIg" type="button">DM via Instagram</button>
+      <button class="arsip-btn ghost" id="copyMsg" type="button">Salin pesan</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="arsip-section">
+  <h2>PAPAN DONATUR SULTAN</h2>
+  <a href="index.html" class="lk">» Kembali ke simulator</a>
+</div>
+<div class="arsip-lb-table">
+  <table>
+    <thead><tr><th>#</th><th>Donatur</th><th>Request</th><th class="num">Total</th></tr></thead>
+    <tbody id="donaturBody"></tbody>
+  </table>
+  <p class="arsip-donate-note">Papan ini <b>dikurasi manual</b>: hanya donatur yang sudah konfirmasi transfer yang dicatat. Jadi angkanya jujur, bukan klaim sepihak. Mau masuk papan? Donasi lalu konfirmasi via WhatsApp/IG di atas.</p>
+</div>
+
+<footer class="arsip-foot">
+  Disusun di Balikpapan · Donasi bersifat sukarela · Tidak ada imbalan selain doa &amp; gelar Sultan · v1
+</footer>
+</div>
+
+<script src="platform.js"></script>
+<script src="donasi/data.js"></script>
+<script>
+const C = (typeof DONASI_CONFIG!=='undefined') ? DONASI_CONFIG : {};
+const LIST = (typeof DONATUR!=='undefined') ? DONATUR : [];
+const $ = id=>document.getElementById(id);
+
+function rb(n){ return 'Rp '+(Number(n)||0).toLocaleString('id-ID'); }
+
+/* ---- GoPay box ---- */
+$('gopayNama').textContent = C.gopayNama ? 'a.n. '+C.gopayNama : '';
+$('gopayNomor').textContent = C.gopayNomor || '(nomor belum diatur)';
+if(C.qrFile){ $('qr').src = C.qrFile; } else { $('qr').style.display='none'; }
+
+function copyText(t, okMsg){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>alert(okMsg||'Tersalin.'),()=>fallbackCopy(t,okMsg));
+  } else fallbackCopy(t,okMsg);
+}
+function fallbackCopy(t,okMsg){
+  const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); alert(okMsg||'Tersalin.'); }catch(e){ alert('Salin manual: '+t); }
+  ta.remove();
+}
+$('copyNomor').addEventListener('click', ()=> copyText(C.gopayNomor||'', 'Nomor GoPay tersalin.'));
+
+/* ---- Request form ---- */
+try{ if(window.Platform){ const h=Platform.getHandle(); if(h) $('reqHandle').value='@'+h; } }catch(e){}
+
+function buildMsg(){
+  const h=$('reqHandle').value.trim(), nom=$('reqNominal').value.trim(), req=$('reqText').value.trim();
+  let m='Halo, saya mau dukung ARSIP.';
+  if(nom) m+='\nNominal: '+nom;
+  if(h)   m+='\nDari: '+h;
+  if(req) m+='\nRequest simulasi: '+req;
+  m+='\n(Akan/sudah transfer ke GoPay '+(C.gopayNomor||'-')+(C.gopayNama?' a.n. '+C.gopayNama:'')+')';
+  return m;
+}
+$('sendWa').addEventListener('click', ()=>{
+  if(!C.waNomor){ copyText(buildMsg(),'Nomor WhatsApp belum diatur. Pesan tersalin, tempel ke chat tujuan.'); return; }
+  window.open('https://wa.me/'+C.waNomor+'?text='+encodeURIComponent(buildMsg()), '_blank', 'noopener');
+});
+$('sendIg').addEventListener('click', ()=>{
+  copyText(buildMsg(), 'Pesan tersalin. Instagram akan terbuka, tempel di DM.');
+  const url = C.ig ? 'https://www.instagram.com/'+C.ig+'/' : 'https://www.instagram.com/';
+  setTimeout(()=>window.open(url,'_blank','noopener'), 300);
+});
+$('copyMsg').addEventListener('click', ()=> copyText(buildMsg(),'Pesan tersalin.'));
+
+/* ---- Papan Donatur Sultan ---- */
+function renderDonatur(){
+  const body=$('donaturBody');
+  const sorted=[...LIST].sort((a,b)=>(b.total||0)-(a.total||0));
+  if(!sorted.length){
+    body.innerHTML='<tr><td colspan="4" class="empty">Belum ada donatur tercatat. Jadilah Sultan pertama.</td></tr>';
+    return;
+  }
+  body.innerHTML = sorted.map((d,i)=>{
+    const rcls = i===0?'r1':i===1?'r2':i===2?'r3':'';
+    const sultan = i===0 ? ' <span class="arsip-sultan">SULTAN</span>' : '';
+    const nama = escapeHtml(d.nama ? String(d.nama) : 'Anonim');
+    const pesan = d.pesan ? escapeHtml(String(d.pesan)) : '<span style="color:var(--ink2)">-</span>';
+    return '<tr>'+
+      '<td class="rank '+rcls+'">'+(i+1)+'</td>'+
+      '<td class="handle">'+nama+sultan+(d.tanggal?'<br><span style="font-size:11px;color:var(--ink2)">'+escapeHtml(d.tanggal)+'</span>':'')+'</td>'+
+      '<td class="jul">'+pesan+'</td>'+
+      '<td class="skor num">'+rb(d.total)+'</td>'+
+    '</tr>';
+  }).join('');
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+renderDonatur();
+</script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARSIP NIAGA · Simulator Pengusaha</title>
+<link rel="stylesheet" href="niaga/style.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>ARSIP NIAGA</h1>
+  <span class="no" id="noArsip">Berkas No. —</span>
+  <div class="hdr-actions">
+    <a href="index.html">« Beranda</a>
+    <button id="caraBtn">Cara Main</button>
+    <button id="restartBtn">Mulai Baru</button>
+  </div>
+</header>
+<main>
+  <section class="doc">
+    <span class="rahasia">RAHASIA</span>
+    <div class="dochead">
+      <h2>Berkas Perjalanan Seorang Pengusaha</h2>
+      <span class="now" id="hdrNow">—</span>
+    </div>
+    <div id="feed" aria-live="polite"></div>
+    <div id="kartu"></div>
+    <div class="meja">
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="panel"><div class="agrid" id="acts"></div></div>
+    </div>
+    <div class="bar">
+      <span class="actInfo" id="actInfo"></span>
+      <button id="nextBtn">Jalani Tahun +1 »</button>
+    </div>
+  </section>
+  <aside>
+    <div class="card">
+      <h3>PROFIL PENGUSAHA</h3>
+      <div class="idrow"><span class="lab">Nama</span><b id="iNama">—</b></div>
+      <div class="idrow"><span class="lab">Usia / Tahun</span><b id="iUmur">—</b></div>
+      <div class="idrow"><span class="lab">Kekayaan bersih</span><b class="uang" id="iNet">—</b></div>
+      <div class="idrow"><span class="lab">Kas / Utang</span><b id="iKas">—</b></div>
+      <div class="idrow"><span class="lab">Uang gelap</span><b class="uang gelap" id="iGelap">—</b></div>
+      <div id="stats" style="margin-top:8px"></div>
+    </div>
+    <div class="card">
+      <h3>PORTOFOLIO USAHA</h3>
+      <div id="bizList"></div>
+      <div class="butuh" id="bizNote"></div>
+    </div>
+    <div class="card">
+      <h3>EKONOMI & PASAR</h3>
+      <div id="pasar"></div>
+      <div class="butuh" id="butuh"></div>
+    </div>
+    <div class="card">
+      <h3>RIWAYAT</h3>
+      <div class="fam" id="riwayat"></div>
+    </div>
+    <div class="card">
+      <h3>TANDA JASA</h3>
+      <div class="chips" id="ach"><span class="muted">Belum ada.</span></div>
+    </div>
+  </aside>
+</main>
+</div>
+<div id="overlay" class="hidden"><div class="epilog" id="epilog"></div></div>
+<script src="niaga/js/00-core.js"></script>
+<script src="niaga/js/01-data.js"></script>
+<script src="niaga/js/02-state.js"></script>
+<script src="niaga/js/03-peluang.js"></script>
+<script src="niaga/js/04-events.js"></script>
+<script src="niaga/js/05-epilog.js"></script>
+<script src="niaga/js/06-actions.js"></script>
+<script src="niaga/js/07-render.js"></script>
+<script src="niaga/js/08-save.js"></script>
+<script src="niaga/js/09-boot.js"></script>
+<script src="platform.js"></script>
+</body>
+</html>

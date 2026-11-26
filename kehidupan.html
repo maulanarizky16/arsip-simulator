@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARSIP KEHIDUPAN — Simulasi Hidup</title>
+<link rel="stylesheet" href="kehidupan/style.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>ARSIP KEHIDUPAN</h1>
+  <span class="no" id="noArsip">No. Arsip —</span>
+  <div class="hdr-actions">
+    <a href="index.html">« Beranda</a>
+    <button id="caraBtn">Cara Main</button>
+    <button id="restartBtn">Hidup Baru</button>
+  </div>
+</header>
+<main>
+  <section class="doc">
+    <div class="dochead">
+      <h2>Catatan Perjalanan Hidup</h2>
+      <span class="now" id="hdrNow">—</span>
+    </div>
+    <div id="feed" aria-live="polite"></div>
+    <div id="kartu"></div>
+    <div class="meja">
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="panel"><div class="agrid" id="acts"></div></div>
+    </div>
+    <div class="bar">
+      <span class="actInfo" id="actInfo"></span>
+      <button id="nextBtn">Jalani Umur +1 »</button>
+    </div>
+  </section>
+  <aside>
+    <div class="card">
+      <h3>Kartu Identitas</h3>
+      <div class="idrow"><span class="lab">Nama</span><b id="iNama">—</b></div>
+      <div class="idrow"><span class="lab">TTL</span><b id="iTtl">—</b></div>
+      <div class="idrow"><span class="lab">Umur</span><b id="iUmur">—</b></div>
+      <div class="idrow"><span class="lab">Pendidikan</span><b id="iEdu">—</b></div>
+      <div class="idrow"><span class="lab">Status</span><b id="iStatus">—</b></div>
+      <div class="idrow"><span class="lab">Uang tunai</span><b class="uang" id="iUang">Rp 0</b></div>
+      <div class="idrow"><span class="lab">Kekayaan bersih</span><b class="uang" id="iNet">Rp 0</b></div>
+    </div>
+    <div class="card">
+      <h3>Kondisi Diri</h3>
+      <div id="stats"></div>
+    </div>
+    <div class="card">
+      <h3>Pekerjaan &amp; Usaha</h3>
+      <div class="fam" id="kerja"></div>
+    </div>
+    <div class="card">
+      <h3>Keluarga &amp; Asmara</h3>
+      <div class="fam" id="fam"></div>
+      <div id="relbar"></div>
+    </div>
+    <div class="card">
+      <h3>Hobi</h3>
+      <div class="chips" id="hobi"><span class="muted">Belum punya hobi.</span></div>
+    </div>
+    <div class="card">
+      <h3>Portofolio &amp; Aset</h3>
+      <div class="fam" id="porto"></div>
+      <div class="chips" id="aset" style="margin-top:6px"></div>
+    </div>
+    <div class="card">
+      <h3>Pencapaian</h3>
+      <div class="chips" id="ach"><span class="muted">Belum ada.</span></div>
+    </div>
+  </aside>
+</main>
+</div>
+<div id="overlay" class="hidden"><div class="epilog" id="epilog"></div></div>
+
+<script src="kehidupan/js/00-core.js"></script>
+<script src="kehidupan/js/01-data.js"></script>
+<script src="kehidupan/js/02-state.js"></script>
+<script src="kehidupan/js/03-interactions.js"></script>
+<script src="kehidupan/js/04-epilog.js"></script>
+<script src="kehidupan/js/05-save.js"></script>
+<script src="kehidupan/js/06-events.js"></script>
+<script src="kehidupan/js/07-actions.js"></script>
+<script src="kehidupan/js/08-render.js"></script>
+<script src="kehidupan/js/09-boot.js"></script>
+<script src="platform.js"></script>
+</body>
+</html>

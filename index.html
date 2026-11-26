@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARSIP · Koleksi Simulator Hidup</title>
+<meta name="description" content="Koleksi simulator hidup berbahasa Indonesia: kehidupan, karier politik, dan banyak lagi.">
+<link rel="stylesheet" href="platform.css">
+</head>
+<body class="arsip-hub">
+<div class="arsip-page">
+
+<header class="arsip-hdr">
+  <span class="brand">ARSIP</span>
+  <span class="tag">Koleksi Simulator Hidup</span>
+  <a class="profile donate" href="donasi.html" style="text-decoration:none" title="Donasi / Sedekah">
+    <span class="dot"></span>
+    <span>Donasi / Sedekah</span>
+  </a>
+  <button class="profile" id="profileBtn" type="button">
+    <span class="dot"></span>
+    <span id="profileLabel">Belum masuk · Atur handle</span>
+  </button>
+</header>
+
+<section class="arsip-hero">
+  <span class="rahasia">RAHASIA</span>
+  <h1>Pilih jalan yang mau kamu jalani.</h1>
+  <p>Tiap simulasi membawamu menjalani satu hidup utuh, dari titik nol sampai berkas ditutup. Kamu bikin pilihan, dunia bereaksi, dan di akhir cerita ada penilaian yang jujur. Jejakmu dicatat di papan peringkat, hasil akhirmu bisa dijadikan gambar untuk dipamerkan.</p>
+</section>
+
+<div class="arsip-update">
+  <span class="upd-tag">PEMBARUAN</span>
+  <div class="upd-body">
+    <b>Baru: Simulator Pengusaha.</b> Bangun kerajaan bisnis dari nol di 18 sektor (kuliner, ritel, properti, tambang, startup, manufaktur, fintech, dan lainnya). Tiap usaha punya simulasi untung-rugi sendiri yang dipengaruhi ekonomi makro; tiap tahun datang peluang yang harus kamu saring lewat due diligence sebelum tanam modal. Naik kelas dari kaki lima sampai konglomerasi yang IPO — atau ambil jalan gelap (suap tender, kartel, kemplang pajak) dengan risiko bangkrut dan razia aparat.
+    <span class="upd-more">Sebelumnya: Simulator Karier IT (8 spesialisasi, insiden produksi interaktif, jalur hacking topi putih–hitam), Simulator Kehidupan makin dalam (profesi negara, politik lokal, drama keluarga, aset antargenerasi), percabangan hidup &amp; negara baru, Simulator Hakim dengan gelar perkara interaktif, sistem APBN/APBD &amp; debat pemilu di Simulator Negara, plus halaman Donasi di tiap simulasi.</span>
+  </div>
+</div>
+
+<div class="arsip-section">
+  <h2>SIMULATOR TERSEDIA</h2>
+  <a href="leaderboard.html" class="lk">» Lihat papan peringkat</a>
+</div>
+
+<div class="arsip-cards" id="cards"></div>
+
+<div class="arsip-section">
+  <h2>3 SKOR TERATAS</h2>
+  <a href="leaderboard.html" class="lk">» Selengkapnya</a>
+</div>
+<div class="arsip-cards" id="topPreview"></div>
+
+<footer class="arsip-foot">
+  Disusun di Balikpapan · <b>Privasi terjaga</b>: semua skor &amp; handle tersimpan lokal di browser ini, tanpa akun &amp; tidak dikirim ke server · <a href="donasi.html" style="color:var(--gold);text-decoration:none">Dukung ARSIP »</a> · v1
+</footer>
+</div>
+
+<!-- DETAIL MODAL TEMPLATE -->
+<div id="modalRoot"></div>
+
+<script src="platform.js"></script>
+<script>
+const SIM=[
+  {
+    id:'kehidupan', file:'kehidupan.html', avail:true,
+    title:'Simulator Kehidupan', subtitle:'Dari lahir sampai berkas ditutup',
+    teaser:'Mulai dari satu sel: pilih masa kecil, sekolah, karier, jodoh, anak, bisnis, sampai pensiun. Jadi polisi, tentara, atau intel, terjun ke politik dari Ketua RT sampai Bupati, atau hancurkan semuanya di tengah jalan.',
+    badge:'Tersedia',
+    icon: lifeIcon(),
+    meta:['~15 menit/hidup','65+ aksi','25+ achievement','Generasi 1 sampai 3+'],
+    persuasive: [
+      'Ini bukan game yang menyuapi kamu jalan cerita. Kamu yang membangun hidupnya, dari pola belajar di SD, jurusan kuliah, pasangan hidup, sampai bisnis yang kamu rintis. Semuanya saling memengaruhi.',
+      'Hidup bukan cuma soal uang. Kamu punya lingkaran teman bernama yang bisa menolong atau mengkhianati, anak yang cara kamu mendidiknya menentukan masa depannya, dan sisi gelap seperti jerat judi online yang bisa menyeretmu ke jurang utang.',
+      'Indikator hidup terasa nyata: kesehatan, kebahagiaan, stres, relasi. Ada burnout, krisis paruh baya, sampai pilihan merantau ke kota besar demi peluang yang lebih luas. Pilihanmu hari ini menentukan kondisimu 30 tahun lagi.',
+      'Yang bikin nagih: penilaian akhirnya jujur. Hidup bisa berakhir sebagai Sultan, Perantau Sukses, Orang Tua Teladan, atau "Yang Penting Pernah Ada". Lalu lanjutkan sebagai anakmu sendiri di generasi berikutnya.'
+    ],
+    fitur: [
+      'Profesi negara: Polri, TNI, Intelijen, PNS, Pilot, Pelaut, Damkar, lengkap dengan tugas dinas khas & naik pangkatnya',
+      'Politik lokal: meniti jabatan dari Ketua RT sampai Bupati lewat kampanye & pamor warga, dengan godaan korupsi dan risikonya',
+      'Drama keluarga: perceraian dengan bagi harta, perselingkuhan, sengketa warisan, anak bermasalah, sampai adopsi',
+      'Sistem keluarga & generasi lanjut, dengan pola asuh anak yang menentukan bekal stat generasi berikutnya',
+      '16 jenis usaha paralel, 4 instrumen investasi, koleksi aset & properti tanpa batas yang diwariskan antargenerasi',
+      'Sisi gelap & risiko: judi online yang adiktif, investasi bodong, jerat pinjol',
+      'Kesehatan mental: terapi, burnout, krisis paruh baya, plus pilihan merantau antarkota',
+      'Lingkaran teman bernama: cari kawan, minta referral kerja, pinjam modal, atau curhat saat berat',
+      'Auto-save: tutup tab kapan saja, lanjutkan hidup yang sama saat dibuka lagi'
+    ]
+  },
+  {
+    id:'negara', file:'negara.html', avail:true,
+    title:'Simulator Karier Politik', subtitle:'Dari aktivis sampai presiden',
+    teaser:'Pilih jalur: aktivis idealis, jurnalis investigasi, atau anak pejabat dengan nama besar. Naik dari DPRD sampai presiden, atau habis terbakar di tengah jalan.',
+    badge:'Tersedia',
+    icon: stateIcon(),
+    meta:['~20 menit/karier','90+ aksi','28 achievement','Penilaian ganda'],
+    persuasive: [
+      'Di sini kamu tidak cuma bikin keputusan moral hitam-putih. Kamu hidup sebagai politisi sungguhan: maju pemilu, hadapi calon lawan di panggung debat, ucapkan janji yang menempel di kepala publik, bertahan dari OTT, sampai menyusun warisan.',
+      'Pemilu bisa kalah betulan. Ada sesi debat melawan rival yang skornya menentukan elektabilitas, pemilihan cawapres, dan rival bebuyutan yang muncul berulang lintas pemilu, makin kuat tiap kali.',
+      'Tiap jabatan punya dunianya sendiri. Sebagai Wali Kota atau Gubernur, kamu mengurus indikator daerahmu dengan pagu APBD; sebagai Presiden, kamu mengajukan APBN untuk proyek nyata: tol, kereta cepat, destinasi pariwisata, rumah sakit, energi hijau. Kebijakan besar pun harus lolos DPR dan bisa ditolak kalau koalisimu lemah.',
+      'Setiap aksi diam-diam dinilai dari dua sudut pandang. Di akhir, kamu dapat dua skor terpisah: Penilaian Rakyat dan Catatan Negara. Bisa dicintai rakyat tapi dihapus dari arsip resmi, atau sebaliknya.'
+    ],
+    fitur: [
+      '5 jenjang jabatan (DPRD sampai Presiden), tiap posisi punya kartu jabatan, kewenangan & indikator sendiri',
+      'Pimpin daerah dengan indikator wilayah & pagu APBD, atau pimpin negara dengan indikator nasional',
+      'Bangun proyek nyata lewat APBN/APBD: tol, kereta cepat, pariwisata, RS, EBT, pasar, irigasi, dan puluhan lainnya',
+      'Pemilu dengan calon lawan, debat, cawapres, koalisi & politik uang; janji kampanye bisa direalisasikan',
+      'Parlemen hidup, kelola kabinet, jaga standing pers, hadapi rival politik (beraliansi atau jatuhkan)',
+      'Perang, perdamaian PBB, separatis, sanksi internasional, korupsi, OTT & penjara',
+      'Dua skor akhir terpisah (Mata Rakyat & Catatan Negara) plus ringkasan positif/negatif kepemimpinan'
+    ]
+  },
+  {
+    id:'hakim', file:'hakim.html', avail:true,
+    title:'Simulator Hakim', subtitle:'Dari Hakim PN sampai Ketua MA',
+    teaser:'Duduk di kursi hakim: timbang bukti, tahan tekanan dan suap, lalu ketuk palu. Tegakkan keadilan, atau jadi mafia peradilan berjubah hitam.',
+    badge:'Tersedia', icon: judgeIcon(),
+    meta:['~15 menit/karier','Perkara tak terbatas','19 achievement','Skor ganda'],
+    persuasive: [
+      'Setiap perkara adalah dilema. Bukti di satu sisi; tekanan orang kuat dan amplop "uang ketok" di sisi lain. Ketukan palumu menentukan nasib orang lain, dan nasibmu sendiri.',
+      'Naik dari Hakim Pengadilan Negeri, jadi Hakim Tipikor, sampai Hakim Agung bahkan Ketua Mahkamah Agung. Tapi makin tinggi kursinya, makin besar godaan dan sorotan Komisi Yudisial serta KPK. Salah langkah, kamu sendiri yang diadili dan dipenjara.',
+      'Di akhir, kamu dinilai dua sisi: Keadilan (apakah hukum kamu tegakkan) dan Karier & Kuasa (setinggi apa kamu naik, sebanyak apa hartamu). Bisa jadi Wakil Tuhan di Bumi yang adil tapi sederhana, atau penguasa kaya yang dikenang sebagai mafia peradilan.'
+    ],
+    fitur: [
+      'Perkara prosedural tak terbatas: pidana, korupsi, narkoba, tanah, lingkungan, HAM, UU ITE',
+      'Timbang kekuatan bukti (kuat/lemah/berimbang) lalu putuskan: bersalah, bebas, atau terima suap',
+      'Jenjang karier Hakim PN sampai Ketua MA, plus penugasan Hakim Tipikor',
+      'Integritas vs godaan: uang ketok, makelar kasus, lobi jabatan, sorotan KY & OTT KPK',
+      'Kepercayaan publik pada peradilan yang naik-turun mengikuti putusanmu',
+      'Dua skor akhir (Keadilan & Karier-Kuasa) plus ringkasan baik/buruk selama bertugas'
+    ]
+  },
+  {
+    id:'it', file:'it.html', avail:true,
+    title:'Simulator Karier IT', subtitle:'Dari Junior sampai CTO (atau buronan siber)',
+    teaser:'Pilih jalur: IT Support, Sysadmin, DevOps, Network, IoT, Security, Backend, atau Data. Padamkan insiden produksi, jaga armada aset, dan tahan godaan topi hitam. Naik jadi CTO, atau berakhir diburu tim siber.',
+    badge:'Baru', icon: itIcon(),
+    meta:['~15 menit/karier','8 spesialisasi','27 achievement','Skor ganda'],
+    persuasive: [
+      'Ini bukan game klik-klik. Tiap tahun pager-mu berbunyi: server tumbang, armada IoT offline massal, deploy gagal di produksi, database nyaris korup, atau sistem diretas. Kamu diagnosa dulu (baca log, cek monitoring, telusuri config), baru putuskan perbaikan. Diagnosa yang teliti bikin tebakanmu jadi keputusan.',
+      'Skill IT cepat usang — kalau berhenti belajar, kemampuanmu meluruh tiap tahun, dan gelombang AI bisa menggilas yang lengah. Kamu kelola portofolio aset nyata (server, cluster cloud, armada perangkat IoT, jaringan, database, aplikasi) yang harus tetap hidup di tengah serangan dan entropi.',
+      'Ada sisi gelap yang menggoda: dari bug bounty & CTF topi putih yang terhormat, sampai jual exploit 0-day, ransomware, dan curi data sebagai topi hitam — uang gelap mengalir deras, tapi tim forensik siber mengintai tiap jejak kripto. Salah langkah, kamu sendiri yang divonis.',
+      'Di akhir, dua skor terpisah menilaimu: Karya & Integritas (sistem andal, etika, kontribusi, mentoring) dan Cuan & Karier (gaji, saham, exit, posisi). Jadi Engineer Legendaris yang dihormati, Sultan Tech yang kaya raya, atau Black Hat yang tumbang di kursi pesakitan.'
+    ],
+    fitur: [
+      '8 spesialisasi (IT Support, Sysadmin, DevOps, Network, IoT, Security/Pentester, Backend, Data) dengan skill & insiden khas masing-masing',
+      'Mesin insiden interaktif: diagnosa bertahap (log, metrik, config, repro, jaringan) lalu terapkan perbaikan yang menyasar akar masalah',
+      'Kelola & rawat aset infra: server, cluster cloud, armada IoT, jaringan, database, aplikasi — masing-masing punya kesehatan/uptime sendiri',
+      'Jalur hacking lengkap: CTF, bug bounty, pentest resmi (topi putih) sampai jual exploit, ransomware, botnet (topi hitam) dengan uang gelap & sorotan hukum',
+      'Karier dari Junior, Medior, Senior, Lead, Principal, sampai CTO; pindah kerja, headhunt, layoff saat tech winter, exit startup',
+      'Skill yang usang tiap tahun, gelombang AI, burnout, sertifikasi, otomasi, observability, dan utang teknis',
+      'Dua skor akhir (Karya & Integritas vs Cuan & Karier) plus ringkasan baik/buruk sepanjang karier'
+    ]
+  },
+  {
+    id:'niaga', file:'niaga.html', avail:true,
+    title:'Simulator Pengusaha', subtitle:'Dari kaki lima sampai konglomerasi',
+    teaser:'Bangun kerajaan bisnis dari nol di 18 sektor: kuliner, ritel, properti, tambang, startup, manufaktur, dan banyak lagi. Cium peluang lewat due diligence, besarkan usaha sampai IPO, atau jatuh bangkrut dan diburu kasus pajak.',
+    badge:'Baru', icon: bizIcon(),
+    meta:['~15 menit/karier','18 sektor usaha','30 achievement','Skor ganda'],
+    persuasive: [
+      'Mulai dari modal nekat (atau warisan juragan), pilih sektor, dan jalankan. Tiap usaha punya simulasi untung-rugi sendiri yang dipengaruhi skala, kinerja, merek, dan kondisi ekonomi makro — boom, resesi, inflasi, suku bunga, sampai krisis moneter dan pandemi yang menghantam sebagian sektor dan justru menguntungkan sebagian lainnya.',
+      'Tiap tahun datang PELUANG: lokasi emas, pesaing yang dijual murah, kontrak besar, investor yang menawarkan dana. Tapi emas dan jebakan kadang terlihat sama. Lakukan due diligence — riset pasar, audit keuangan, cek legalitas, telusuri rekam jejak mitra — untuk membedakannya, lalu putuskan ambil, negosiasi, atau lewatkan. Salah baca, modalmu lenyap.',
+      'Naik kelas dari Mikro, UKM, Besar, Korporasi, sampai Konglomerasi yang melantai di bursa lewat IPO. Diversifikasi ke banyak sektor, waralabakan usahamu, tembus pasar ekspor, akuisisi pesaing. Atau ambil jalan pintas: suap tender, kartel harga, kemplang pajak, tekan upah buruh — cuan deras, tapi Ditjen Pajak dan aparat mengintai tiap jejak.',
+      'Di akhir, dua skor menilaimu: Harta & Imperium (sebesar apa kerajaanmu) dan Nama & Warisan (sebersih apa cara membangunnya). Jadi taipan dermawan yang dikenang harum dan mewariskan imperium, atau bos kaya bertangan kotor yang berakhir pailit atau di balik jeruji.'
+    ],
+    fitur: [
+      '18 sektor usaha (kuliner, ritel, fashion, agro, ternak, properti, otomotif, startup tek, jasa, manufaktur, tambang, logistik, farmasi, pendidikan, media, ekspor, waralaba, fintech) dengan margin, risiko, & musim sendiri',
+      'Mesin keuangan tiap usaha: untung-rugi dari skala, kinerja, merek, ekonomi makro, inflasi, suku bunga, daya beli, pajak, & utang',
+      'Mekanik PELUANG dengan due diligence: bedakan peluang emas dari jebakan sebelum tanam modal',
+      'Naik kelas Mikro → UKM → Korporasi → Konglomerasi, IPO, waralaba, ekspor, akuisisi, joint venture',
+      'Sisi gelap: suap tender, kartel, penghindaran pajak, tekan upah, abaikan lingkungan — dengan razia Ditjen Pajak & aparat',
+      'Drama nyata: resesi, krisis moneter, pandemi, perang harga, viral/skandal, mogok buruh, preman, gugatan, ditipu mitra, kebangkrutan & bangkit',
+      'Dua skor akhir (Harta & Imperium vs Nama & Warisan) plus ringkasan baik/buruk sepanjang karier'
+    ]
+  },
+  {
+    id:'coming-startup', file:null, avail:false,
+    title:'Simulator Startup', subtitle:'Segera hadir',
+    teaser:'Bangun startup dari kost-kostan: cari co-founder, kejar pendanaan, lewati death valley. (Belum tersedia.)',
+    badge:'Segera', icon: startupIcon(),
+    meta:['Coming soon'],
+    persuasive:['Sedang dalam perencanaan.'], fitur:[]
+  },
+  {
+    id:'coming-petani', file:null, avail:false,
+    title:'Simulator Petani', subtitle:'Segera hadir',
+    teaser:'Tanah, musim, harga gabah, kebijakan pemerintah. Cerita yang jarang diceritakan. (Belum tersedia.)',
+    badge:'Segera', icon: farmIcon(),
+    meta:['Coming soon'],
+    persuasive:['Sedang dalam perencanaan.'], fitur:[]
+  }
+];
+
+/* ===== INLINE SVG ICONS ===== */
+function lifeIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="28" r="11" fill="#f4efe1"/><path d="M30 80c0-16 9-28 20-28s20 12 20 28" fill="#f4efe1"/><path d="M22 78l8-4M78 78l-8-4M50 50v15M40 90h20"/></g></svg>`;}
+function stateIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M50 14L86 32v6H14v-6z" fill="#f4efe1"/><path d="M20 80h60v8H20zM24 38v40M40 38v40M60 38v40M76 38v40" fill="#f4efe1"/><path d="M14 88h72M50 8v6" stroke-width="2"/></g></svg>`;}
+function startupIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M50 12l16 16-16 50-16-50z" fill="#f4efe1"/><circle cx="50" cy="34" r="5" fill="#fff"/><path d="M34 62l-8 14 14-6M66 62l8 14-14-6"/></g></svg>`;}
+function farmIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 70l40-30 40 30v18H10z" fill="#f4efe1"/><path d="M38 88V70h24v18M50 14v14M44 22l6-8 6 8"/></g></svg>`;}
+function judgeIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M50 22v56M32 86h36"/><circle cx="50" cy="18" r="4" fill="#f4efe1"/><path d="M20 32h60"/><path d="M20 32l-9 20h18z" fill="#f4efe1"/><path d="M80 32l-9 20h18z" fill="#f4efe1"/></g></svg>`;}
+function itIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="22" width="68" height="44" rx="4" fill="#f4efe1"/><path d="M28 36l8 8-8 8M44 52h14"/><path d="M38 78h24M50 66v12M16 60h68"/></g></svg>`;}
+function bizIcon(){return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="none" stroke="#2a2622" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 84V44l16-10 16 10v40" fill="#f4efe1"/><path d="M52 84V52l14-9 14 9v32" fill="#f4efe1"/><path d="M14 84h74M28 50v6M28 64v6M40 50v6M40 64v6M62 60v6M74 60v6M44 24l-8 10M44 24l8 10M44 18v6"/></g></svg>`;}
+
+/* ===== RENDER CARDS ===== */
+function renderCards(){
+  const root=document.getElementById('cards');
+  root.innerHTML='';
+  SIM.forEach(s=>{
+    const card=document.createElement('div');
+    card.className='arsip-card '+(s.avail?'avail':'soon');
+    card.innerHTML=`
+      <div class="thumb">${s.icon}<span class="badge ${s.avail?'':'soon'}">${s.badge}</span></div>
+      <div class="body">
+        <div class="sub">${s.subtitle}</div>
+        <h3>${s.title}</h3>
+        <p>${s.teaser}</p>
+        <div class="meta">${s.meta.map(m=>'<span>'+m+'</span>').join('')}</div>
+        <button class="cta" data-id="${s.id}">${s.avail?'Lihat Detail »':'Belum tersedia'}</button>
+      </div>`;
+    if(s.avail){
+      card.addEventListener('click', ()=>openDetail(s));
+    }
+    root.appendChild(card);
+  });
+}
+
+function openDetail(s){
+  const root=document.getElementById('modalRoot');
+  root.innerHTML=`
+  <div class="arsip-modal" id="modal">
+    <div class="box">
+      <button class="close" data-close>×</button>
+      <h2>${s.title}</h2>
+      <div class="meta-line">${s.subtitle} · ${s.meta.join(' · ')}</div>
+      <div class="desc">${s.persuasive.map(p=>'<p>'+p+'</p>').join('')}</div>
+      <h4>YANG AKAN KAMU HADAPI</h4>
+      <ul>${s.fitur.map(f=>'<li>'+f+'</li>').join('')}</ul>
+      <div class="row">
+        <button class="arsip-btn ghost" data-close>Tutup</button>
+        <button class="arsip-btn primary" data-start="${s.id}">Mulai Simulasi »</button>
+      </div>
+    </div>
+  </div>`;
+  root.querySelector('[data-start]').addEventListener('click', ()=>startSim(s));
+  root.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click', ()=>{root.innerHTML='';}));
+  root.querySelector('#modal').addEventListener('click', e=>{if(e.target.id==='modal')root.innerHTML='';});
+}
+
+function startSim(s){
+  // Belum pernah pilih identitas? tawarkan dulu (sekali). Anonim juga sah.
+  if(!Platform.getIdentity()){
+    Platform.showHandleDialog(()=>{ window.location.href=s.file; }, {welcome:true});
+  } else {
+    window.location.href=s.file;
+  }
+}
+
+/* ===== PROFILE BUTTON ===== */
+function refreshProfile(){
+  const h=Platform.getHandle();
+  const choice=Platform.getIdentity();
+  const btn=document.getElementById('profileBtn');
+  const lbl=document.getElementById('profileLabel');
+  if(h){ btn.classList.add('set'); lbl.textContent='@'+h+' · Ubah'; }
+  else if(choice==='anon'){ btn.classList.remove('set'); lbl.textContent='Anonim · Pakai nama?'; }
+  else { btn.classList.remove('set'); lbl.textContent='Belum diatur · Atur'; }
+}
+document.getElementById('profileBtn').addEventListener('click', ()=>{
+  Platform.showHandleDialog(refreshProfile);
+});
+
+/* ===== TOP 3 PREVIEW ===== */
+function topPreview(){
+  const lb=Platform.getLB();
+  const root=document.getElementById('topPreview');
+  root.innerHTML='';
+  ['kehidupan','negara','hakim','it','niaga'].forEach(g=>{
+    const list=(lb[g]||[]).slice(0,3);
+    const card=document.createElement('div');
+    card.className='arsip-card soon';
+    card.style.opacity='1';
+    const title = g==='kehidupan'?'Simulator Kehidupan':g==='negara'?'Simulator Negara':g==='hakim'?'Simulator Hakim':g==='it'?'Simulator Karier IT':'Simulator Pengusaha';
+    const icon = g==='kehidupan'?lifeIcon():g==='negara'?stateIcon():g==='hakim'?judgeIcon():g==='it'?itIcon():bizIcon();
+    let rows='';
+    if(!list.length){
+      rows='<p style="color:var(--ink2);font-style:italic;margin-top:8px">Belum ada catatan. Mulai sebuah simulasi untuk memulai papan peringkat.</p>';
+    } else {
+      list.forEach((e,i)=>{
+        const score = g==='kehidupan'?e.skor:g==='negara'?((e.skorRakyat||0)+(e.skorNegara||0)):g==='hakim'?((e.skorAdil||0)+(e.skorKarier||0)):g==='it'?((e.skorKarya||0)+(e.skorCuan||0)):((e.skorHarta||0)+(e.skorNama||0));
+        const sub = g==='kehidupan'?(e.julukan||'-'):g==='negara'?(e.julukanRakyat||'-'):g==='hakim'?(e.julukanAdil||'-'):g==='it'?(e.julukanKarya||'-'):(e.julukanHarta||'-');
+        const h = e.handle?'@'+e.handle:'Anonim';
+        rows+=`<div style="display:flex;justify-content:space-between;border-bottom:1px dotted var(--line);padding:6px 0;font-size:13px">
+          <span><b style="color:${i===0?'var(--gold)':'var(--ink2)'}">${i+1}.</b> ${h}<br><span style="color:var(--ink2);font-size:11.5px;font-family:'Special Elite',monospace">${sub}</span></span>
+          <b style="font-family:'Staatliches',sans-serif;font-size:19px">${score}</b>
+        </div>`;
+      });
+    }
+    card.innerHTML = `
+      <div class="thumb">${icon}<span class="badge">TOP 3</span></div>
+      <div class="body">
+        <h3>${title}</h3>
+        ${rows}
+      </div>`;
+    root.appendChild(card);
+  });
+}
+
+/* ===== BOOT ===== */
+renderCards();
+refreshProfile();
+topPreview();
+/* Sambutan identitas: cuma sekali, saat pertama buka */
+if(!Platform.getIdentity()){
+  Platform.showHandleDialog(refreshProfile, {welcome:true});
+}
+</script>
+</body>
+</html>

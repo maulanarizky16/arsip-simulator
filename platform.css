@@ -1,0 +1,184 @@
+/* ARSIP Platform CSS - shared aesthetic with the games */
+@import url('https://fonts.googleapis.com/css2?family=Staatliches&family=Special+Elite&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+:root{
+  --desk:#1d1a16; --paper:#ece5d4; --paper2:#ded5bf; --paper3:#f4efe1;
+  --ink:#2a2622; --ink2:#5f594f; --line:#b9b09c;
+  --red:#8e1f1f; --green:#3a7a4d; --gold:#a87b1f; --navy:#27374d;
+  --manila:#d6bd84; --manila2:#c2a868;
+  --disp:'Staatliches',sans-serif; --type:'Special Elite',monospace; --ui:'IBM Plex Sans',system-ui,sans-serif;
+}
+html,body{margin:0;padding:0}
+body.arsip-hub{background:var(--desk);background-image:radial-gradient(circle at 30% 10%,rgba(255,255,255,.04),transparent 60%);color:var(--ink);font:14.5px/1.55 var(--ui);min-height:100vh;overflow-x:hidden}
+
+/* ===== LANDING ===== */
+.arsip-page{max-width:1180px;margin:0 auto;padding:18px 16px 60px}
+.arsip-hdr{display:flex;align-items:baseline;gap:14px;color:#d8cfb8;flex-wrap:wrap;margin-bottom:6px}
+.arsip-hdr .brand{font:400 36px/1 var(--disp);letter-spacing:.06em;color:#ece5d4}
+.arsip-hdr .tag{font:400 14px var(--type);color:#9a917c;flex:1;min-width:0}
+.arsip-hdr .profile{margin-left:auto;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.05);border:1px solid #4b4538;border-radius:8px;padding:5px 10px;font:400 12.5px var(--type);color:#d8cfb8;cursor:pointer}
+.arsip-hdr .profile:hover{background:rgba(255,255,255,.1);border-color:#7c7461}
+.arsip-hdr .profile .dot{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.arsip-hdr .profile.set .dot{background:var(--green)}
+.arsip-hdr .profile.donate{margin-left:0}
+.arsip-hdr .profile.donate .dot{background:var(--red)}
+.arsip-hdr .profile.donate:hover{border-color:var(--gold)}
+
+.arsip-hero{background:var(--paper);border-radius:8px;padding:22px 26px;position:relative;margin:10px 0 18px;box-shadow:0 8px 28px rgba(0,0,0,.45)}
+.arsip-hero::before{content:'';position:absolute;left:0;top:0;bottom:0;width:18px;border-right:1.5px dashed var(--line);background:radial-gradient(circle at 9px 14px, var(--desk) 3.6px, transparent 4.2px);background-size:18px 30px;background-position:0 10px;background-repeat:repeat-y;border-radius:8px 0 0 8px}
+.arsip-hero h1{font:400 32px/1.05 var(--disp);letter-spacing:.08em;color:var(--ink);margin-bottom:8px;padding-left:18px}
+.arsip-hero p{font:400 14.5px/1.6 var(--type);color:var(--ink2);padding-left:18px;max-width:760px}
+.arsip-hero .rahasia{position:absolute;top:10px;right:14px;font:400 13px var(--disp);letter-spacing:.3em;color:var(--red);border:2px solid var(--red);padding:2px 8px;transform:rotate(4deg);opacity:.65}
+
+/* ===== KOTAK PEMBARUAN ===== */
+.arsip-update{display:flex;gap:13px;align-items:flex-start;background:var(--paper2);border:1px dashed var(--line);border-radius:8px;padding:12px 16px;margin:0 0 16px}
+.arsip-update .upd-tag{flex-shrink:0;font:400 12px var(--disp);letter-spacing:.18em;color:var(--paper);background:var(--red);padding:3px 10px;border-radius:4px;transform:rotate(-2deg);margin-top:2px}
+.arsip-update .upd-body{font:400 13.5px/1.55 var(--ui);color:var(--ink)}
+.arsip-update .upd-more{display:block;margin-top:5px;font-size:12.5px;color:var(--ink2)}
+
+.arsip-section{margin:24px 0 10px;display:flex;align-items:baseline;justify-content:space-between;color:#d8cfb8;gap:10px;flex-wrap:wrap}
+.arsip-section h2{font:400 22px var(--disp);letter-spacing:.14em;color:#e7dec8}
+.arsip-section .lk{font:400 13px var(--type);color:#a99e85;text-decoration:none}
+.arsip-section .lk:hover{color:#fff}
+
+.arsip-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.arsip-card{background:var(--paper);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 6px 20px rgba(0,0,0,.4);transition:transform .15s ease, box-shadow .15s ease}
+.arsip-card.avail{cursor:pointer}
+.arsip-card.avail:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.55)}
+.arsip-card .thumb{height:120px;background:linear-gradient(135deg, var(--manila) 0%, var(--manila2) 100%);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.arsip-card .thumb svg{width:64%;max-height:78%;opacity:.95}
+.arsip-card .thumb .badge{position:absolute;top:8px;right:8px;font:400 11px var(--disp);letter-spacing:.14em;background:var(--ink);color:var(--paper);padding:3px 9px;border-radius:99px}
+.arsip-card .thumb .badge.soon{background:var(--ink2)}
+.arsip-card .body{padding:13px 16px 16px;display:flex;flex-direction:column;gap:5px;flex:1}
+.arsip-card h3{font:400 22px var(--disp);letter-spacing:.06em;color:var(--ink)}
+.arsip-card .sub{font:400 12px var(--type);color:var(--gold);letter-spacing:.06em}
+.arsip-card p{font:400 13px/1.5 var(--ui);color:var(--ink2);margin-top:5px;flex:1}
+.arsip-card .meta{display:flex;gap:8px;flex-wrap:wrap;font:400 11px var(--type);color:var(--ink2);margin-top:8px}
+.arsip-card .meta span{border:1px solid var(--line);padding:2px 7px;border-radius:99px}
+.arsip-card .cta{margin-top:10px;font:400 14px var(--disp);letter-spacing:.1em;background:var(--ink);color:var(--paper);border:none;border-radius:5px;padding:8px 14px;cursor:pointer;text-align:center}
+.arsip-card .cta:hover{background:#3a3530}
+.arsip-card.soon{opacity:.78}
+.arsip-card.soon .cta{background:transparent;color:var(--ink2);border:1.5px dashed var(--line);cursor:default}
+
+/* ===== DETAIL MODAL ===== */
+.arsip-modal{position:fixed;inset:0;background:rgba(20,16,10,.82);display:flex;align-items:center;justify-content:center;padding:14px;z-index:50}
+.arsip-modal .box{background:var(--paper);max-width:640px;width:100%;max-height:92vh;overflow-y:auto;border-radius:8px;padding:24px 26px;position:relative;box-shadow:0 18px 50px rgba(0,0,0,.6)}
+.arsip-modal .close{position:absolute;top:10px;right:14px;background:transparent;border:none;font:400 22px var(--disp);color:var(--ink2);cursor:pointer}
+.arsip-modal .close:hover{color:var(--red)}
+.arsip-modal h2{font:400 30px var(--disp);letter-spacing:.08em;color:var(--ink);margin-bottom:4px}
+.arsip-modal .meta-line{font:400 12.5px var(--type);color:var(--gold);letter-spacing:.06em;margin-bottom:14px}
+.arsip-modal .desc{font:400 14.5px/1.65 var(--ui);color:var(--ink);margin-bottom:14px}
+.arsip-modal .desc p{margin:0 0 10px}
+.arsip-modal h4{font:400 15px var(--disp);letter-spacing:.1em;color:var(--ink2);border-bottom:1.5px solid var(--ink);padding-bottom:3px;margin:14px 0 8px}
+.arsip-modal ul{margin:0 0 12px 18px;font:400 13.5px/1.6 var(--ui);color:var(--ink)}
+.arsip-modal ul li{margin:3px 0}
+.arsip-modal .row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.arsip-modal .row .arsip-btn{flex:1;min-width:160px}
+
+/* ===== BUTTONS ===== */
+.arsip-btn{font:400 16px var(--disp);letter-spacing:.08em;background:var(--paper3);color:var(--ink);border:1.5px solid var(--ink);border-radius:5px;padding:9px 16px;cursor:pointer;transition:background .15s}
+.arsip-btn:hover{background:#fff}
+.arsip-btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.arsip-btn.primary:hover{background:#3a3530}
+.arsip-btn.ghost{background:transparent}
+.arsip-btn:disabled{opacity:.5;cursor:not-allowed}
+.arsip-btn:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+
+/* ===== INLINE SHARE BLOCK (inside game epilog) ===== */
+.arsip-share-inline{margin-top:18px;padding:14px 6px 4px;border-top:2px dashed var(--line)}
+.arsip-share-inline .arsip-share-head{text-align:center;margin-bottom:10px}
+.arsip-share-inline h3{font:400 17px var(--disp);letter-spacing:.14em;color:var(--ink2)}
+.arsip-share-inline .arsip-share-handle{font:400 12px var(--type);color:var(--ink2);margin-top:4px}
+.arsip-share-inline .arsip-share-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.arsip-share-inline .arsip-btn{font:400 13.5px var(--disp);letter-spacing:.08em;padding:7px 11px}
+.arsip-wm{}
+
+/* ===== HANDLE DIALOG ===== */
+.arsip-handle-wrap, .arsip-share-wrap{position:fixed;inset:0;background:rgba(20,16,10,.85);display:flex;align-items:center;justify-content:center;padding:14px;z-index:60}
+.arsip-handle, .arsip-share{background:var(--paper);max-width:480px;width:100%;border-radius:8px;padding:22px 26px;box-shadow:0 18px 50px rgba(0,0,0,.6)}
+.arsip-handle h3, .arsip-share h3{font:400 24px var(--disp);letter-spacing:.1em;color:var(--ink);text-align:center;margin-bottom:6px}
+.arsip-handle p{font:400 13px/1.55 var(--type);color:var(--ink2);text-align:center;margin-bottom:12px}
+.arsip-handle input{display:block;width:100%;font:400 16px var(--ui);padding:10px 12px;border:1.5px solid var(--ink);border-radius:6px;background:var(--paper3);color:var(--ink);margin-bottom:14px}
+.arsip-handle input:focus{outline:2px solid var(--gold);outline-offset:1px}
+.arsip-handle-actions, .arsip-share-actions{display:flex;flex-direction:column;gap:6px}
+.arsip-handle-privacy{font:400 11.5px/1.5 var(--ui);color:var(--ink2);background:var(--paper2);border:1px dashed var(--line);border-radius:6px;padding:9px 11px;margin:14px 0 0;text-align:left}
+.arsip-handle-privacy b{color:var(--green)}
+.arsip-share-head{text-align:center;margin-bottom:14px;padding-bottom:12px;border-bottom:1.5px dashed var(--line)}
+.arsip-share-sub{font:400 13px var(--type);color:var(--ink2);margin:6px 0}
+.arsip-share-jul{color:var(--gold);font:400 13.5px var(--disp);letter-spacing:.06em}
+.arsip-share-handle{font:400 12px var(--type);color:var(--ink2);margin-top:8px}
+.arsip-share-foot{font:400 11.5px var(--type);color:var(--ink2);text-align:center;margin-top:10px;font-style:italic}
+
+/* ===== DONASI ===== */
+.arsip-donate-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-top:6px}
+.arsip-donate-box{background:var(--paper);border-radius:8px;padding:18px 20px;box-shadow:0 6px 20px rgba(0,0,0,.4);display:flex;flex-direction:column;gap:9px}
+.arsip-donate-box h3{font:400 19px var(--disp);letter-spacing:.12em;color:var(--ink2);border-bottom:1.5px solid var(--ink);padding-bottom:5px}
+.arsip-qr{display:block;width:180px;height:180px;object-fit:contain;margin:4px auto;border:1px solid var(--line);border-radius:6px;background:#fff;padding:6px}
+.arsip-gopay-nama{font:400 13px var(--type);color:var(--ink2);text-align:center}
+.arsip-gopay-nomor{font:400 26px var(--disp);letter-spacing:.08em;color:var(--ink);text-align:center;background:var(--paper3);border:1.5px dashed var(--line);border-radius:6px;padding:8px 6px;word-break:break-all}
+.arsip-donate-hint{font:400 12px/1.5 var(--type);color:var(--ink2)}
+.arsip-donate-box input,.arsip-donate-box textarea{width:100%;box-sizing:border-box;font:400 14px var(--ui);padding:9px 11px;border:1.5px solid var(--ink);border-radius:6px;background:var(--paper3);color:var(--ink);resize:vertical}
+.arsip-donate-box input:focus,.arsip-donate-box textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
+.arsip-donate-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.arsip-donate-actions .arsip-btn{flex:1;min-width:130px;font-size:13.5px;padding:8px 10px}
+.arsip-donate-note{font:400 12px/1.6 var(--type);color:var(--ink2);margin:12px 4px 2px;font-style:italic}
+.arsip-sultan{font:400 11px var(--disp);letter-spacing:.14em;background:var(--gold);color:#2a2200;padding:2px 7px;border-radius:99px;vertical-align:middle}
+.arsip-lb-table .num{text-align:right}
+.arsip-donate-cta{margin-left:8px;background:var(--gold)!important;border-color:#7c5a14!important;color:#2a2200!important}
+.arsip-donate-cta:hover{background:#c08f29!important}
+
+/* ===== LEADERBOARD ===== */
+.arsip-lb-tabs{display:flex;gap:3px;padding:0 6px;margin-top:18px;flex-wrap:wrap}
+.arsip-lb-tabs button{font:400 13px var(--disp);letter-spacing:.1em;background:var(--manila2);color:#4a3c1c;border:1px solid #9c854c;border-bottom:none;border-radius:7px 7px 0 0;padding:6px 14px 5px;cursor:pointer}
+.arsip-lb-tabs button.on{background:var(--manila);padding-top:8px;font-size:13.5px}
+.arsip-lb-table{background:var(--paper);border-radius:0 6px 6px 6px;padding:14px;box-shadow:0 6px 20px rgba(0,0,0,.4);overflow-x:auto}
+.arsip-lb-table table{width:100%;border-collapse:collapse;font:400 13px var(--ui)}
+.arsip-lb-table th{font:400 12px var(--disp);letter-spacing:.12em;text-align:left;color:var(--ink2);border-bottom:2px solid var(--ink);padding:8px 6px;white-space:nowrap}
+.arsip-lb-table td{padding:8px 6px;border-bottom:1px dotted var(--line)}
+.arsip-lb-table tr.lbrow{cursor:pointer}
+.arsip-lb-table tr.lbrow:hover td{background:rgba(168,123,31,.10)}
+.arsip-lb-table .rank{font:400 18px var(--disp);color:var(--ink2);width:42px;text-align:center}
+.arsip-lb-table .rank.r1{color:var(--gold)}
+.arsip-lb-table .rank.r2{color:#888}
+.arsip-lb-table .rank.r3{color:#a67c52}
+.arsip-lb-table .handle{font:400 13.5px var(--type);color:var(--ink)}
+.arsip-lb-table .handle.anon{color:var(--ink2);font-style:italic}
+.arsip-lb-table .skor{font:400 16px var(--disp);color:var(--ink)}
+.arsip-lb-table .jul{font:400 13px var(--type);color:var(--ink2)}
+.arsip-lb-table .empty{color:var(--ink2);font-style:italic;text-align:center;padding:30px 10px}
+
+.arsip-stars{color:var(--gold);font-size:16px;letter-spacing:1px}
+.arsip-stars span{color:#ccc6b3}
+
+footer.arsip-foot{text-align:center;font:400 11.5px var(--type);color:#7a7160;margin-top:30px;padding:10px}
+
+@media (max-width:760px){
+  .arsip-donate-grid{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .arsip-page{padding:12px 10px 48px}
+  /* header: brand + tombol di atas, tagline turun ke baris sendiri */
+  .arsip-hdr{gap:6px 8px;align-items:center}
+  .arsip-hdr .brand{font-size:26px}
+  .arsip-hdr .tag{order:5;flex-basis:100%;margin:0;font-size:12px}
+  .arsip-hdr .profile,.arsip-hdr .profile.donate{font-size:11px;padding:6px 9px;gap:6px}
+  .arsip-hero{padding:15px 16px}
+  .arsip-hero h1{font-size:22px;padding-left:14px}
+  .arsip-hero p{padding-left:14px;font-size:13.5px}
+  .arsip-hero .rahasia{font-size:11px;letter-spacing:.2em;top:8px;right:10px}
+  .arsip-section{margin:20px 0 8px}
+  .arsip-section h2{font-size:19px;letter-spacing:.1em}
+  .arsip-update{flex-direction:column;gap:7px;padding:11px 13px}
+  .arsip-cards{grid-template-columns:1fr;gap:12px}
+  .arsip-card .thumb{height:104px}
+  .arsip-card h3{font-size:20px}
+  /* modal jadi bottom-sheet biar enak dijangkau jempol */
+  .arsip-modal{align-items:flex-end;padding:0}
+  .arsip-modal .box{padding:18px 16px;max-height:92vh;border-radius:14px 14px 0 0}
+  .arsip-modal h2{font-size:22px}
+  .arsip-modal .row{flex-direction:column}
+  .arsip-modal .row .arsip-btn{min-width:0;width:100%}
+  .arsip-handle, .arsip-share{padding:18px 16px}
+  .arsip-gopay-nomor{font-size:22px}
+  .arsip-donate-actions .arsip-btn{min-width:0}
+}

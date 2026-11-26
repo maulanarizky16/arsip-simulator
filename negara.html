@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARSIP NEGARA — Simulator Karier Politik</title>
+<link rel="stylesheet" href="negara/style.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>ARSIP NEGARA</h1>
+  <span class="no" id="noArsip">Berkas No. —</span>
+  <div class="hdr-actions">
+    <a href="index.html">« Beranda</a>
+    <button id="caraBtn">Cara Main</button>
+    <button id="restartBtn">Karier Baru</button>
+  </div>
+</header>
+<main>
+  <section class="doc">
+    <span class="rahasia">RAHASIA</span>
+    <div class="dochead">
+      <h2>Berkas Perjalanan Politik — Republik Nusantara</h2>
+      <span class="now" id="hdrNow">—</span>
+    </div>
+    <div id="feed" aria-live="polite"></div>
+    <div id="kartu"></div>
+    <div class="meja">
+      <div class="tabs" id="tabs" role="tablist"></div>
+      <div class="panel"><div class="agrid" id="acts"></div></div>
+    </div>
+    <div class="bar">
+      <span class="actInfo" id="actInfo"></span>
+      <button id="nextBtn">Jalani Tahun +1 »</button>
+    </div>
+  </section>
+  <aside>
+    <div class="card">
+      <h3>PROFIL TOKOH</h3>
+      <div class="idrow"><span class="lab">Nama</span><b id="iNama">—</b></div>
+      <div class="idrow"><span class="lab">Usia / Tahun</span><b id="iUmur">—</b></div>
+      <div class="idrow"><span class="lab">Jabatan</span><b id="iJab">—</b></div>
+      <div class="idrow"><span class="lab">Pendidikan</span><b id="iEdu">—</b></div>
+      <div class="idrow"><span class="lab">Partai</span><b id="iPartai">—</b></div>
+      <div class="idrow"><span class="lab">Uang resmi</span><b class="uang" id="iUang">—</b></div>
+      <div class="idrow"><span class="lab">Uang gelap</span><b class="uang gelap" id="iGelap">—</b></div>
+      <div id="stats" style="margin-top:8px"></div>
+    </div>
+    <div class="card" id="jabCard" style="display:none">
+      <h3 id="jabCardTitle">JABATAN AKTIF</h3>
+      <div id="jabCardBody"></div>
+    </div>
+    <div class="card">
+      <h3>REPUBLIK NUSANTARA</h3>
+      <div id="negara"></div>
+      <div class="butuh" id="butuh"></div>
+    </div>
+    <div class="card">
+      <h3>RIWAYAT & KELUARGA</h3>
+      <div class="fam" id="fam"></div>
+    </div>
+    <div class="card">
+      <h3>TANDA JASA</h3>
+      <div class="chips" id="ach"><span class="muted">Belum ada.</span></div>
+    </div>
+  </aside>
+</main>
+</div>
+<div id="overlay" class="hidden"><div class="epilog" id="epilog"></div></div>
+<script src="negara/js/00-core.js"></script>
+<script src="negara/js/01-data.js"></script>
+<script src="negara/js/02-state.js"></script>
+<script src="negara/js/03-politik.js"></script>
+<script src="negara/js/04-events.js"></script>
+<script src="negara/js/05-epilog.js"></script>
+<script src="negara/js/06-actions.js"></script>
+<script src="negara/js/07-render.js"></script>
+<script src="negara/js/08-save.js"></script>
+<script src="negara/js/09-boot.js"></script>
+<script src="platform.js"></script>
+</body>
+</html>

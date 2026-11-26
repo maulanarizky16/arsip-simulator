@@ -4,7 +4,9 @@ let P=null;
 const G={current:null, queue:[], over:false, feed:[], tab:'diri', acted:0, mkt:{biz:1,label:null}};
 
 function newGame(){
-  const g=r()<0.5?'L':'P';
+  if(window.ArsipArt&&ArsipArt.creator('kehidupan',newGame))return;   /* pop-up buat karakter dulu */
+  const ID=window.ArsipArt?ArsipArt.identity():{};
+  const g=ID.gender||(r()<0.5?'L':'P');
   P={
     nama:namaOrang(g), gender:g, kota:pick(KOTA), lahir:ri(1980,2004),
     kelas:pick(['miskin','menengah','menengah','kaya']),
@@ -26,6 +28,8 @@ function newGame(){
     mafiaTanah:false, whistleKantor:false, umrohOrtu:false, ketuaRT:false,
     ipk:0, reputasiKerja:50, mental:60, nikotin:0, integritas:60, finansialIQ:0
   };
+  if(ID.nama)P.nama=ID.nama;
+  if(ID.skin)P.skin=ID.skin;
   P.arsipNo='No. Arsip '+ri(100000,999999)+'/'+P.lahir;
   G.current=null; G.queue=[]; G.over=false; G.feed=[]; G.tab='diri'; G.acted=0; G.mkt={biz:1,label:null};
   if(hasDoc){

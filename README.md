@@ -127,3 +127,18 @@ Ikon & karakter berwarna di `assets/fluent/` berasal dari [Microsoft Fluent Emoj
 - Pop-up keputusan otomatis menampilkan karakter/ikon sesuai kata kunci judul & isi kejadian (`KARTU_RULES` di `art.js`), dan tiap tombol aksi dapat ikon (`ACT_RULES`).
 
 Untuk menambah aset baru: ambil PNG dari repo Fluent Emoji, perkecil ke WebP, simpan sebagai `assets/fluent/<nama-kebab>.webp`, lalu rujuk lewat `ArsipArt.img('<nama-kebab>')`.
+
+## Fitur tampilan tambahan
+
+- **Buat karakter** — di awal tiap hidup/karier baru muncul pop-up: nama (atau acak 🎲), jenis kelamin, dan 5 warna kulit. Pilihan jenis kelamin & warna kulit diingat untuk permainan berikutnya. Teknis: baris pertama `newGame()` tiap game memanggil `ArsipArt.creator(game, newGame)`; pilihan diambil lewat `ArsipArt.identity()` dan disimpan di `P.skin`.
+- **Angka melayang** — setiap stat/uang berubah, muncul chip "+5 ❤️" di atas layar dan bar-nya berkedip (hijau = membaik, merah = memburuk; untuk Stres/Sorotan kebalikannya).
+- **Kartu hasil** — tombol "Simpan / salin gambar" kini menangkap kartu khusus (pasfoto, julukan, skor, pencapaian, alamat situs) buatan `ArsipArt.buildShareCard()`.
+
+## Tes
+
+```
+npm ci      # sekali saja, memasang jsdom
+npm test    # menjalankan semua file di tests/ (main semua game ratusan tahun + tes per fitur)
+```
+
+Tes juga dijalankan otomatis oleh GitHub Actions (`.github/workflows/test.yml`) setiap push ke `main` dan setiap pull request.

@@ -4,7 +4,9 @@ let P=null, N=null;
 const G={current:null, queue:[], over:false, feed:[], tab:'usaha', acted:0};
 
 function newGame(){
-  const g=r()<0.6?'L':'P';
+  if(window.ArsipArt&&ArsipArt.creator('niaga',newGame))return;   /* pop-up buat karakter dulu */
+  const ID=window.ArsipArt?ArsipArt.identity():{};
+  const g=ID.gender||(r()<0.6?'L':'P');
   N={ tahun:2008, ekonomi:'normal', inflasi:6, suku:9, daya:55, tren:pick(SEKTOR).k, harga:{}, pandemiSisa:0 };
   SEKTOR.forEach(s=>N.harga[s.k]=+(0.85+r()*0.3).toFixed(2));
   P={
@@ -25,6 +27,8 @@ function newGame(){
     evWarisan:false, evPandemi:false, evKrisis98:false, evPreman:false, evTawarAkuisisi:false, evTipu:false,
     riwayat:[], ach:{}, used:{}
   };
+  if(ID.nama)P.nama=ID.nama;
+  if(ID.skin)P.skin=ID.skin;
   P.arsipNo='Berkas No. '+ri(10000,99999)+'/NIAGA/'+N.tahun;
   G.current=null; G.queue=[]; G.over=false; G.feed=[]; G.tab='usaha'; G.acted=0;
   if(hasDoc){

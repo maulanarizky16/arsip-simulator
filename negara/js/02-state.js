@@ -4,7 +4,9 @@ let P=null, N=null;
 const G={current:null, queue:[], over:false, feed:[], tab:'diri', acted:0};
 
 function newGame(){
-  const g=r()<0.6?'L':'P';
+  if(window.ArsipArt&&ArsipArt.creator('negara',newGame))return;   /* pop-up buat karakter dulu */
+  const ID=window.ArsipArt?ArsipArt.identity():{};
+  const g=ID.gender||(r()<0.6?'L':'P');
   N={
     tahun:2004, ekonomi:55, kas:120, utang:1300, pajak:11,
     kemiskinan:16, pendidikan:50, keswa:50, infra:45, lingkungan:55,
@@ -32,6 +34,8 @@ function newGame(){
     evDataBocor:false, evDinasti:false,
     _lawan:null, _lawanKuat:0, _debatBonus:0
   };
+  if(ID.nama)P.nama=ID.nama;
+  if(ID.skin)P.skin=ID.skin;
   P.arsipNo='Berkas No. '+ri(10000,99999)+'/POL/'+N.tahun;
   G.current=null; G.queue=[]; G.over=false; G.feed=[]; G.tab='diri'; G.acted=0;
   if(hasDoc){

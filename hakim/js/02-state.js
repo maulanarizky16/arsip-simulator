@@ -4,7 +4,9 @@ let P=null, N=null;
 const G={current:null, queue:[], over:false, feed:[], tab:'sidang', acted:0};
 
 function newGame(){
-  const g=r()<0.6?'L':'P';
+  if(window.ArsipArt&&ArsipArt.creator('hakim',newGame))return;   /* pop-up buat karakter dulu */
+  const ID=window.ArsipArt?ArsipArt.identity():{};
+  const g=ID.gender||(r()<0.6?'L':'P');
   N={ tahun:2004, kepercayaan:50 };
   P={
     nama:(g==='L'?pick(NAMA_L):pick(NAMA_P))+' '+pick(BLK), gelar:'S.H., M.H.', gender:g, kota:pick(KOTA),
@@ -20,6 +22,8 @@ function newGame(){
     keluarga:false, anak:0,
     riwayat:[], ach:{}, used:{}
   };
+  if(ID.nama)P.nama=ID.nama;
+  if(ID.skin)P.skin=ID.skin;
   P.arsipNo='Berkas No. '+ri(10000,99999)+'/HKM/'+N.tahun;
   G.current=null; G.queue=[]; G.over=false; G.feed=[]; G.tab='sidang'; G.acted=0;
   if(hasDoc){

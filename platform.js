@@ -113,20 +113,27 @@
   }
   async function captureAndShare(result){
     const epilog = document.getElementById('epilog');
-    // kalau game menyediakan kartu khusus share (.arsip-sharecard), tangkap itu supaya satu card penuh & rapi
-    const target = (epilog && epilog.querySelector('.arsip-sharecard')) || epilog;
+    // utamakan kartu hasil bergaya baru dari ArsipArt (pasfoto, julukan, skor, pencapaian);
+    // kalau tidak ada, pakai kartu share game (.arsip-sharecard) atau seluruh epilog seperti dulu
+    let gen = null;
+    try{ gen = (window.ArsipArt && ArsipArt.buildShareCard) ? ArsipArt.buildShareCard(result) : null; }catch(e){ gen = null; }
+    const target = gen || (epilog && epilog.querySelector('.arsip-sharecard')) || epilog;
     if(!target){ alert('Tidak menemukan area untuk diambil.'); return; }
     const btn = document.querySelector('[data-arsip="capture"]');
-    const shareInline = target.querySelector('.arsip-share-inline');
     if(btn){ btn.disabled=true; btn.textContent='⏳ Menyiapkan gambar...'; }
+    const shareInline = gen ? null : target.querySelector('.arsip-share-inline');
     if(shareInline) shareInline.style.visibility='hidden';
-    const gameButtons = target.querySelectorAll('button[data-go]');
+    const gameButtons = gen ? [] : target.querySelectorAll('button[data-go]');
     gameButtons.forEach(function(b){ b.style.visibility='hidden'; });
-    const wm = el('div','arsip-wm','ARSIP · arsip-simulator');
-    wm.style.cssText='text-align:center;margin-top:14px;font:400 11px "Special Elite",monospace;color:#7a7160;letter-spacing:.1em';
-    target.appendChild(wm);
+    let wm = null;
+    if(!gen){
+      wm = el('div','arsip-wm','ARSIP · arsip-simulator');
+      wm.style.cssText='text-align:center;margin-top:14px;font:700 11px Nunito,sans-serif;color:#8a7558';
+      target.appendChild(wm);
+    }
     function cleanup(){
-      wm.remove();
+      if(wm) wm.remove();
+      if(gen) gen.remove();
       if(shareInline) shareInline.style.visibility='';
       gameButtons.forEach(function(b){ b.style.visibility=''; });
     }
@@ -134,7 +141,9 @@
     try{
       const h2c = await loadHtml2Canvas();
       await new Promise(function(r){ setTimeout(r,180); });
-      const canvas = await h2c(target, {backgroundColor:'#ece5d4', scale:2, useCORS:true, logging:false});
+      let canvas;
+      try{ canvas = await h2c(target, {backgroundColor: gen ? null : '#fff8e6', scale: gen ? 2.5 : 2, useCORS:true, logging:false}); }
+      catch(err){ cleanup(); throw err; }
       cleanup();
       canvas.toBlob(async function(blob){
         if(!blob){ alert('Gagal membuat gambar.'); resetBtn(); return; }

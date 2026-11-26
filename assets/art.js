@@ -13,11 +13,22 @@ const BASE=(function(){
   try{ return new URL('fluent/', s&&s.src?s.src:location.href.replace(/[^/]*$/,'')+'assets/').href; }
   catch(e){ return 'assets/fluent/'; }
 })();
-function src(k){ return BASE+k+'.webp'; }
-function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function img(k,cls,alt){
-  return '<img class="aa-'+(cls||'ic')+'" src="'+src(k)+'" alt="'+esc(alt||'')+'" decoding="async" draggable="false">';
+/* karakter yang punya varian warna kulit: <slug>--<tone>.webp (file tanpa akhiran = tone medium) */
+const PEOPLE=new Set('baby,boy,flexed-biceps,girl,man,man-artist,man-construction-worker,man-cook,man-detective,man-factory-worker,man-farmer,man-firefighter,man-health-worker,man-in-tuxedo,man-judge,man-mechanic,man-office-worker,man-pilot,man-police-officer,man-raising-hand,man-student,man-teacher,man-technologist,man-tipping-hand,ninja,old-man,old-woman,person-in-lotus-position,person-in-suit-levitating,person-lifting-weights,person-running,person-shrugging,pregnant-woman,woman,woman-artist,woman-cook,woman-detective,woman-factory-worker,woman-farmer,woman-firefighter,woman-health-worker,woman-in-tuxedo,woman-judge,woman-office-worker,woman-pilot,woman-police-officer,woman-raising-hand,woman-student,woman-teacher,woman-technologist,woman-tipping-hand,woman-with-headscarf'.split(','));
+const TONES=[
+  {k:'light',n:'Terang',c:'#f7d7bd'},{k:'medium-light',n:'Kuning langsat',c:'#e3b48a'},
+  {k:'medium',n:'Sawo matang',c:'#c08354'},{k:'medium-dark',n:'Cokelat',c:'#8f5b36'},{k:'dark',n:'Gelap',c:'#5a3a26'}
+];
+const NPC_TONES=['medium-light','medium','medium','medium-dark'];
+function src(k,tone){
+  if(tone&&tone!=='medium'&&PEOPLE.has(k))return BASE+k+'--'+tone+'.webp';
+  return BASE+k+'.webp';
 }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function img(k,cls,alt,tone){
+  return '<img class="aa-'+(cls||'ic')+'" src="'+src(k,tone)+'" alt="'+esc(alt||'')+'" decoding="async" draggable="false">';
+}
+function toneOf(P){ return (P&&P.skin)||'medium'; }
 
 /* ---------- ikon statistik (berdasarkan label bar) ---------- */
 const STAT={
@@ -217,9 +228,9 @@ function mountAvatar(game){
   if(h)h.after(box); else card.prepend(box);
   return box;
 }
-function setImg(el,k){
+function setImg(el,k,tone){
   if(!el)return;
-  const want=k?src(k):'';
+  const want=k?src(k,tone):'';
   if(el.getAttribute('src')!==want){ if(want)el.setAttribute('src',want); else el.removeAttribute('src'); }
 }
 function resolve(game,P){
@@ -234,8 +245,8 @@ function avatar(game,P){
   const w=resolve(game,P);
   const m=moodOf(P,game);
   const who=box.querySelector('.aa-who');
-  if(who.getAttribute('src')!==src(w.who)){
-    setImg(who,w.who);
+  if(who.getAttribute('src')!==src(w.who,toneOf(P))){
+    setImg(who,w.who,toneOf(P));
     who.classList.remove('aa-pop'); void who.offsetWidth; who.classList.add('aa-pop');
   }
   who.alt='Karakter: '+(w.role||'');
@@ -252,8 +263,10 @@ function hash(s){ let h=0; for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0
 const opp=c=>c.P&&c.P.gender==='P'?'man':'woman';
 const gv=base=>c=>(c.h%2?'man-':'woman-')+base;
 const pick=(...a)=>c=>a[c.h%a.length];
+/* tokoh = pemain sendiri: pakai jenis kelamin & warna kulit pemain */
+const selfv=base=>c=>({k:(c.P&&c.P.gender==='P'?'woman-':'man-')+base,self:true});
 const KARTU_RULES=[
-  [/cara main|selamat datang|panduan/, c=>(c.P&&c.P.gender==='P'?'woman':'man')+'-tipping-hand'],
+  [/cara main|selamat datang|panduan/, c=>({k:(c.P&&c.P.gender==='P'?'woman':'man')+'-tipping-hand',self:true})],
   [/berkas lama|lanjutkan|tersimpan/, 'open-file-folder'],
   [/haji|umroh|ibadah/, 'kaaba'],
   [/judi|slot|taruhan/, 'game-die'],
@@ -303,8 +316,8 @@ const KARTU_RULES=[
   [/burnout|kolaps/, 'face-with-steam-from-nose'],
   [/sakit|batuk|demam|kanker|jantung|dirawat|rumah sakit|operasi|berobat/, gv('health-worker')],
   [/teman|reuni|sahabat|kenalan|pertemuan|ajakan/, 'people-hugging'],
-  [/profesi|panggilan kerja|tawaran kerja|tawaran promosi|resign|dibajak|kantor|atasan|rekrut|lamaran|kerja/, gv('office-worker')],
-  [/kuliah|jurusan|sekolah|belajar|beasiswa|wisuda/, gv('student')],
+  [/profesi|panggilan kerja|tawaran kerja|tawaran promosi|resign|dibajak|kantor|atasan|rekrut|lamaran|kerja/, selfv('office-worker')],
+  [/kuliah|jurusan|sekolah|belajar|beasiswa|wisuda/, selfv('student')],
   [/usaha|bisnis|toko|dagang|warung/, 'convenience-store'],
   [/beli|jual|aset|kpr|rumah|properti|tanah/, 'house'],
   [/investasi|instrumen|saham|cairkan|kripto|emas|deposito/, 'chart-increasing'],
@@ -376,8 +389,10 @@ function decorateKartu(game){
   const ctx={P:P,game:game,t:(title+' '+body).toLowerCase()};
   ctx.h=hash(ctx.t);
   let key=matchRule(KARTU_RULES,title.toLowerCase(),ctx)||matchRule(KARTU_RULES,ctx.t,ctx);
-  if(!key&&P){ try{ key=resolve(game,P).who; }catch(e){} }
-  if(key)k.insertAdjacentHTML('afterbegin','<div class="aa-kicon" aria-hidden="true">'+img(key,'kimg')+'</div>');
+  let tone=NPC_TONES[ctx.h%NPC_TONES.length];          /* tokoh lain: warna kulit beragam */
+  if(key&&typeof key==='object'){ tone=toneOf(P); key=key.k; }
+  if(!key&&P){ try{ key=resolve(game,P).who; tone=toneOf(P); }catch(e){} }
+  if(key)k.insertAdjacentHTML('afterbegin','<div class="aa-kicon" aria-hidden="true">'+img(key,'kimg','',tone)+'</div>');
   k.querySelectorAll('button').forEach((b,i)=>{ if(i<2)b.classList.add('aa-b'+(i+1)); });
 }
 function watchKartu(game){
@@ -404,6 +419,216 @@ function decorateHeader(game){
   h.insertAdjacentHTML('afterbegin',img(LOGO[game]||'open-file-folder','logo'));
 }
 
+/* ================= BUAT KARAKTER (di awal tiap hidup/karier baru) =================
+   Game memanggil ArsipArt.creator(game, newGame) di baris pertama newGame(): kalau belum ada
+   identitas terpilih, pop-up dibuka & newGame dibatalkan; tombol "Mulai" lalu memanggil newGame lagi.
+   newGame mengambil pilihan lewat ArsipArt.identity() → {gender, nama, skin}. */
+const PREF_KEY='arsip_identity_pref_v1';
+const CR_SUB={kehidupan:'Siapa yang akan lahir hari ini?',negara:'Siapa tokoh yang akan terjun ke politik?',
+  hakim:'Siapa hakim baru yang dilantik hari ini?',it:'Siapa engineer yang memulai karier hari ini?',niaga:'Siapa calon pengusaha kita?'};
+const CR_WHO={kehidupan:g=>g==='L'?'boy':'girl',negara:g=>g==='L'?'man':'woman',hakim:g=>(g==='L'?'man':'woman')+'-judge',
+  it:g=>(g==='L'?'man':'woman')+'-technologist',niaga:g=>(g==='L'?'man':'woman')+'-office-worker'};
+let pendingId=null, creatorOpen=false;
+function loadPref(){ try{ return JSON.parse(localStorage.getItem(PREF_KEY))||{}; }catch(e){ return {}; } }
+function savePref(p){ try{ localStorage.setItem(PREF_KEY,JSON.stringify(p)); }catch(e){} }
+function rnd(a){ return a[Math.floor(Math.random()*a.length)]; }
+function randomName(g){
+  try{
+    if(typeof namaOrang==='function')return namaOrang(g);
+    if(typeof NAMA_L!=='undefined'&&typeof BLK!=='undefined')return (g==='L'?rnd(NAMA_L):rnd(NAMA_P))+' '+rnd(BLK);
+  }catch(e){}
+  return g==='L'?'Budi Santoso':'Siti Rahayu';
+}
+function cleanName(s){ return String(s||'').replace(/[<>&"'`]/g,'').replace(/\s+/g,' ').trim().slice(0,28); }
+function creator(game,startFn){
+  if(pendingId)return false;
+  try{ if(typeof G!=='undefined'&&G&&G._continuing)return false; }catch(e){}
+  if(!document.body)return false;
+  if(!creatorOpen)openCreator(game,startFn);
+  return true;
+}
+function identity(){
+  const id=pendingId; pendingId=null;
+  if(id)return id;
+  return {skin:(last&&last.P&&last.P.skin)||loadPref().skin||'medium'};   /* lanjut sebagai anak: warisi warna kulit */
+}
+function openCreator(game,startFn){
+  creatorOpen=true;
+  const pref=loadPref();
+  let g=pref.gender==='P'?'P':pref.gender==='L'?'L':(Math.random()<.5?'L':'P');
+  let skin=TONES.some(t=>t.k===pref.skin)?pref.skin:'medium';
+  let edited=false;
+  const canCancel=(()=>{ try{ return typeof P!=='undefined'&&!!P; }catch(e){ return false; } })();
+  const wrap=document.createElement('div');
+  wrap.className='aa-creator';
+  wrap.innerHTML='<div class="aa-cr-card" role="dialog" aria-modal="true" aria-labelledby="aaCrTitle">'+
+    '<div class="aa-cr-photo" style="--aa-tint:'+(TINT[game]||'#d6bd84')+'"><img class="aa-cr-who" alt=""></div>'+
+    '<h2 id="aaCrTitle">Buat Karaktermu</h2><p class="aa-cr-sub">'+esc(CR_SUB[game]||'Siapa yang akan kamu mainkan?')+'</p>'+
+    '<label class="aa-cr-lab" for="aaCrName">Nama</label>'+
+    '<div class="aa-cr-name"><input id="aaCrName" maxlength="28" autocomplete="off" spellcheck="false">'+
+      '<button type="button" data-cr="dice" title="Nama acak" aria-label="Nama acak">'+img('game-die')+'</button></div>'+
+    '<span class="aa-cr-lab">Jenis kelamin</span>'+
+    '<div class="aa-cr-seg" role="radiogroup" aria-label="Jenis kelamin">'+
+      '<button type="button" data-g="L" role="radio">'+img('man','cr-g','',skin)+'Laki-laki</button>'+
+      '<button type="button" data-g="P" role="radio">'+img('woman','cr-g','',skin)+'Perempuan</button></div>'+
+    '<span class="aa-cr-lab">Warna kulit</span>'+
+    '<div class="aa-cr-tones" role="radiogroup" aria-label="Warna kulit">'+
+      TONES.map(t=>'<button type="button" role="radio" data-tone="'+t.k+'" title="'+t.n+'" aria-label="'+t.n+'" style="--sw:'+t.c+'"></button>').join('')+'</div>'+
+    '<button type="button" class="aa-cr-ok" data-cr="ok">Mulai »</button>'+
+    (canCancel?'<button type="button" class="aa-cr-cancel" data-cr="cancel">Batal</button>':'')+
+  '</div>';
+  document.body.appendChild(wrap);
+  const input=wrap.querySelector('#aaCrName');
+  input.value=randomName(g);
+  function paint(){
+    wrap.querySelector('.aa-cr-who').src=src((CR_WHO[game]||CR_WHO.negara)(g),skin);
+    wrap.querySelectorAll('[data-g]').forEach(b=>{ const on=b.dataset.g===g; b.classList.toggle('on',on); b.setAttribute('aria-checked',on); });
+    wrap.querySelectorAll('[data-g] img').forEach((im,i)=>{ im.src=src(i?'woman':'man',skin); });
+    wrap.querySelectorAll('[data-tone]').forEach(b=>{ const on=b.dataset.tone===skin; b.classList.toggle('on',on); b.setAttribute('aria-checked',on); });
+  }
+  function close(){ wrap.remove(); creatorOpen=false; }
+  function go(){
+    const nama=cleanName(input.value)||randomName(g);
+    savePref({gender:g,skin:skin});
+    pendingId={gender:g,nama:nama,skin:skin};
+    close();
+    startFn();
+  }
+  input.addEventListener('input',()=>{ edited=true; });
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); go(); } });
+  wrap.addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    if(b.dataset.g){ g=b.dataset.g; if(!edited)input.value=randomName(g); paint(); }
+    else if(b.dataset.tone){ skin=b.dataset.tone; paint(); }
+    else if(b.dataset.cr==='dice'){ input.value=randomName(g); edited=false; }
+    else if(b.dataset.cr==='ok')go();
+    else if(b.dataset.cr==='cancel')close();
+  });
+  wrap.addEventListener('keydown',e=>{ if(e.key==='Escape'&&canCancel){ e.stopPropagation(); close(); } });
+  paint();
+  setTimeout(()=>{ try{ input.focus(); input.select(); }catch(e){} },30);
+}
+
+/* ================= ANGKA MELAYANG SAAT STAT BERUBAH ================= */
+const INVERT=new Set(['stres','sorotan hukum','sorotan ky/kpk','on-call fatigue']);
+let snap=null;
+function readStats(){
+  const m={};
+  document.querySelectorAll('.stat .sl').forEach(sl=>{
+    const sp=sl.querySelectorAll('span');
+    if(sp.length<2)return;
+    const lab=sp[0].textContent.trim(), v=parseFloat(sp[sp.length-1].textContent);
+    if(lab&&!isNaN(v))m[lab]=v;
+  });
+  return m;
+}
+function moneyOf(P){ const a=P.money!=null?P.money:(P.kas!=null?P.kas:0); return a+(P.depo||0); }
+function rpShort(v){
+  const a=Math.abs(v), s=v<0?'−':'+';
+  const f=(x,u)=>s+'Rp '+(x>=100?Math.round(x):x.toFixed(1).replace('.',',').replace(',0',''))+' '+u;
+  if(a>=1e12)return f(a/1e12,'T'); if(a>=1e9)return f(a/1e9,'M'); if(a>=1e6)return f(a/1e6,'jt');
+  return s+'Rp '+Math.round(a/1e3)+' rb';
+}
+function tray(){
+  let t=document.getElementById('aaDeltas');
+  if(!t){ t=document.createElement('div'); t.id='aaDeltas'; t.setAttribute('aria-hidden','true'); document.body.appendChild(t); }
+  return t;
+}
+/* perubahan dari beberapa render berdekatan digabung (dijumlahkan per label), lalu tampil sebagai satu gelombang */
+let pend={}, pendT=null;
+function queueDeltas(list){
+  for(const d of list){
+    const p=pend[d.lab];
+    if(p){ p.v+=d.v; } else pend[d.lab]=Object.assign({},d);
+  }
+  clearTimeout(pendT);
+  pendT=setTimeout(flushDeltas,140);
+}
+function flushDeltas(){
+  const list=Object.values(pend).filter(d=>Math.round(d.v)!==0||d.money); pend={};
+  const out=list.map(d=>{
+    if(d.money)return {k:d.v>0?'money-bag':'money-with-wings',txt:rpShort(d.v),lab:'Uang',good:d.v>0,w:1e9,skip:Math.abs(d.v)<1e5};
+    const v=Math.round(d.v);
+    return {k:d.k,txt:(v>0?'+':'−')+Math.abs(v),lab:d.lab,good:d.inv?v<0:v>0,w:Math.abs(v)};
+  }).filter(d=>!d.skip).sort((a,b)=>b.w-a.w);
+  if(!out.length)return;
+  const t=tray();
+  t.innerHTML='';                       /* gelombang baru menggantikan yang lama */
+  out.slice(0,7).forEach((d,i)=>{
+    const c=document.createElement('span');
+    c.className='aa-dchip '+(d.good?'good':'bad');
+    c.style.animationDelay=(i*70)+'ms';
+    c.innerHTML=img(d.k,'dimg')+'<b>'+esc(d.txt)+'</b><small>'+esc(d.lab)+'</small>';
+    c.addEventListener('animationend',()=>c.remove());
+    t.appendChild(c);
+  });
+}
+function trackDeltas(P){
+  const cur={P:P,stats:readStats(),money:moneyOf(P)};
+  if(snap&&snap.P===P&&P.alive!==false){
+    const out=[];
+    const dm=cur.money-snap.money;
+    if(dm)out.push({money:true,lab:'Uang',v:dm});
+    for(const lab in cur.stats){
+      if(!(lab in snap.stats))continue;
+      const d=cur.stats[lab]-snap.stats[lab];
+      if(Math.abs(d)<0.5)continue;
+      const inv=INVERT.has(lab.toLowerCase());
+      out.push({k:statKey(lab)||'sparkles',lab:lab,v:d,inv:inv});
+      document.querySelectorAll('.stat .sl > span:first-child').forEach(s=>{
+        if(s.textContent.trim()===lab){ const row=s.closest('.stat'); row.classList.remove('aa-bump','aa-up','aa-down'); void row.offsetWidth; row.classList.add('aa-bump','aa-'+((inv?d<0:d>0)?'up':'down')); setTimeout(()=>row.classList.remove('aa-bump','aa-up','aa-down'),1100); }
+      });
+    }
+    queueDeltas(out);
+  }
+  snap=cur;
+}
+
+/* ================= KARTU HASIL UNTUK DIBAGIKAN ================= */
+const GAME_NAME={kehidupan:'Simulator Kehidupan',negara:'Simulator Karier Politik',hakim:'Simulator Hakim',it:'Simulator Karier IT',niaga:'Simulator Pengusaha'};
+const SCORES={
+  kehidupan:r=>[{l:'Skor hidup',v:r.skor}],
+  negara:r=>[{l:'Rakyat',v:r.skorRakyat},{l:'Negara',v:r.skorNegara}],
+  hakim:r=>[{l:'Keadilan',v:r.skorAdil},{l:'Karier',v:r.skorKarier}],
+  it:r=>[{l:'Karya',v:r.skorKarya},{l:'Cuan',v:r.skorCuan}],
+  niaga:r=>[{l:'Harta',v:r.skorHarta},{l:'Nama baik',v:r.skorNama}]
+};
+const TITLES={
+  kehidupan:r=>[r.julukan,r.grade],negara:r=>[r.julukanRakyat,r.gelarNegara],hakim:r=>[r.julukanAdil,r.gelarKarier],
+  it:r=>[r.julukanKarya,r.gelarCuan],niaga:r=>[r.julukanHarta,r.gelarNama]
+};
+function buildShareCard(result){
+  const game=result&&result.game; if(!game||!SIM_ART[game])return null;
+  const P=last&&last.P;
+  let w={who:'man',role:''};
+  try{ if(P)w=(WHO[game]||WHO.kehidupan)(P); }catch(e){}
+  const tone=toneOf(P);
+  const sc=(SCORES[game]||(()=>[]))(result).filter(s=>s.v!=null);
+  const tt=(TITLES[game]||(()=>[]))(result).filter(Boolean);
+  const ach=(result.achievements||[]).filter(Boolean);
+  let handle=''; try{ handle=window.Platform&&Platform.getHandle?Platform.getHandle():''; }catch(e){}
+  const site=/^https?:/.test(location.protocol)?(location.host+location.pathname.replace(/[^/]*$/,'')).replace(/\/$/,''):'';
+  const lahir=result.lahir, wafat=result.lahir!=null&&result.age!=null?result.lahir+result.age:null;
+  const el=document.createElement('div');
+  el.className='aa-share';
+  el.style.background=SIM_ART[game].bg;
+  el.innerHTML=
+    '<div class="aa-sh-top">'+img(LOGO[game]||'open-file-folder','sh-logo')+'<div><b>ARSIP</b><span>'+esc(GAME_NAME[game]||'')+'</span></div></div>'+
+    '<div class="aa-sh-paper">'+
+      '<div class="aa-sh-photo" style="background:'+(TINT[game]||'#d6bd84')+'">'+img(w.who,'sh-who','',tone)+'</div>'+
+      '<div class="aa-sh-name">'+esc(result.nama||'')+'</div>'+
+      '<div class="aa-sh-meta">'+[lahir!=null&&wafat!=null?lahir+'–'+wafat:'',result.kota||'',result.age!=null?'usia '+result.age:''].filter(Boolean).map(esc).join(' · ')+'</div>'+
+      (w.role?'<div class="aa-sh-role">'+esc(w.role)+'</div>':'')+
+      (tt[0]?'<div class="aa-sh-jul">“'+esc(tt[0])+'”</div>':'')+
+      (tt[1]&&tt[1]!==tt[0]?'<div class="aa-sh-jul2">'+esc(tt[1])+'</div>':'')+
+      (sc.length?'<div class="aa-sh-scores">'+sc.map(s=>'<div class="aa-sh-score"><b>'+esc(s.v)+'</b><span>'+esc(s.l)+'</span></div>').join('')+'</div>':'')+
+      (ach.length?'<div class="aa-sh-ach">'+ach.slice(0,4).map(a=>'<span>'+img('trophy','sh-tro')+esc(a)+'</span>').join('')+(ach.length>4?'<span class="more">+'+(ach.length-4)+' lagi</span>':'')+'</div>':'')+
+    '</div>'+
+    '<div class="aa-sh-foot">'+(handle?'<b>@'+esc(handle)+'</b> · ':'')+(site?'Main gratis di '+esc(site):'Main gratis di ARSIP')+'</div>';
+  document.body.appendChild(el);
+  return el;
+}
+
 /* potret di layar akhir (In Memoriam / Berkas Ditutup) */
 let last=null;
 function watchEpilog(){
@@ -414,12 +639,12 @@ function watchEpilog(){
     if(!last||!last.P||last.P.alive!==false||ep.querySelector('.aa-epi')||!ep.firstElementChild)return;
     const w=resolve(last.game,last.P);
     ep.insertAdjacentHTML('afterbegin','<div class="aa-epi"><div class="aa-photo" style="--aa-tint:'+(TINT[last.game]||'#d6bd84')+'">'+
-      img(w.who,'who')+'<span class="aa-mood">'+img('headstone')+'</span></div></div>');
+      img(w.who,'who','',toneOf(last.P))+'<span class="aa-mood">'+img('headstone')+'</span></div></div>');
   }).observe(ep,{childList:true});
 }
 function update(game,P){
   last={game:game,P:P};
-  try{ decorateHeader(game); decorateH3(); avatar(game,P); decorateStats(); decorateTabs(game); decorateActs(game); watchKartu(game); watchEpilog(); }
+  try{ decorateHeader(game); decorateH3(); avatar(game,P); decorateStats(); decorateTabs(game); decorateActs(game); watchKartu(game); watchEpilog(); trackDeltas(P); }
   catch(e){ console.error('ArsipArt',e); }
 }
 
@@ -430,5 +655,6 @@ function update(game,P){
   document.head.appendChild(l);
 })();
 
-window.ArsipArt={img:img,src:src,thumb:thumb,update:update,statKey:statKey,SIM_ART:SIM_ART,TINT:TINT};
+window.ArsipArt={img:img,src:src,thumb:thumb,update:update,statKey:statKey,SIM_ART:SIM_ART,TINT:TINT,
+  creator:creator,identity:identity,buildShareCard:buildShareCard};
 })();

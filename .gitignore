@@ -1,5 +1,3 @@
 node_modules/
 .claude/
 *.zip
-_test_*.js
-_play_all.js

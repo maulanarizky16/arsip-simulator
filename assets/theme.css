@@ -1,0 +1,210 @@
+/* ARSIP — tema kasual cerah (kartu krem membulat, tombol tebal, font bulat).
+   Lapisan penimpa: dimuat SETELAH style.css game & platform.css. Hapus link file ini untuk kembali ke tema arsip lama.
+   Semua selektor diawali `html` supaya menang dari platform.css yang disuntik belakangan oleh platform.js. */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@500;600;700;800&display=swap');
+
+html:root{
+  --desk:#cfeefc;
+  --paper:#fff8e6; --paper2:#fcefd2; --paper3:#fffdf7;
+  --ink:#3d2e1f; --ink2:#8a7558; --line:#eedfb9;
+  --red:#e8574d; --green:#3dbb63; --gold:#d99a12; --navy:#3b6fb6;
+  --manila:#fff1cc; --manila2:#f6e4b5;
+  --disp:'Baloo 2',system-ui,sans-serif; --type:'Nunito',system-ui,sans-serif; --ui:'Nunito',system-ui,sans-serif;
+  --c-shadow:#ead8a8; --c-green:#4cc767; --c-green-d:#2f9e50; --c-yellow:#ffd54f; --c-yellow-d:#e0a913;
+  --c-red:#f0645a; --c-red-d:#c8433a; --c-white-d:#e9dab3;
+}
+html *{letter-spacing:normal!important}
+
+/* ---------- latar: langit → rumput, dengan grid isometrik halus & awan ---------- */
+html body,html body.arsip-hub{
+  background:linear-gradient(180deg,#bfe6fa 0%,#dcf2f8 38%,#e6f5d8 72%,#c9e7aa 100%) fixed;
+  color:var(--ink);font-family:var(--ui);font-weight:600}
+html body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    repeating-linear-gradient(30deg,rgba(255,255,255,.22) 0 2px,transparent 2px 52px),
+    repeating-linear-gradient(150deg,rgba(255,255,255,.22) 0 2px,transparent 2px 52px)}
+html body::after{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.85;
+  background:url(fluent/cloud.webp) 6% 3%/86px no-repeat,url(fluent/cloud.webp) 88% 9%/120px no-repeat,
+    url(fluent/cloud.webp) 52% 1%/64px no-repeat,url(fluent/deciduous-tree.webp) 2% 99%/92px no-repeat,
+    url(fluent/deciduous-tree.webp) 98% 98%/110px no-repeat}
+
+/* ---------- header game: judul gaya logo ---------- */
+html header{color:var(--ink);align-items:center}
+html header h1{font:800 34px/1 var(--disp);color:#ffd54f;-webkit-text-stroke:7px #5a3a17;paint-order:stroke fill;
+  text-shadow:0 4px 0 #5a3a17;display:flex;align-items:center;gap:8px}
+html header h1 .aa-logo{width:46px;height:46px;-webkit-text-stroke:0;filter:drop-shadow(0 3px 2px rgba(0,0,0,.25))}
+html header .no{font:700 12px var(--type);color:#4d6b7a;background:rgba(255,255,255,.65);padding:3px 10px;border-radius:99px}
+html header button,html .hdr-actions a,html .hdr-actions button{font:800 13.5px var(--disp);color:var(--ink);background:#fff;
+  border:none;border-radius:14px;padding:7px 14px;box-shadow:0 4px 0 var(--c-white-d);text-decoration:none;transition:transform .1s}
+html header button:hover,html .hdr-actions a:hover{color:var(--ink);transform:translateY(-1px)}
+html header button:active,html .hdr-actions a:active{transform:translateY(3px);box-shadow:0 1px 0 var(--c-white-d)}
+
+/* ---------- panel utama ---------- */
+html .doc{background:var(--paper);border-radius:28px;padding:18px 20px 14px;box-shadow:0 7px 0 var(--c-shadow),0 18px 40px rgba(60,80,40,.18)}
+html .doc::before,html .rahasia{display:none}
+html .dochead{border-bottom:2px dashed var(--line);align-items:center}
+html .dochead h2{font:800 19px var(--disp);color:var(--ink)}
+html .dochead .now{font:800 13px var(--disp);color:#7a5200;background:var(--c-yellow);padding:2px 12px;border-radius:99px;box-shadow:0 3px 0 var(--c-yellow-d)}
+
+/* log kejadian → gelembung */
+html #feed{font:600 13.5px/1.55 var(--type);padding-right:4px}
+html #feed .yr{display:table;margin:12px 0 4px;font:800 13px var(--disp);color:#fff;background:#5ab4f0;
+  border:none;border-radius:99px;padding:2px 12px;box-shadow:0 3px 0 #3a8fca}
+html #feed .e{margin:5px 0;padding:7px 12px;text-indent:0;background:#fff;border-radius:14px;border-left:4px solid var(--line)}
+html #feed .e::before{content:none}
+html #feed .e.good{color:#1f6e3a;background:#effaf0;border-left-color:var(--c-green)}
+html #feed .e.bad{color:#9b2a22;background:#fff0ee;border-left-color:var(--c-red)}
+html #feed .e.sys{color:var(--ink2);background:transparent;border-left-color:transparent;font-size:12.5px;padding:2px 12px}
+html #feed .e .d{color:var(--ink2);font-size:11.5px}
+html .stamp{font:800 15px/1 var(--disp);color:#fff;background:var(--c-red);border:none;border-radius:12px;padding:6px 14px;
+  box-shadow:0 4px 0 var(--c-red-d);opacity:1}
+html .stamp.green{color:#fff;background:var(--c-green);box-shadow:0 4px 0 var(--c-green-d)}
+html .stamp.gold{color:#6b4600;background:var(--c-yellow);box-shadow:0 4px 0 var(--c-yellow-d)}
+
+/* ---------- kartu keputusan → pop-up dengan karakter ---------- */
+html #kartu:not(:empty){position:fixed;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;padding:16px;
+  background:rgba(48,70,52,.38);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+html .kartu{width:min(460px,100%);max-height:calc(100vh - 32px);overflow-y:auto;margin:0;background:var(--paper);border:none;
+  border-radius:30px;padding:20px 20px 16px;text-align:center;box-shadow:0 8px 0 var(--c-shadow),0 24px 60px rgba(0,0,0,.3);
+  animation:aaKartu .28s cubic-bezier(.3,1.5,.5,1)}
+@keyframes aaKartu{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}
+html .aa-kicon{width:104px;height:104px;margin:0 auto 6px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 50% 35%,#fff7d6 0%,#ffe07a 70%,#f6c94a 100%);box-shadow:inset 0 -5px 0 rgba(160,110,0,.18),0 4px 10px rgba(0,0,0,.12)}
+html .aa-kicon img{width:78px;height:78px;object-fit:contain;filter:drop-shadow(0 4px 3px rgba(0,0,0,.22));animation:aaBob 2.6s ease-in-out infinite}
+@keyframes aaBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+html .kartu .kh{font:800 22px/1.15 var(--disp);color:var(--ink);margin:2px 0 8px}
+html .kartu .kt{font:600 14.5px/1.55 var(--type);color:#5b4a35;margin-bottom:12px}
+html .kartu.aa-long .kt{text-align:left;background:#fff;border-radius:16px;padding:10px 14px;border:2px dashed var(--line)}
+html .kartu button{text-align:center;background:#fff;border:none;border-radius:18px;padding:11px 14px;margin:9px 0;
+  font:800 15.5px/1.25 var(--disp);color:var(--ink);box-shadow:0 5px 0 var(--c-white-d);transition:transform .1s,box-shadow .1s}
+html .kartu button small{font:600 12px/1.35 var(--type);color:var(--ink2);margin-top:1px}
+html .kartu button .num{display:none}
+html .kartu button:hover{background:#fff;transform:translateY(-1px)}
+html .kartu button:active{transform:translateY(4px);box-shadow:0 1px 0 var(--c-white-d)}
+html .kartu button.aa-b1{background:var(--c-green);color:#fff;box-shadow:0 5px 0 var(--c-green-d)}
+html .kartu button.aa-b1 small{color:#e6ffe9}
+html .kartu button.aa-b2{background:var(--c-yellow);color:#5a3e00;box-shadow:0 5px 0 var(--c-yellow-d)}
+html .kartu button.aa-b2 small{color:#7a5a12}
+html .kartu button:focus-visible{outline:3px solid #5ab4f0;outline-offset:2px}
+
+/* ---------- meja aksi ---------- */
+html .tabs{gap:6px;padding:0;flex-wrap:wrap}
+html .tabs button{font:800 13.5px var(--disp);color:var(--ink2);background:#f6e8c4;border:none;border-radius:14px;padding:7px 12px;top:0}
+html .tabs button:hover{background:#fbefd3}
+html .tabs button.on{background:#fff;color:var(--ink);padding-top:7px;font-size:13.5px;box-shadow:0 4px 0 var(--c-shadow)}
+html .panel{background:#fff0c9;border:none;border-radius:22px;padding:12px;margin-top:9px}
+html .agrid{gap:9px}
+html .agrid button{display:grid;grid-template-columns:34px 1fr;column-gap:8px;align-items:center;background:#fff;border:none;
+  border-radius:16px;padding:8px 10px;min-height:58px;box-shadow:0 4px 0 var(--c-white-d);transition:transform .1s,box-shadow .1s}
+html .agrid button .aa-act{grid-row:1/3;width:34px;height:34px;object-fit:contain}
+html .agrid button b{grid-column:2;font:800 13.5px/1.2 var(--ui);color:var(--ink)}
+html .agrid button span{grid-column:2;font:600 11.5px/1.3 var(--ui)}
+html .agrid button:hover:not(:disabled){background:#fff;transform:translateY(-2px);box-shadow:0 6px 0 var(--c-white-d)}
+html .agrid button:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--c-white-d)}
+html .agrid button:disabled{opacity:.5;filter:grayscale(.6)}
+html .agrid button.used{opacity:.6;background:#eef8ea}
+html .agrid .empty{font:700 13px var(--type);color:var(--ink2)}
+html .bar{background:linear-gradient(transparent,var(--paper) 30%)}
+html .actInfo{font:600 12px var(--type)}
+html #nextBtn{font:800 20px var(--disp);color:#fff;background:var(--c-green);border-radius:18px;padding:11px 26px;
+  box-shadow:0 6px 0 var(--c-green-d);transition:transform .1s,box-shadow .1s}
+html #nextBtn:hover:not(:disabled){background:#56d272}
+html #nextBtn:active:not(:disabled){transform:translateY(4px);box-shadow:0 2px 0 var(--c-green-d)}
+html #nextBtn:disabled{background:#d3c9ae;box-shadow:0 6px 0 #b8ad90;opacity:1}
+
+/* ---------- sidebar ---------- */
+html .card{background:var(--paper);border-radius:24px;padding:13px 16px;box-shadow:0 6px 0 var(--c-shadow),0 14px 30px rgba(60,80,40,.15)}
+html .card h3{font:800 16px var(--disp);color:var(--ink);border-bottom:2px dashed var(--line);display:flex;align-items:center}
+html .idrow{border-bottom:1px dashed var(--line);font-size:13px}
+html .idrow b{font-weight:800}
+html .uang{font:800 16px var(--disp)}
+html .stat .sl{font-weight:700;font-size:12px}
+html .sbar{height:12px;background:#f1e5c6;border:none;box-shadow:inset 0 2px 0 rgba(0,0,0,.06)}
+html .sbar i{background:var(--c-green);border-radius:99px}
+html .sbar i.mid{background:var(--c-yellow)} html .sbar i.low{background:var(--c-red)}
+html .chip{font:700 12px var(--type);border:none;background:#fff;border-radius:99px;padding:3px 10px;box-shadow:0 2px 0 var(--c-white-d)}
+html .chip.au{background:#ffe48a;color:#6b4600}
+html .fam .fr{border-bottom:1px dashed var(--line)}
+html .aa-photo{border-radius:18px;transform:rotate(-2deg)}
+
+/* ---------- layar akhir ---------- */
+html #overlay{background:rgba(48,70,52,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+html .epilog{border-radius:30px;box-shadow:0 8px 0 var(--c-shadow),0 24px 60px rgba(0,0,0,.35)}
+html .epilog h2{font:800 32px var(--disp)}
+html .epilog .sub{font:600 13px var(--type)}
+html .epilog .jdl{font:800 22px var(--disp);color:var(--gold)}
+html .epilog ul{font:600 13px/1.7 var(--type);border-color:var(--line)}
+html .epilog .skor{font:800 18px var(--disp)}
+html .epilog button{font:800 18px var(--disp);color:#fff;background:var(--c-green);border-radius:18px;box-shadow:0 5px 0 var(--c-green-d)}
+html .epilog button:hover{background:#56d272}
+html .epilog button.ghost{background:#fff;color:var(--ink);border:none;box-shadow:0 5px 0 var(--c-white-d)}
+
+/* ================= HALAMAN HUB (beranda, leaderboard, donasi) ================= */
+html .arsip-hdr{color:var(--ink);align-items:center}
+html .arsip-hdr .brand{font:800 40px/1 var(--disp);color:#ffd54f;-webkit-text-stroke:7px #5a3a17;paint-order:stroke fill;text-shadow:0 4px 0 #5a3a17}
+html .arsip-hdr .tag{font:800 14px var(--type);color:#3f6475}
+html .arsip-hdr .profile{font:800 13px var(--disp);color:var(--ink);background:#fff;border:none;border-radius:14px;padding:6px 12px;box-shadow:0 4px 0 var(--c-white-d)}
+html .arsip-hdr .profile:hover{background:#fff;transform:translateY(-1px)}
+html .arsip-hero{background:var(--paper);border-radius:30px;padding:24px 28px;box-shadow:0 8px 0 var(--c-shadow),0 20px 40px rgba(60,80,40,.18)}
+html .arsip-hero::before{display:none}
+html .arsip-hero h1{font:800 34px/1.1 var(--disp);color:var(--ink);padding-left:0}
+html .arsip-hero p{font:600 15px/1.6 var(--type);color:#6b5a42;padding-left:0}
+html .aa-cast{margin-left:0}
+html .arsip-update{background:#fff3cf;border:none;border-radius:22px;box-shadow:0 5px 0 var(--c-shadow)}
+html .arsip-update .upd-tag{font:800 12px var(--disp);background:var(--c-red);border-radius:10px;box-shadow:0 3px 0 var(--c-red-d)}
+html .arsip-update .upd-body{font:600 14px/1.55 var(--type)}
+html .arsip-section h2{font:800 24px var(--disp);color:#2f4d5c}
+html .arsip-section .lk{font:800 13.5px var(--disp);color:#2f7fb5}
+html .arsip-section .lk:hover{color:#1d5e8a}
+html .arsip-card{border-radius:26px;box-shadow:0 7px 0 var(--c-shadow),0 16px 32px rgba(60,80,40,.16)}
+html .arsip-card.avail:hover{box-shadow:0 10px 0 var(--c-shadow),0 22px 40px rgba(60,80,40,.22)}
+html .arsip-card .thumb{border-radius:26px 26px 0 0}
+html .arsip-card .thumb .badge{font:800 11.5px var(--disp);background:#fff;color:var(--ink);box-shadow:0 2px 0 var(--c-white-d)}
+html .arsip-card .thumb .badge.soon{background:#efe6cf;color:var(--ink2)}
+html .arsip-card h3{font:800 23px/1.1 var(--disp)}
+html .arsip-card .sub{font:800 12.5px var(--type);color:#e08a00}
+html .arsip-card p{font:600 13.5px/1.5 var(--type)}
+html .arsip-card .meta{font:700 11.5px var(--type)}
+html .arsip-card .meta span{border:none;background:#fff;box-shadow:0 2px 0 var(--c-white-d)}
+html .arsip-card .cta{font:800 16px var(--disp);background:var(--c-green);color:#fff;border-radius:16px;padding:9px 14px;box-shadow:0 5px 0 var(--c-green-d)}
+html .arsip-card .cta:hover{background:#56d272}
+html .arsip-card.soon{opacity:.85}
+html .arsip-card.soon .cta{background:#efe6cf;color:var(--ink2);border:none;box-shadow:0 4px 0 #dccfae}
+html .arsip-foot{color:#3f5b4a;font-weight:700}
+html .arsip-foot a{color:#c27800!important}
+html .arsip-modal{background:rgba(48,70,52,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+html .arsip-modal .box{border-radius:30px;box-shadow:0 8px 0 var(--c-shadow),0 24px 60px rgba(0,0,0,.3)}
+html .aa-mthumb{border-radius:30px 30px 0 0}
+html .arsip-modal h2{font:800 30px var(--disp)}
+html .arsip-modal .meta-line{font:800 12.5px var(--type);color:#e08a00}
+html .arsip-modal .desc{font:600 14.5px/1.65 var(--type)}
+html .arsip-modal h4{font:800 16px var(--disp);color:var(--ink);border-bottom:2px dashed var(--line)}
+html .arsip-modal ul{font:600 13.5px/1.6 var(--type)}
+html .arsip-btn{font:800 16px var(--disp);color:var(--ink);background:#fff;border:none;border-radius:16px;padding:10px 16px;box-shadow:0 5px 0 var(--c-white-d);transition:transform .1s}
+html .arsip-btn:hover{background:#fff;transform:translateY(-1px)}
+html .arsip-btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--c-white-d)}
+html .arsip-btn.primary{background:var(--c-green);color:#fff;box-shadow:0 5px 0 var(--c-green-d)}
+html .arsip-btn.primary:hover{background:#56d272}
+html .arsip-btn.ghost{background:#fff}
+html .arsip-handle-wrap,html .arsip-share-wrap{background:rgba(48,70,52,.45);backdrop-filter:blur(3px)}
+html .arsip-handle,html .arsip-share{border-radius:30px;box-shadow:0 8px 0 var(--c-shadow),0 24px 60px rgba(0,0,0,.3)}
+html .arsip-handle h3,html .arsip-share h3{font:800 26px var(--disp)}
+html .arsip-handle p{font:600 13.5px/1.55 var(--type)}
+html .arsip-handle input{border:2px solid var(--line);border-radius:14px;font:700 16px var(--type)}
+html .arsip-handle-privacy{border:none;border-radius:14px;background:#effaf0;font:600 12px/1.5 var(--type)}
+html .arsip-share-inline{border-top:2px dashed var(--line)}
+html .arsip-share-inline h3{font:800 17px var(--disp)}
+html .arsip-share-inline .arsip-btn{font:800 14px var(--disp)}
+html .arsip-lb-tabs{gap:6px;padding:0}
+html .arsip-lb-tabs button{font:800 14px var(--disp);color:var(--ink2);background:#f6e8c4;border:none;border-radius:14px;padding:7px 12px}
+html .arsip-lb-tabs button.on{background:#fff;color:var(--ink);padding-top:7px;box-shadow:0 4px 0 var(--c-shadow)}
+html .arsip-lb-table{border-radius:24px;margin-top:10px;box-shadow:0 6px 0 var(--c-shadow),0 14px 30px rgba(60,80,40,.15)}
+html .arsip-lb-table table{font:600 13.5px var(--type)}
+html .arsip-lb-table th{font:800 13px var(--disp);border-bottom:2px dashed var(--line)}
+html .arsip-lb-table td{border-bottom:1px dashed var(--line)}
+html .arsip-lb-table .rank{font:800 20px var(--disp)}
+html .arsip-donate-box{border-radius:24px;box-shadow:0 6px 0 var(--c-shadow),0 14px 30px rgba(60,80,40,.15)}
+html .arsip-donate-box h3{font:800 19px var(--disp);color:var(--ink);border-bottom:2px dashed var(--line)}
+html .arsip-donate-box input,html .arsip-donate-box textarea{border:2px solid var(--line);border-radius:14px;font:600 14px var(--type)}
+html .arsip-gopay-nomor{font:800 26px var(--disp);border-radius:14px}
+html .arsip-hdr .profile{color:var(--ink)!important}

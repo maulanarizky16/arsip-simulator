@@ -132,7 +132,7 @@ aside{width:344px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
 .epilog .row2 button{margin:14px 0 0}
 .epilog button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
 @media (max-width:940px){
-  main{flex-direction:column} aside{width:auto}
+  main{flex-direction:column;align-items:stretch} aside{width:auto}
   #feed{max-height:32vh}
   .bar{flex-wrap:wrap} #nextBtn{margin-left:0;width:100%}
   .tabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}

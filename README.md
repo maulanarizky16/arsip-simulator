@@ -123,5 +123,7 @@ Ikon & karakter berwarna di `assets/fluent/` berasal dari [Microsoft Fluent Emoj
 
 - `assets/art.js` — modul bersama: thumbnail beranda, pasfoto karakter di kartu identitas (berubah sesuai umur, profesi/jabatan, dan suasana hati), ikon tab/stat/judul kartu, potret di layar akhir. Tiap game cukup memanggil `ArsipArt.update('<game>', P)` di akhir `render()`.
 - `assets/art.css` — gaya untuk semua elemen di atas.
+- `assets/theme.css` — tema kasual cerah (kartu krem membulat, tombol tebal hijau/kuning, font Baloo 2 + Nunito, latar langit-rumput). Dimuat paling akhir sebagai lapisan penimpa; hapus `<link>`-nya di tiap HTML untuk kembali ke tema arsip lama.
+- Pop-up keputusan otomatis menampilkan karakter/ikon sesuai kata kunci judul & isi kejadian (`KARTU_RULES` di `art.js`), dan tiap tombol aksi dapat ikon (`ACT_RULES`).
 
 Untuk menambah aset baru: ambil PNG dari repo Fluent Emoji, perkecil ke WebP, simpan sebagai `assets/fluent/<nama-kebab>.webp`, lalu rujuk lewat `ArsipArt.img('<nama-kebab>')`.

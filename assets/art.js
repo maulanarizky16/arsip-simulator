@@ -462,6 +462,10 @@ function decorateKartu(game){
   if(!key&&P){ try{ key=resolve(game,P).who; tone=toneOf(P); }catch(e){} }
   if(key)k.insertAdjacentHTML('afterbegin','<div class="aa-kicon" aria-hidden="true">'+img(key,'kimg','',tone)+'</div>');
   k.querySelectorAll('button').forEach((b,i)=>{ if(i<2)b.classList.add('aa-b'+(i+1)); });
+  /* game memfokuskan tombol pertama → pop-up panjang ikut tergulung ke bawah. Kembalikan ke atas supaya judul terbaca;
+     di form soal, tombol "Kumpulkan" jangan disorot (Enter/spasi tak sengaja mengumpulkan). */
+  k.scrollTop=0;
+  if(k.querySelector('.kz')&&document.activeElement&&k.contains(document.activeElement))document.activeElement.blur();
 }
 function watchKartu(game){
   const el=document.getElementById('kartu');
@@ -574,7 +578,9 @@ function openCreator(game,startFn){
   });
   wrap.addEventListener('keydown',e=>{ if(e.key==='Escape'&&canCancel){ e.stopPropagation(); close(); } });
   paint();
-  setTimeout(()=>{ try{ input.focus(); input.select(); }catch(e){} },30);
+  /* layar sentuh: jangan langsung fokus (keyboard HP akan menutupi setengah pop-up) */
+  const sentuh=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+  if(!sentuh)setTimeout(()=>{ try{ input.focus(); input.select(); }catch(e){} },30);
 }
 
 /* ================= EFEK SUARA (disintesis Web Audio, tanpa file) =================
@@ -637,7 +643,7 @@ function readStats(){
   });
   return m;
 }
-function moneyOf(P){ const a=P.money!=null?P.money:(P.kas!=null?P.kas:0); return a+(P.depo||0); }
+function moneyOf(P){ const a=P.money!=null?P.money:(P.kas!=null?P.kas:(P.saldo!=null?P.saldo:0)); return a+(P.depo||0); }
 function rpShort(v){
   const a=Math.abs(v), s=v<0?'−':'+';
   const f=(x,u)=>s+'Rp '+(x>=100?Math.round(x):x.toFixed(1).replace('.',',').replace(',0',''))+' '+u;
@@ -701,6 +707,50 @@ function trackDeltas(P){
   snap=cur;
 }
 
+/* ================= STRIP STATISTIK RINGKAS (HP) =================
+   Di layar sempit kartu profil berada jauh di bawah meja aksi. Strip kecil yang menempel di atas
+   menampilkan uang + 3 stat terpenting tiap game; ketuk untuk melompat ke profil lengkap. */
+const HUD={it:['stres','kesehatan','reputasi teknis'],wni:['kewarasan','kesehatan','skill'],kehidupan:['kebahagiaan','kesehatan','stres'],
+  hakim:['integritas','reputasi','stres'],negara:['popularitas','integritas','stres'],niaga:['reputasi','kesehatan','stres']};
+function rpPlain(v){ if(Math.abs(v)<1e3)return 'Rp '+Math.round(v); const t=rpShort(v); return v<0?t:t.slice(1); }
+function mountHud(game,P){
+  const keys=HUD[game]; if(!keys||!P)return;
+  let h=document.getElementById('aaHud');
+  if(!h){
+    h=document.createElement('button'); h.id='aaHud'; h.type='button';
+    h.addEventListener('click',()=>{ const a=document.querySelector('aside'); if(a)a.scrollIntoView({behavior:'smooth',block:'start'}); });
+    document.body.insertBefore(h,document.body.firstChild);
+  }
+  const st={}; const raw=readStats(); for(const l in raw)st[l.toLowerCase()]=raw[l];
+  const m=moneyOf(P);
+  let html='<span class="aa-hc'+(m<0?' bad':'')+'">'+img(m<0?'money-with-wings':'money-bag','himg')+'<b>'+esc(rpPlain(m))+'</b></span>';
+  const lbl=[];
+  for(const k of keys){
+    if(!(k in st))continue;
+    const v=Math.round(st[k]), inv=INVERT.has(k), bad=inv?v>66:v<34;
+    lbl.push(k+' '+v);
+    html+='<span class="aa-hc'+(bad?' bad':'')+'" title="'+esc(k)+'">'+img(statKey(k)||'sparkles','himg')+'<b>'+v+'</b><small>'+esc(k)+'</small></span>';
+  }
+  html+='<span class="aa-hmore">profil ▾</span>';
+  if(h.innerHTML!==html)h.innerHTML=html;
+  h.setAttribute('aria-label','Ringkasan: uang '+rpPlain(m)+', '+lbl.join(', ')+'. Ketuk untuk melihat profil lengkap.');
+}
+/* ================= LOG DI HP: tanpa scroll ganda =================
+   CSS di layar sempit hanya menampilkan beberapa catatan terakhir; tombol ini membuka/menutup sisanya. */
+const FEED_N=6;
+function mountFeedMore(){
+  const f=document.getElementById('feed'); if(!f)return;
+  let b=document.getElementById('aaFeedMore');
+  if(!b){
+    b=document.createElement('button'); b.id='aaFeedMore'; b.type='button';
+    b.addEventListener('click',()=>{ f.classList.toggle('aa-all'); mountFeedMore(); });
+    f.insertAdjacentElement('beforebegin',b);   /* catatan lama ada di atas → tombolnya juga di atas */
+  }
+  const sisa=f.children.length-FEED_N;
+  b.hidden=sisa<=0;
+  b.textContent=f.classList.contains('aa-all')?'Ringkas catatan ▾':'▴ Lihat '+Math.max(0,sisa)+' catatan sebelumnya';
+}
+
 /* ================= KARTU HASIL UNTUK DIBAGIKAN ================= */
 const GAME_NAME={kehidupan:'Simulator Kehidupan',negara:'Simulator Karier Politik',hakim:'Simulator Hakim',it:'Simulator Karier IT',niaga:'Simulator Pengusaha',wni:'Simulator WNI'};
 const SCORES={
@@ -762,7 +812,7 @@ function watchEpilog(){
 }
 function update(game,P){
   last={game:game,P:P};
-  try{ decorateHeader(game); mountSoundBtn(); decorateH3(); avatar(game,P); decorateStats(); decorateTabs(game); decorateActs(game); watchKartu(game); watchEpilog(); trackDeltas(P); }
+  try{ decorateHeader(game); mountSoundBtn(); decorateH3(); avatar(game,P); decorateStats(); decorateTabs(game); decorateActs(game); watchKartu(game); watchEpilog(); trackDeltas(P); mountHud(game,P); mountFeedMore(); }
   catch(e){ console.error('ArsipArt',e); }
 }
 

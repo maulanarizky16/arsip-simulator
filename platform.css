@@ -98,7 +98,7 @@ body.arsip-hub{background:var(--desk);background-image:radial-gradient(circle at
 .arsip-handle, .arsip-share{background:var(--paper);max-width:480px;width:100%;border-radius:8px;padding:22px 26px;box-shadow:0 18px 50px rgba(0,0,0,.6)}
 .arsip-handle h3, .arsip-share h3{font:400 24px var(--disp);letter-spacing:.1em;color:var(--ink);text-align:center;margin-bottom:6px}
 .arsip-handle p{font:400 13px/1.55 var(--type);color:var(--ink2);text-align:center;margin-bottom:12px}
-.arsip-handle input{display:block;width:100%;font:400 16px var(--ui);padding:10px 12px;border:1.5px solid var(--ink);border-radius:6px;background:var(--paper3);color:var(--ink);margin-bottom:14px}
+.arsip-handle input{display:block;width:100%;box-sizing:border-box;font:400 16px var(--ui);padding:10px 12px;border:1.5px solid var(--ink);border-radius:6px;background:var(--paper3);color:var(--ink);margin-bottom:14px}
 .arsip-handle input:focus{outline:2px solid var(--gold);outline-offset:1px}
 .arsip-handle-actions, .arsip-share-actions{display:flex;flex-direction:column;gap:6px}
 .arsip-handle-privacy{font:400 11.5px/1.5 var(--ui);color:var(--ink2);background:var(--paper2);border:1px dashed var(--line);border-radius:6px;padding:9px 11px;margin:14px 0 0;text-align:left}

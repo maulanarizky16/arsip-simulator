@@ -18,7 +18,7 @@ const ACTS=[
 {k:'belajar',tab:'skill',lbl:'Belajar & upskill',sub:'Kerjakan 3 soal latihan',cond:()=>!P.retired,e:()=>belajarTeknis()},
 {k:'homelab',tab:'skill',lbl:'Bangun homelab',sub:'Rp 15 jt · ngoding & sistem',cond:()=>!P.retired&&P.money>=15e6,e:()=>{P.money-=15e6;
   addLog('Rak server bekas, mini-PC, dan kabel di pojok kamar. Lab pribadi tempat Anda merusak & memperbaiki tanpa takut produksi.'+fx({sistem:+4,ngoding:+3,jaringan:+2}),'good');}},
-{k:'sertifikasi',tab:'skill',lbl:'Ambil sertifikasi',sub:'Grade 0 Fundamental → 3 Expert · 10 jalur',cond:()=>!P.retired&&SERT_JALUR.some(j=>!sertBisa(j).max),e:()=>menuSertifikasi()},
+{k:'sertifikasi',tab:'skill',lbl:'Ambil sertifikasi',sub:'10 jalur · grade 0–3',cond:()=>!P.retired&&SERT_JALUR.some(j=>!sertBisa(j).max),e:()=>menuSertifikasi()},
 {k:'sidepro',tab:'skill',lbl:'Bangun produk sampingan (SaaS)',sub:'Cuan lepas + MRR yang menumpuk',multi:true,cond:()=>!P.retired&&P.st.ngoding>=40,e:()=>{
   const u=ri(8,30)*1e6; P.usedSkill.ngoding=true; P.usedSkill.saas=true;
   P.saasMRR=Math.min(200e6,(P.saasMRR||0)+ri(2,10)*1e6);

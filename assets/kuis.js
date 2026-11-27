@@ -159,10 +159,45 @@ function lembar(judul,intro,soal,done,o){
     for(let qi=0;qi<soal.length;qi++)delete JAWAB[id+'_'+qi];
     delete FORM[id];
     const rasio=jumlah?benar/jumlah:(poinMaks?poin/poinMaks:0);
+    const hasil={benar,jumlah,poin,poinMaks,rasio,detail};
     if(!o.diam)addLog('Hasil '+judul.toLowerCase()+': '+(jumlah?'<b>'+benar+' dari '+jumlah+' benar</b>.':poinMaks?'<b>'+poin+' dari '+poinMaks+' poin</b>.':'selesai.')+(cat.length?'<br>'+cat.join('<br>'):''),
       !jumlah&&!poinMaks?'':rasio>=0.7?'good':rasio<0.4?'bad':'');
-    done({benar,jumlah,poin,poinMaks,rasio,detail});
+    /* di layar (browser): tampilkan kartu hasil dulu supaya pemain langsung tahu mana yang benar/salah,
+       baru lanjut ke akibatnya. Form "diam" (wawancara, calon mertua, TKP) tetap dinilai diam-diam. */
+    if(adaDoc()&&!o.diam&&jumlah){ kartuHasil(judul,soal,hasil,o,()=>done(hasil)); return; }
+    done(hasil);
   }}]});
+  keAtas(id);
+}
+/* game memfokuskan tombol pertama (di form = "Kumpulkan", paling bawah) sehingga pop-up tergulung ke bawah.
+   Kembalikan ke atas & lepas sorotan supaya judul + soal no. 1 terlihat. id = form yang dicari (opsional). */
+function keAtas(id){
+  if(!adaDoc())return;
+  const k=document.querySelector('#kartu .kartu'); if(!k)return;
+  if(id&&!k.querySelector('[data-kz="'+id+'"]'))return;   /* form ini masih antre di belakang kartu lain */
+  k.scrollTop=0;
+  if(id&&document.activeElement&&k.contains(document.activeElement))document.activeElement.blur();
+}
+/* kartu hasil: skor, status lulus (bila ada ambang o.lulus), lalu tiap soal ✓/✗ + jawaban benar + pembahasan */
+function kartuHasil(judul,soal,h,o,lanjut){
+  const lulus=o.lulus!=null?h.benar>=o.lulus:null;
+  const kelas=lulus===true||(lulus===null&&h.rasio>=0.7)?'ok':lulus===false||h.rasio<0.4?'no':'mid';
+  let html='<div class="kz-skor '+kelas+'"><b>'+h.benar+'/'+h.jumlah+'</b><span>jawaban benar'+
+    (lulus===null?'':lulus?' · <i>LULUS</i>':' · <i>BELUM LULUS</i> (butuh '+o.lulus+')')+'</span></div><div class="kz-rev">';
+  h.detail.forEach(d=>{
+    const s=soal[d.qi], pilih=d.pilih>=0?s.o[d.pilih]:'(tidak dijawab)';
+    if(s.lucu){ html+='<div class="kz-r lucu"><div class="kz-rq"><b>'+(d.qi+1)+'.</b> '+s.q+'</div><div class="kz-ra">Jawabanmu: '+pilih+(d.pilih>=0&&s.r?' — <i>'+s.r[d.pilih]+'</i>':'')+'</div></div>'; return; }
+    if(s.w){ const mx=Math.max.apply(null,s.w), p=d.pilih>=0?s.w[d.pilih]:0;
+      html+='<div class="kz-r '+(p>=mx?'ok':p>=mx*0.6?'mid':'no')+'"><div class="kz-rq"><span class="kz-ic">'+(p>=mx?'✓':'~')+'</span><b>'+(d.qi+1)+'.</b> '+s.q+'</div>'+
+        '<div class="kz-ra">Jawabanmu: '+pilih+' <small>('+p+'/'+mx+' poin)</small>'+(p<mx?'<br>Terbaik: <b>'+s.o[s.w.indexOf(mx)]+'</b>':'')+'</div></div>'; return; }
+    const a=s.a||0;
+    html+='<div class="kz-r '+(d.ok?'ok':'no')+'"><div class="kz-rq"><span class="kz-ic">'+(d.ok?'✓':'✗')+'</span><b>'+(d.qi+1)+'.</b> '+s.q+'</div>'+
+      '<div class="kz-ra">'+(d.ok?'Jawabanmu: <b>'+pilih+'</b>':'Jawabanmu: <s>'+pilih+'</s><br>Jawaban benar: <b>'+s.o[a]+'</b>')+
+      (s.x&&!d.ok?'<div class="kz-rx">'+s.x+'</div>':'')+'</div></div>';
+  });
+  html+='</div>';
+  ask({title:'HASIL '+judul,text:html,opts:[{t:'Lanjut »',e:lanjut}]});
+  keAtas();
 }
 
 /* ---------- 1. CPNS: SKD (TWK, TIU, TKP), ambang batas tiap subtes ---------- */
@@ -179,8 +214,8 @@ function skd(done){
         addLog('Skor SKD: TWK '+hasil.twk+'/5 · TIU '+hasil.tiu+'/5 · TKP '+hasil.tkp+'/25. '+(hasil.lolos?'<b>Lolos ambang batas!</b>':'Tidak lolos ambang batas '+gagalDi.join(' & ')+'.'),hasil.lolos?'good':'bad');
         done(hasil);
       },{diam:true});
-    });
-  });
+    },{lulus:3});
+  },{lulus:3});
 }
 /* ---------- 2. Wawancara kerja: done(rasio 0..1) ---------- */
 function wawancara(posisi,done){
@@ -193,7 +228,7 @@ function hoax(done){
 }
 /* ---------- 5. SIM: teori 5 soal, lulus jika ≥ 4 benar ---------- */
 function sim(done){
-  lembar('UJIAN TEORI SIM','Satpas ramai. Komputer ujian teori menyala dengan font kecil. Lulus jika minimal 4 dari 5 benar:',ambil('sim',5),h=>done(h.benar>=4,h.benar));
+  lembar('UJIAN TEORI SIM','Satpas ramai. Komputer ujian teori menyala dengan font kecil. Lulus jika minimal 4 dari 5 benar:',ambil('sim',5),h=>done(h.benar>=4,h.benar),{lulus:4});
 }
 /* SIM lengkap: teori → praktik → (kalau gagal) tawaran "jalur nembak". done('resmi' | 'nembak' | 'gagal') */
 function simLengkap(sehat,done){

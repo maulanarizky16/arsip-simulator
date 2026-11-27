@@ -222,13 +222,77 @@ html .kartu .kz-q.kz-miss{box-shadow:0 0 0 2px #e8794f,0 3px 0 #f3c3ad;backgroun
 html .kartu .kz-q.kz-miss .kz-t::after{content:" · belum dijawab";color:#c4532c;font-weight:800;font-size:12px}
 html .kartu .kz-warn{background:#fff1e8;border:2px dashed #e8794f;border-radius:14px;padding:8px 12px;font:800 13px/1.4 var(--type);color:#b14a25}
 /* lencana grade sertifikasi (Simulator IT) */
-html .kartu .sg-peta{display:flex;flex-direction:column;gap:6px;margin-top:10px;text-align:left}
-html .kartu .sg-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff;border-radius:12px;padding:6px 10px;box-shadow:0 2px 0 var(--c-white-d);font:700 13px/1.35 var(--type);color:var(--ink)}
-html .kartu .sg-row small{display:block;font-weight:600;color:#7a6a52}
-html .sg-pips{display:inline-flex;gap:3px;flex:0 0 auto}
-html .sg-pips i{width:12px;height:12px;border-radius:4px;background:#eadfca;display:inline-block}
+html .kartu .sg-legend{font:600 12.5px/1.45 var(--type);color:var(--ink2);text-align:left}
+html .kartu .sg-punya{margin-top:8px;background:#fff;border-radius:12px;padding:7px 10px;font:700 13px/1.45 var(--type);color:var(--ink);text-align:left}
+html .kartu .sg-punya small{font-weight:600;color:var(--ink2)}
+html .kartu .sg-kunci{margin-top:8px;text-align:left;font:600 12.5px/1.4 var(--type);color:var(--ink2)}
+html .kartu .sg-kunci summary{cursor:pointer;font-weight:800;color:var(--ink);padding:4px 0}
+html .kartu .sg-k{padding:4px 2px;border-bottom:1px dashed var(--line)}
+html .sg-pips{display:inline-flex;gap:3px;flex:0 0 auto;vertical-align:middle;margin-left:6px}
+html .sg-pips i{width:11px;height:11px;border-radius:4px;background:#eadfca;display:inline-block}
+html .kartu button.aa-b1 .sg-pips i:not(.on),html .kartu button.aa-b2 .sg-pips i:not(.on){background:rgba(255,255,255,.55)}
 html .sg-pips i.on{background:#3dbb63}
+html .kartu button.aa-b1 .sg-pips i.on{background:#1f6e3a}
 html .sg-pips i.on.g3{background:#e0a92b}
+
+/* ---------- kartu hasil kuis: skor + ulasan tiap soal ---------- */
+html .kartu .kt:has(.kz),html .kartu .kt:has(.kz-rev){background:none;border:none;padding:0}
+html .kartu .kz-skor{display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;border-radius:16px;padding:8px 14px;margin-bottom:10px;box-shadow:0 3px 0 var(--c-white-d)}
+html .kartu .kz-skor b{font:800 32px/1 var(--disp)}
+html .kartu .kz-skor span{font:700 13px/1.35 var(--type);color:var(--ink2);text-align:left}
+html .kartu .kz-skor i{font-style:normal;font-weight:800}
+html .kartu .kz-skor.ok b,html .kartu .kz-skor.ok i{color:#22a04a}
+html .kartu .kz-skor.no b,html .kartu .kz-skor.no i{color:#d9453b}
+html .kartu .kz-skor.mid b,html .kartu .kz-skor.mid i{color:#c48a12}
+html .kartu .kz-rev{display:flex;flex-direction:column;gap:8px;text-align:left}
+html .kartu .kz-r{background:#fff;border-radius:14px;padding:8px 11px;border-left:5px solid #3dbb63}
+html .kartu .kz-r.no{border-left-color:#e0574b;background:#fff6f3}
+html .kartu .kz-r.mid{border-left-color:#e0a92b}
+html .kartu .kz-r.lucu{border-left-color:#b9a98a}
+html .kartu .kz-rq{font:700 13.5px/1.45 var(--type);color:var(--ink)}
+html .kartu .kz-ic{display:inline-block;width:18px;font-weight:800;color:#22a04a}
+html .kartu .kz-r.no .kz-ic{color:#d9453b}
+html .kartu .kz-r.mid .kz-ic{color:#c48a12}
+html .kartu .kz-ra{margin-top:4px;font:600 13px/1.45 var(--type);color:#5b4a35}
+html .kartu .kz-ra s{color:#b14a25}
+html .kartu .kz-rx{margin-top:5px;padding:6px 9px;border-radius:10px;background:#fff8e3;font:600 12.5px/1.45 var(--type);color:#6b5a3e}
+
+/* ---------- angka melayang: selalu dengan label, boleh dua baris ---------- */
+html #aaDeltas{flex-wrap:wrap;max-width:94vw}
+html .aa-dchip small{display:inline;margin-left:2px;font:700 11px var(--type);color:var(--ink2)}
+
+/* ---------- strip statistik ringkas & log ringkas (layar sempit) ---------- */
+html #aaHud{display:none}
+html #aaFeedMore{display:none}
+@media (max-width:940px){
+  html #aaHud{display:flex;align-items:center;gap:5px;position:sticky;top:0;z-index:7;width:100%;margin:0 0 8px;padding:6px 9px;
+    border:none;border-radius:0 0 16px 16px;background:rgba(255,250,236,.97);box-shadow:0 3px 0 var(--c-shadow),0 6px 14px rgba(0,0,0,.08);
+    font:600 12px var(--type);color:var(--ink);cursor:pointer;text-align:left;overflow:hidden}
+  html .aa-hc{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;min-width:0}
+  html .aa-hc .aa-himg{width:18px;height:18px;flex:0 0 auto}
+  html .aa-hc b{font:800 14px var(--disp)}
+  html .aa-hc small{font:600 10.5px var(--type);color:var(--ink2)}
+  html .aa-hc.bad b{color:#d9453b}
+  html .aa-hmore{margin-left:auto;font:700 11px var(--type);color:var(--ink2);white-space:nowrap}
+  html #aaDeltas{top:50px}
+  html #feed{max-height:none;overflow:visible}
+  html #feed:not(.aa-all)>:nth-last-child(n+7){display:none}
+  html #aaFeedMore:not([hidden]){display:block;margin:0 auto 6px;background:#fff;border:none;border-radius:12px;padding:6px 14px;
+    font:800 12.5px var(--disp);color:var(--ink2);box-shadow:0 3px 0 var(--c-white-d);cursor:pointer}
+  html .bar{background:var(--paper);border-radius:18px 18px 0 0;box-shadow:0 -6px 12px -6px rgba(0,0,0,.18);padding-top:8px}
+}
+@media (max-width:640px){
+  html .aa-hc small{display:none}
+  html #kartu:not(:empty){padding:10px}
+  html .kartu{padding:14px 12px 12px;border-radius:24px;max-height:calc(100vh - 20px)}
+  html .aa-kicon{width:78px;height:78px}
+  html .aa-kicon img{width:58px;height:58px}
+  html .kartu .kh{font-size:19px}
+  html .kartu .kz-q{padding:8px 10px}
+  html .kartu .kz-o{padding:8px 6px}
+  html .actInfo{font-size:11px}
+}
+@media (max-width:380px){ html .aa-hc:nth-of-type(n+4){display:none} }
 
 /* ---------- atur anggaran (slider) ---------- */
 html .kartu .ang{display:flex;flex-direction:column;gap:10px;margin-top:12px;text-align:left}
@@ -236,3 +300,20 @@ html .kartu .ang-row{display:block;background:#fff;border-radius:14px;padding:9p
 html .kartu .ang-row span{display:flex;justify-content:space-between}
 html .kartu .ang-row b{color:#2f9e50}
 html .kartu .ang-row input[type=range]{width:100%;margin-top:6px;accent-color:#3dbb63}
+
+/* ---------- beranda di HP: daftar game lebih cepat terlihat ---------- */
+@media (max-width:640px){
+  html .arsip-hero{padding:16px 18px;border-radius:24px}
+  html .arsip-hero h1{font-size:25px}
+  html .arsip-hero p{font-size:13.5px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  html .aa-cast{flex-wrap:nowrap;margin-top:8px}
+  html .aa-cast img,html .aa-cast img:nth-child(1),html .aa-cast img:nth-child(2){width:30px;height:30px}
+  html .aa-cast .aa-arrow{margin:0 1px;font-size:14px}
+  html .arsip-update .upd-more{display:none}
+  html .arsip-update .upd-body{font-size:13px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+  html .arsip-card .thumb{height:118px}
+  html .arsip-card p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  html .arsip-card h3{font-size:21px}
+}
+/* kolom isian selebar kotak tanpa meluber (padding & border dihitung di dalam lebar) */
+html .arsip-handle input,html .arsip-donate-box input,html .arsip-donate-box textarea,html .aa-creator input{box-sizing:border-box;max-width:100%}

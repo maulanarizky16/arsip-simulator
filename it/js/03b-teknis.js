@@ -328,22 +328,23 @@ function sertBisa(j){
   return {ok:true,g};
 }
 function sertPips(g){ let s='<span class="sg-pips" aria-label="grade '+Math.max(g,0)+' dari 3">'; for(let i=0;i<4;i++)s+='<i class="'+(i<=g?'on':'')+(i===3&&g>=3?' g3':'')+'"></i>'; return s+'</span>'; }
-/* menu sertifikasi: peta semua jalur + daftar ujian yang bisa diambil */
+/* menu sertifikasi (ringkas untuk layar HP): satu tombol per jalur yang bisa diambil,
+   sertifikat yang dimiliki dalam satu baris, jalur terkunci dilipat di <details> */
 function menuSertifikasi(){
-  let peta='<b>Jenjang grade:</b> 0 Fundamental → 1 Associate → 2 Professional → 3 Expert. Setiap grade butuh grade sebelumnya di jalur yang sama. Gagal ujian = biaya hangus.<div class="sg-peta">';
-  const opts=[];
+  const opts=[], kunci=[], punya=[];
   for(const j of SERT_JALUR){
     const g=sertGrade(j.k), b=sertBisa(j);
-    const kini=g>=0?j.gelar[g]+' · '+GRADE[g].n:'belum punya';
-    const lanjut=b.max?'Grade tertinggi tercapai':'Berikutnya: '+sertNama(j,b.g)+' · '+rp(j.biaya[b.g])+(b.ok?'':' · 🔒 '+b.why);
-    peta+='<div class="sg-row"><span>'+j.n+'<small>'+kini+' — '+lanjut+'</small></span>'+sertPips(g)+'</div>';
+    if(g>=0)punya.push(j.gelar[g]+' <small>('+GRADE[g].n+')</small>');
     if(b.ok){ const gr=GRADE[b.g];
-      opts.push({t:j.n+': '+sertNama(j,b.g),sub:'Grade '+b.g+' · biaya '+rp(j.biaya[b.g])+' · 5 soal '+[...new Set(gr.mix)].map(d=>TINGKAT_LBL[d]).join('+')+' · lulus ≥ '+gr.lulus+' benar',e:()=>ujianSertifikasi(j,b.g)}); }
+      opts.push({t:j.n+' '+sertPips(g),sub:'Grade '+b.g+' '+GRADE[b.g].n+': '+j.gelar[b.g]+' · '+rp(j.biaya[b.g])+' · lulus ≥'+gr.lulus+'/5',e:()=>ujianSertifikasi(j,b.g)}); }
+    else kunci.push('<div class="sg-k"><b>'+j.n+'</b> — '+(b.max?'sudah Expert 🏆':GRADE[b.g].n+': '+b.why)+'</div>');
   }
-  peta+='</div>';
-  if(!opts.length)peta+='<br>Belum ada ujian yang bisa kamu ambil sekarang. Naikkan skill, jenjang, atau tabungan dulu.';
+  let teks='<div class="sg-legend">Grade <b>0</b> Fundamental › <b>1</b> Associate › <b>2</b> Professional › <b>3</b> Expert. Tiap grade butuh grade sebelumnya; gagal ujian = biaya hangus.</div>'+
+    '<div class="sg-punya">Sertifikatmu: '+(punya.length?punya.join(' · '):'<i>belum ada</i>')+'</div>';
+  if(kunci.length)teks+='<details class="sg-kunci"><summary>🔒 '+kunci.length+' jalur belum bisa diambil</summary>'+kunci.join('')+'</details>';
+  if(!opts.length)teks+='<div class="sg-legend">Belum ada ujian yang bisa diambil. Naikkan skill, jenjang, atau tabungan dulu.</div>';
   opts.push({t:opts.length?'Nanti saja':'Tutup',e:()=>{ delete P.used.sertifikasi; G.acted=Math.max(0,G.acted-1); }});
-  ask({title:'AMBIL SERTIFIKASI',text:peta,opts});
+  ask({title:'AMBIL SERTIFIKASI',text:teks,opts});
 }
 /* ujian sertifikasi: 5 soal sesuai grade; lulus jika benar ≥ GRADE.lulus; gagal = biaya hangus */
 function ujianSertifikasi(j,g){
@@ -360,7 +361,7 @@ function ujianSertifikasi(j,g){
       ach('lulusSertif'); if(g===3)ach('sertExpert');
       if(P.sertifikat.filter(x=>+x.slice(-1)>=1).length>=4)ach('sertifikat');
     } else addLog('Nilaimu '+h.benar+'/5, batas lulus '+nama+' adalah '+gr.lulus+'. Biaya '+rp(biaya)+' hangus, tapi kamu tahu bagian mana yang harus diulang.'+fx({stres:3+g*2,reputasi:g>=2?-1:0}),'bad');
-  });
+  },{lulus:gr.lulus});
 }
 /* bonus sertifikasi: peluang fix insiden di domainnya & nilai jual (gaji) */
 function sertBonusDomain(dom){ let b=0; for(const j of SERT_JALUR){ if(j.dom!==dom)continue; const g=sertGrade(j.k); if(g>=0)b=Math.max(b,GRADE[g].bonus); } return b; }
@@ -376,7 +377,7 @@ function ctfMain(){
       addLog('Tim kamu naik podium CTF dengan '+h.benar+' flag!'+fx({keamanan:+4,reputasi:+4,money:+u}),'good'); ach('ctfJuara'); leg(2,1);
       if(h.benar===h.jumlah)ach('ctfSempurna'); }
     else { addLog('Belum naik podium, tapi teknik baru terserap dari soal-soalnya.'+fx({keamanan:+3,stres:+2}),'sys'); leg(1,0); }
-  });
+  },{lulus:2});
 }
 /* wawancara teknis: 2 soal teknis (tingkat sesuai jenjang) + 1 system design → done(rasio 0..1) */
 function wawancaraTeknis(konteks,done){

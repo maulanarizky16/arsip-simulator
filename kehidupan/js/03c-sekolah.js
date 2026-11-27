@@ -70,9 +70,11 @@ function belajarSoal(){
   const lbl=SOAL_LBL[cat]||'Umum';
   lembarSoal('LATIHAN SOAL '+lbl.toUpperCase(),'Kamu duduk di meja belajar dengan buku '+lbl+'. Kerjakan soal latihan ini:',ambilSoal(cat,3,r()<0.4),(b,n)=>{
     const rasio=n?b/n:0.5;
-    if(rasio>=0.99)addLog('Latihan sempurna! Otakmu terasa encer.'+fx({smart:+6,happy:+2}),'good');
-    else if(rasio>=0.5)addLog('Lumayan, ada yang masih perlu diulang.'+fx({smart:+4,stress:+1}));
-    else addLog('Banyak yang salah, tapi justru dari situ kamu belajar.'+fx({smart:+2,stress:+2}));
+    /* makin pintar makin sulit bertambah: di atas 75 hasilnya 2/3, di atas 90 tinggal 1/3 */
+    const k=P.st.smart>=90?1/3:P.st.smart>=75?2/3:1, g=x=>Math.max(1,Math.round(x*k));
+    if(rasio>=0.99)addLog('Latihan sempurna! Otakmu terasa encer.'+fx({smart:g(6),happy:+2}),'good');
+    else if(rasio>=0.5)addLog('Lumayan, ada yang masih perlu diulang.'+fx({smart:g(4),stress:+1}));
+    else addLog('Banyak yang salah, tapi justru dari situ kamu belajar.'+fx({smart:g(2),stress:+2}));
     if(P.kuliah){ P.kuliah.bonus=(P.kuliah.bonus||0)+rasio*0.12; }
   });
 }

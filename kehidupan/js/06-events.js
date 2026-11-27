@@ -2,6 +2,7 @@
 /* ================= EVENT TAHUNAN (otomatis) ================= */
 function events(){
   const a=P.age;
+  if(P.penjara>0)return;   /* di balik jeruji: tidak ada event kehidupan biasa (lihat drift) */
   /* ---- RELASI & PERTEMANAN ---- */
   if(a>=20&&P.st.relasi>=60&&r()<0.08){
     const u=ri(5,30)*1e6;
@@ -119,9 +120,11 @@ function events(){
   if(P.gapKuliah&&!P.kuliah&&!P.job&&a<=20){ P.gapKuliah=false; masukKuliah(); }
   if(P.kuliah)kuliahTahunan(a);
   if(a>=58&&P.job&&!P.retired){
-    const pesangon=Math.round(P.job.g*1.5);
-    P.pensiun=Math.round(P.job.g*0.3); P.retired=true;
-    addLog('Anda pensiun dari posisi '+LV[P.job.level]+P.job.title+'. Pesangon '+rp(pesangon)+'.'+fx({money:pesangon,stress:-15,happy:+5}),'good');
+    /* aparat negara: pensiun bulanan seumur hidup + tabungan hari tua kecil. Swasta: JHT sekaligus sesuai masa kerja + jaminan pensiun kecil. */
+    const lama=clamp(a-(P.job.mulai!=null?P.job.mulai:a-10),1,40), ngr=jobNegeri();
+    const pesangon=ngr?Math.round(P.job.g*0.8):Math.round(P.job.g*0.08*lama);
+    P.pensiun=P.tanpaPensiun?0:Math.round(P.job.g*(ngr?0.4:0.1)); P.retired=true;
+    addLog('Anda pensiun sebagai '+jabatan()+' setelah '+lama+' tahun bekerja. '+(ngr?'Tabungan hari tua ':'JHT & pesangon ')+rp(pesangon)+' cair, '+(P.pensiun?'uang pensiun '+rp(Math.round(P.pensiun/12))+'/bulan.':'tanpa uang pensiun.')+fx({money:pesangon,stress:-15,happy:+5}),'good');
     stamp('PENSIUN'); milestone('Pensiun'); P.job=null;
   }
   /* ---- MASA KECIL & REMAJA RANDOM ---- */
@@ -153,10 +156,19 @@ function events(){
   /* ---- PERTEMUAN TAK SENGAJA ---- */
   if(!P.love&&a>=19&&a<=45&&r()<0.18){
     const c=newCandidate();
-    ask({title:'PERTEMUAN',text:'Anda berkenalan dengan <b>'+c.nama+'</b> '+pick(['di acara teman','di tempat kerja','lewat media sosial','di warung kopi langganan'])+'. Ada getaran aneh.<br>'+profilCalon(c),opts:[
+    ask({title:'PERTEMUAN',text:'Anda berkenalan dengan <b>'+c.nama+'</b> '+pick(['di acara teman','di tempat kerja',a+P.lahir>=2008?'lewat media sosial':'di kondangan saudara','di warung kopi langganan'])+'. Ada getaran aneh.<br>'+profilCalon(c),opts:[
       {t:'Dekati pelan-pelan',e:()=>{ if(r()<0.35+P.st.charm/200)jadian(c);
         else addLog(c.nama.split(' ')[0]+' ternyata sudah punya pasangan. Yah.'+fx({happy:-4}),'bad');}},
       {t:'Cuek, fokus diri sendiri',e:()=>addLog('Anda memilih fokus pada hidup sendiri dulu.'+fx({stress:-2}))}
+    ]});
+  }
+  /* ---- KODE DARI PASANGAN (pemain laki-laki: diingatkan untuk melamar) ---- */
+  if(P.gender==='L'&&P.love&&!P.love.married&&P.love.rel>=62&&P.love.thn>=2&&a>=22&&r()<0.35){
+    const nm=P.love.nama.split(' ')[0];
+    ask({title:'KODE DARI '+nm.toUpperCase(),text:nm+' mulai sering membahas undangan nikah teman dan bertanya, "Kita ini mau dibawa ke mana?" Sudah '+P.love.thn+' tahun kalian bersama.',opts:[
+      {t:'Lamar sekarang',sub:'Butuh tabungan minimal '+rp(30e6),cond:()=>P.money>=30e6,e:()=>{ const x=ACTS.find(z=>z.k==='lamar'); if(x&&!P.used.lamar&&x.cond()){ P.used.lamar=true; x.e(); } else addLog('Anda berniat melamar, tapi tahun ini sudah mencobanya. Tunggu tahun depan.'); }},
+      {t:'Minta waktu menabung dulu',e:()=>{P.love.rel=clamp(P.love.rel-3,0,100);addLog('"Sabar ya, aku lagi nabung." '+nm+' mengangguk, walau senyumnya menipis.'+fx({stress:+3}));}},
+      {t:'Alihkan pembicaraan',e:()=>{P.love.rel=clamp(P.love.rel-8,0,100);addLog('Anda mengganti topik. '+nm+' diam sepanjang perjalanan pulang.'+fx({stress:+2}),'bad');}}
     ]});
   }
   /* ---- DILAMAR (khusus pemain perempuan: pasangan yang melamar) ---- */
@@ -192,18 +204,22 @@ function events(){
     milestone('Ditinggal pasangan'); P.love=null;
   }
   /* ---- ANAK & CUCU ---- */
-  if(P.kids.length&&r()<0.35){
-    const k=pick(P.kids), ua=a-k.lahirAt;
+  /* tonggak anak (masuk SD, lulus & kuliah) pasti muncul di umurnya, bukan untung-untungan */
+  for(const k of P.kids){
+    const ua=a-k.lahirAt;
     if(ua===6)addLog(k.nama+' masuk SD hari ini. Anda yang lebih gugup dari anaknya.'+fx({happy:+4}));
     else if(ua===18){
       addLog(k.nama+' lulus sekolah.','good');
       ask({title:'ANAK MAU KULIAH',text:k.nama+' ingin melanjutkan kuliah. Biaya total sekitar '+rp(80e6)+'.',opts:[
         {t:'Biayai penuh',cond:()=>P.money>=80e6,e:()=>{P.money-=80e6;k.kuliah=true;k.didik=clamp((k.didik||40)+15,0,100);
           addLog('Anda membiayai kuliah '+k.nama+'. Investasi terbaik seorang orang tua.'+fx({happy:+8}),'good');milestone(k.nama+' kuliah');}},
-        {t:'Dorong cari beasiswa / kerja dulu',e:()=>addLog(k.nama+' berjuang lewat jalur beasiswa dan kerja sambilan.'+fx({happy:-2}))}
+        {t:'Dorong cari beasiswa / kerja dulu',e:()=>{ if((k.didik||40)>=60&&r()<0.5){k.kuliah=true;addLog(k.nama+' lolos beasiswa penuh. Bekal didikan Anda tidak sia-sia.'+fx({happy:+6}),'good');milestone(k.nama+' kuliah (beasiswa)');} else addLog(k.nama+' berjuang lewat jalur beasiswa dan kerja sambilan.'+fx({happy:-2})); }}
       ]});
     }
-    else if(ua>0&&ua<18&&r()<0.4)addLog(k.nama+' sakit dan harus ke dokter.'+fx({money:-3e6,stress:+3}));
+  }
+  if(P.kids.length&&r()<0.35){
+    const k=pick(P.kids), ua=a-k.lahirAt;
+    if(ua>0&&ua<18&&r()<0.4)addLog(k.nama+' sakit dan harus ke dokter.'+fx({money:-(P.asuransi?1e6:3e6),stress:+3}));
     else if(ua>2&&ua<18)addLog(k.nama+' memeluk Anda tanpa alasan sepulang kerja. Lelah langsung hilang.'+fx({happy:+5}));
   }
   for(const k of P.kids){
@@ -216,25 +232,40 @@ function events(){
   /* ---- KARIER OTOMATIS ---- */
   if(P.job&&!P.retired){
     /* performa & reputasi kerja menentukan: ditawari promosi lebih sering, lebih aman dari PHK, lebih sering dibajak */
-    if(P.job.level<4&&r()<0.1+P.perf*0.03+(P.reputasiKerja-50)/400){
+    const ngr=jobNegeri();
+    if(P.job.level<4&&!PANGKAT[P.job.bidang]&&r()<0.1+P.perf*0.03+(P.reputasiKerja-50)/400){   /* aparat & profesi berpangkat naik lewat tugas dinas */
       const gBaru=Math.round(P.job.g*1.4);
-      ask({title:'TAWARAN PROMOSI',text:'Atasan menawarkan posisi '+LV[P.job.level+1]+P.job.title+', gaji '+rp(Math.round(gBaru/12))+'/bulan. Tapi tanggung jawab berlipat.',opts:[
-        {t:'Ambil!',e:()=>{if(!P.job)return;P.job.level++;P.job.g=gBaru;P.reputasiKerja=clamp(P.reputasiKerja+4,0,100);
-          addLog('Anda naik jabatan jadi '+LV[P.job.level]+P.job.title+'.'+fx({stress:+10,happy:+5}),'good');
-          milestone('Promosi: '+LV[P.job.level]+P.job.title);}},
+      ask({title:'TAWARAN PROMOSI',text:'Atasan menawarkan posisi '+jabatan(P.job.level+1)+', gaji '+rp(Math.round(gBaru/12))+'/bulan. Tapi tanggung jawab berlipat.',opts:[
+        {t:'Ambil!',e:()=>{if(!P.job)return;P.job.level++;P.job.g=gBaru;P.job.naik=0;P.reputasiKerja=clamp(P.reputasiKerja+4,0,100);
+          addLog('Anda naik jabatan jadi '+jabatan()+'.'+fx({stress:+10,happy:+5}),'good');
+          milestone('Promosi: '+jabatan());}},
         {t:'Tolak, jaga keseimbangan hidup',e:()=>addLog('Anda memilih waras daripada jabatan.'+fx({happy:+4,stress:-4}))}
       ]});
-    } else if(r()<(G.mkt.label==='krisis'?0.1:0.03)*clamp(1-(P.perf*0.15+(P.reputasiKerja-50)/200),0.25,1)){
-      const pesangon=Math.round(P.job.g*0.5);
+    } else if(!ngr&&r()<(G.mkt.label==='krisis'?0.1:0.03)*clamp(1-(P.perf*0.15+(P.reputasiKerja-50)/200),0.25,1)){
+      /* pesangon mengikuti masa kerja: ±1 bulan gaji per tahun, maksimal 9 bulan (aparat negara tidak kena PHK) */
+      const pesangon=Math.round(P.job.g/12*clamp(a-(P.job.mulai!=null?P.job.mulai:a-2),1,9));
       addLog('Perusahaan efisiensi besar-besaran — Anda kena PHK. Pesangon '+rp(pesangon)+'.'+(P.reputasiKerja>=65?' (Atasan menyesal melepas Anda.)':'')+fx({money:pesangon,happy:-12,stress:+12}),'bad');
       milestone('Kena PHK'); P.job=null; P.reputasiKerja=clamp(P.reputasiKerja-5,0,100);
-    } else if(r()<0.03+(P.reputasiKerja>=60?0.05:0)){
-      const gBaru=Math.round(P.job.g*1.25);
+    } else if(!ngr&&(P.job.bajak||0)<2&&r()<0.03+(P.reputasiKerja>=60?0.05:0)){   /* maksimal 2x per pekerjaan, supaya gaji tidak berlipat tanpa batas */
+      const gBaru=Math.round(P.job.g*1.15);
       ask({title:'DIBAJAK PERUSAHAAN LAIN',text:'Kompetitor menawari posisi sama, gaji '+rp(Math.round(gBaru/12))+'/bulan.',opts:[
-        {t:'Pindah',e:()=>{if(!P.job)return;P.job.g=gBaru;addLog('Anda pindah kantor. Gaji naik, suasana baru.'+fx({happy:+4,stress:+4}),'good');}},
+        {t:'Pindah',e:()=>{if(!P.job)return;P.job.g=gBaru;P.job.bajak=(P.job.bajak||0)+1;P.job.mulai=a;addLog('Anda pindah kantor. Gaji naik, suasana baru.'+fx({happy:+4,stress:+4}),'good');}},
         {t:'Bertahan, loyalitas',e:()=>addLog('Anda bertahan. Atasan diam-diam menghargainya.'+fx({happy:+2}))}
       ]});
     }
+  }
+  /* ---- UANG HARAM DI TEMPAT KERJA TERCIUM (suap, fee proyek, jatah tutup mulut) ---- */
+  if(!P.politik&&P.job&&P.korup>=10&&r()<P.korup/220){
+    const ngr2=jobNegeri();
+    ask({title:ngr2?'DIPERIKSA PENGAWAS INTERNAL':'AUDIT INTERNAL',text:(ngr2?'Surat panggilan dari pengawas internal tiba di meja Anda.':'Tim audit kantor menemukan transaksi janggal atas nama Anda.')+' Uang haram yang pernah Anda terima mulai ditelusuri.',opts:[
+      {t:'Kooperatif & kembalikan uangnya',e:()=>{ const kembali=Math.min(Math.max(P.money,0),P.korupTotal); P.money-=kembali; P.korup=0; P.korupTotal=0; P.reputasiKerja=clamp(P.reputasiKerja-15,0,100);
+        if(r()<0.6)addLog('Anda mengaku dan mengembalikan '+rp(kembali)+'. Sanksinya penurunan pangkat & teguran keras, tapi Anda tidak dipecat.'+fx({stress:+8,happy:-5}),'bad');
+        else { const t=jabatan(); P.job=null; P.tanpaPensiun=true; addLog('Uang '+rp(kembali)+' dikembalikan, tetapi Anda tetap diberhentikan tidak hormat dari posisi '+t+'. Hak pensiun hangus.'+fx({stress:+12,happy:-12}),'bad'); milestone('Diberhentikan tidak hormat'); }}},
+      {t:'Menyangkal semuanya',e:()=>{ if(r()<0.35){ P.korup=clamp(P.korup-10,0,100); addLog('Bukti dianggap kurang. Anda lolos kali ini, dengan jantung yang belum mau tenang.'+fx({stress:+8}),'bad'); }
+        else { const denda=Math.min(Math.max(P.money,0)+totalInv(),Math.round(P.korupTotal*1.5)); P.money-=denda; tagihUtang(); const berat=P.korupTotal>=100e6; P.korup=0; P.korupTotal=0;
+          addLog('Bukti transfer dan saksi berbicara. Anda dipecat tidak hormat, harta '+rp(denda)+' disita.','bad');
+          if(berat)masukPenjara(ri(1,4),'menerima suap'); else { P.job=null; P.tanpaPensiun=true; milestone('Dipecat karena suap'); } }}}
+    ]});
   }
   /* ---- TUGAS DINAS PROFESI ---- */
   if(P.job&&P.job.bidang&&P.job.bidang!=='sipil'&&!P.retired&&r()<0.4)dinasEvent(P.job.bidang);
@@ -243,7 +274,8 @@ function events(){
   /* ---- USAHA OTOMATIS ---- */
   for(const b of P.biz.slice()){
     if(P.money<-30e6&&r()<0.5){
-      addLog('Usaha '+b.nama+' tidak tertolong — Anda gulung tikar.'+fx({happy:-12,stress:+12}),'bad');
+      const sisa=Math.round(bizValue(b)*0.3);
+      addLog('Usaha '+b.nama+' tidak tertolong — Anda gulung tikar. Peralatan & stok laku '+rp(sisa)+'.'+fx({money:sisa,happy:-12,stress:+12}),'bad');
       milestone('Usaha bangkrut: '+b.nama); P.biz.splice(P.biz.indexOf(b),1); continue;
     }
     if(r()<0.12)addLog('Supplier nakal hampir menipu usaha '+b.nama+'. Untung cepat sadar.'+fx({smart:+2,stress:+4}));
@@ -253,8 +285,8 @@ function events(){
     const parah=P.st.health<40;
     const nama_sakit=parah?pick(['tipes berat','demam berdarah','infeksi paru']):pick(['tipes','demam berdarah ringan','maag kambuh parah']);
     ask({title:'JATUH SAKIT',text:'Anda terkena '+nama_sakit+'. Badan remuk semua.',opts:[
-      {t:'Berobat ke rumah sakit',sub:'Biaya '+rp(parah?15e6:4e6),
-        e:()=>{ if(a>=18)P.money-=(parah?15e6:4e6);
+      {t:'Berobat ke rumah sakit',sub:a<18?'Ditanggung orang tua':'Biaya '+rp(parah?15e6:4e6)+(P.asuransi?' · 80% ditanggung asuransi':''),
+        e:()=>{ if(a>=18)P.money-=Math.round((parah?15e6:4e6)*(P.asuransi?0.2:1));
           addLog('Anda dirawat dan pulih.'+fx({health:+(parah?10:6),stress:+2}));}},
       {t:'Tahan saja, minum obat warung',e:()=>addLog('Anda memaksakan diri. Badan tidak pernah benar-benar pulih.'+fx({health:-(parah?14:8),stress:+5}),'bad')}
     ]});
@@ -275,7 +307,7 @@ function events(){
     ]});
   }
   if(a>=18&&P.money<-8e6&&P.pinjol===0&&r()<0.4){
-    ask({title:'GODAAN PINJOL',text:'Iklan pinjaman online muncul terus: "Cair 5 menit, tanpa jaminan!"',opts:[
+    ask({title:adaPinjol()?'GODAAN PINJOL':'GODAAN RENTENIR',text:adaPinjol()?'Iklan pinjaman online muncul terus: "Cair 5 menit, tanpa jaminan!"':'"Bank keliling" mampir ke rumah: "Butuh berapa? Hari ini cair, cicil harian saja."',opts:[
       {t:'Pinjam '+rp(10e6),e:()=>{P.money+=10e6;P.pinjol=3;
         addLog('Dana cair. Anda belum sadar bunganya akan mencekik 3 tahun ke depan.'+fx({stress:+5}),'bad');}},
       {t:'Tahan diri, hidup hemat',e:()=>addLog('Anda mengencangkan ikat pinggang. Pelan tapi selamat.'+fx({stress:+3,smart:+2}))}
@@ -283,7 +315,7 @@ function events(){
   }
   if(a>=18&&r()<0.025){
     const rejeki=ri(2,15)*1e6;
-    addLog(pick(['Anda menang giveaway media sosial','THR tak terduga dari saudara jauh','Uang lama ditemukan di jaket bekas'])+'.'+fx({money:rejeki,happy:+4}),'good');
+    addLog(pick([a+P.lahir>=2012?'Anda menang giveaway media sosial':'Anda menang undian berhadiah bank','THR tak terduga dari saudara jauh','Uang lama ditemukan di jaket bekas'])+'.'+fx({money:rejeki,happy:+4}),'good');
   }
   if(punyaAset('motor')&&a<60&&r()<0.03){
     addLog('Anda kecelakaan motor — diserempet di perempatan.'+fx({health:-12,money:-4e6,stress:+8}),'bad');
@@ -311,7 +343,7 @@ function events(){
   if(P.judi>=55&&P.money<5e6&&r()<0.5){
     addLog('Tabungan ludes ke meja judi. Anda menatap saldo Rp 0 dan grup taruhan yang masih menyala.'+fx({stress:+10,happy:-8,health:-3}),'bad');
     if(P.pinjol===0&&r()<0.6){P.pinjol=3;P.money+=8e6;
-      addLog('Demi modal "balik modal", Anda nekat ambil pinjol. Lubang makin dalam.'+fx({stress:+6}),'bad');}
+      addLog('Demi modal "balik modal", Anda nekat ambil '+(adaPinjol()?'pinjol':'utang ke rentenir')+'. Lubang makin dalam.'+fx({stress:+6}),'bad');}
   }
   /* ---- CABANG HIDUP TAMBAHAN ---- */
   if((P.ortu.ayah||P.ortu.ibu)&&a>=25&&a<=62&&r()<0.05){
@@ -332,10 +364,10 @@ function events(){
         else addLog('Sejenak Anda merasa hidup lagi, ditemani rasa bersalah yang menggerogoti.'+fx({happy:+3,stress:+9}),'bad');}}
     ]});
   }
-  if(P.job&&a>=23&&a<=50&&r()<0.04){
-    const gBaru=Math.round(P.job.g*2.2);
+  if(P.job&&!P.job.ln&&!jobNegeri()&&!P.politik&&a>=23&&a<=50&&r()<0.04){
+    const gBaru=Math.round(P.job.g*1.9);
     ask({title:'TAWARAN KERJA LUAR NEGERI',text:'Sebuah perusahaan menawarkan posisi di luar negeri, gaji '+rp(Math.round(gBaru/12))+'/bulan. Tapi jauh dari keluarga dan tanah air.',opts:[
-      {t:'Ambil, merantau jauh',e:()=>{if(!P.job)return;P.job.g=gBaru;P.pernahRantau=true;P.st.relasi=clamp(P.st.relasi-12,0,100);if(P.kids.length)P.dekatAnak=clamp(P.dekatAnak-10,0,100);addLog('Anda terbang ke negeri orang. Gaji berlipat, tapi rindu kampung halaman menemani tiap malam.'+fx({happy:+4,stress:+6}),'good');}},
+      {t:'Ambil, merantau jauh',e:()=>{if(!P.job)return;P.job.g=gBaru;P.job.ln=true;P.pernahRantau=true;P.st.relasi=clamp(P.st.relasi-12,0,100);if(P.kids.length)P.dekatAnak=clamp(P.dekatAnak-10,0,100);addLog('Anda terbang ke negeri orang. Gaji berlipat, tapi rindu kampung halaman menemani tiap malam.'+fx({happy:+4,stress:+6}),'good');}},
       {t:'Tolak, tetap dekat keluarga',e:()=>addLog('Anda memilih keluarga di atas gaji besar. Tidak semua paham, tapi hati Anda tenang.'+fx({happy:+3,stress:-3}))}
     ]});
   }
@@ -375,13 +407,13 @@ function events(){
   }
   if((!P.ortu.ayah||!P.ortu.ibu)&&a>=30&&!P.sengketaWaris&&r()<0.05){
     P.sengketaWaris=true;
-    const nilai=ri(80,400)*1e6;
+    const nilai=(P.kelas==='kaya'?ri(150,600):P.kelas==='menengah'?ri(40,200):ri(8,40))*1e6;   /* peninggalan mengikuti kondisi keluarga */
     ask({title:'SENGKETA WARISAN',text:'Tanah dan rumah peninggalan orang tua jadi rebutan. Saudara Anda mengklaim bagian lebih besar. Nilai yang dipersengketakan sekitar '+rp(nilai)+'.',opts:[
       {t:'Tempuh jalur hukum',sub:'Bayar pengacara · bisa menang besar',cond:()=>P.money>=15e6,e:()=>{P.money-=15e6;
         if(r()<0.5){P.money+=nilai;addLog('Pengadilan memenangkan Anda. Bagian '+rp(nilai)+' jatuh ke tangan Anda, tapi hubungan dengan saudara putus.'+fx({happy:-4,stress:+6,relasi:-8}),'good');}
         else addLog('Anda kalah di pengadilan. Biaya pengacara hangus dan tali persaudaraan ikut putus.'+fx({happy:-8,stress:+8,relasi:-8}),'bad');}},
       {t:'Mengalah demi kerukunan',e:()=>{const dapat=Math.round(nilai*0.3);P.money+=dapat;addLog('Anda memilih mengalah, hanya menerima '+rp(dapat)+', tapi hubungan keluarga tetap hangat.'+fx({happy:+4,relasi:+4,stress:-2}),'good');}},
-      {t:'Rebut dengan segala cara',e:()=>{ if(r()<0.55){P.money+=Math.round(nilai*1.2);addLog('Anda menguasai hampir seluruh warisan dengan tekanan dan akal. Kaya, tapi dibenci seluruh keluarga besar.'+fx({happy:-6,relasi:-15}),'bad');}
+      {t:'Rebut dengan segala cara',e:()=>{ if(r()<0.55){P.money+=Math.round(nilai*0.9);addLog('Anda menguasai hampir seluruh warisan dengan tekanan dan akal. Kaya, tapi dibenci seluruh keluarga besar.'+fx({happy:-6,relasi:-15}),'bad');}
         else addLog('Manuver Anda gagal dan memicu permusuhan terbuka. Tidak dapat apa-apa selain cap "perebut harta".'+fx({happy:-8,stress:+8,relasi:-15}),'bad'); }}
     ]});
   }
@@ -437,7 +469,7 @@ function events(){
         else {P.job=null;
           addLog('Laporan Anda "dibelokkan". Posisi Anda yang justru dihabisi — dipecat dengan alasan efisiensi.'+fx({happy:-10,stress:+12}),'bad');milestone('Dipecat karena membongkar kecurangan');}}},
       {t:'Diam, amankan posisi',e:()=>addLog('Anda menutup mata. Gaji tetap mengalir, tapi tiap rapat dengan petinggi itu rasanya getir.'+fx({stress:+5,happy:-3}))},
-      {t:'Minta "jatah tutup mulut"',e:()=>{const x=ri(15,40)*1e6;
+      {t:'Minta "jatah tutup mulut"',e:()=>{const x=ri(15,40)*1e6;P.korup=clamp(P.korup+15,0,100);P.korupTotal+=x;P.integritas=clamp(P.integritas-10,0,100);
         addLog('Anda justru ikut bermain. '+rp(x)+' masuk rekening, nurani Anda yang membayar bunganya.'+fx({money:x,stress:+7,happy:-4}),'bad');}}
     ]});
   }
@@ -479,17 +511,17 @@ function events(){
   /* rekening dibobol */
   if(a>=20&&P.money>=15e6&&r()<0.035){
     const x=Math.min(ri(5,25)*1e6,P.money);   /* yang raib tak melebihi saldo yang ada */
-    ask({title:'REKENING DIBOBOL',text:'Anda terlanjur mengklik tautan palsu — m-banking dibobol, '+rp(x)+' raib dalam semalam.',opts:[
+    ask({title:'REKENING DIBOBOL',text:(a+P.lahir>=2012?'Anda terlanjur mengklik tautan palsu — m-banking dibobol, ':'Kartu ATM Anda digandakan di mesin yang dipasangi alat skimming — ')+rp(x)+' raib dalam semalam.',opts:[
       {t:'Lapor polisi & blokir semua akun',e:()=>{ if(r()<0.45){const back=Math.round(x*0.7);
           addLog('Bank dan polisi bergerak cepat — '+rp(back)+' berhasil dibekukan dan kembali. Sisanya jadi biaya pelajaran.'+fx({money:-(x-back),stress:+5,smart:+3}));}
         else addLog('Laporan diproses, tapi uangnya sudah berpindah lewat puluhan rekening. Hilang.'+fx({money:-x,stress:+8,happy:-5,smart:+3}),'bad');}},
-      {t:'Ikhlaskan, ganti semua kata sandi',e:()=>addLog('Anda mengikhlaskan dan memperketat semua akun. Mahal, tapi tak terulang.'+fx({money:-x,happy:-4,smart:+2}),'bad')}
+      {t:'Ikhlaskan, ganti PIN & kata sandi',e:()=>addLog('Anda mengikhlaskan dan memperketat semua akun. Mahal, tapi tak terulang.'+fx({money:-x,happy:-4,smart:+2}),'bad')}
     ]});
   }
   /* dicalonkan jadi ketua RT */
-  if(!P.ketuaRT&&a>=35&&a<=60&&P.aset.some(x=>x.k==='rumah')&&P.st.relasi>=45&&r()<0.04){
+  if(!P.ketuaRT&&!P.politik&&a>=30&&a<=65&&P.aset.some(x=>x.k==='rumah'||x.kelas==='properti')&&P.st.relasi>=40&&r()<0.06){
     ask({title:'DICALONKAN JADI KETUA RT',text:'Warga sepakat mencalonkan Anda jadi Ketua RT. "Yang muda yang jujur," kata mereka sambil menyodorkan formulir.',opts:[
-      {t:'Terima amanah',e:()=>{P.ketuaRT=true;
+      {t:'Terima amanah',e:()=>{P.ketuaRT=true;P.politik={idx:0,thn:0};P.pamor=clamp(P.pamor+5,0,100);
         addLog('Anda resmi jadi Ketua RT. Hidup kini berisi rapat warga, surat pengantar, dan keluhan saluran air — tapi nama Anda harum satu kampung.'+fx({relasi:+10,charm:+3,stress:+5,happy:+3}),'good');milestone('Jadi Ketua RT');}},
       {t:'Tolak halus',e:()=>addLog('Anda menolak dengan alasan kesibukan. Warga memaklumi, sebagian menggerutu.'+fx({relasi:-3}))}
     ]});
@@ -522,7 +554,7 @@ function dinasEvent(b){
     polisi:[
       ()=>ask({title:'OPERASI DI LAPANGAN',text:'Saat razia, seorang pengusaha menyelipkan amplop agar masalahnya "beres".',opts:[
         {t:'Tolak & tindak sesuai aturan',e:()=>addLog('Anda menolak suap dan bertindak sesuai aturan. Integritas terjaga.'+fx({happy:+3,relasi:+1}),'good')},
-        {t:'Terima amplopnya',e:()=>addLog('Amplop masuk kantong. Sedikit uang, sedikit nurani tergerus.'+fx({money:+ri(3,12)*1e6,stress:+3,happy:-2}),'bad')}
+        {t:'Terima amplopnya',e:()=>{const x=ri(3,12)*1e6;P.korup=clamp(P.korup+10,0,100);P.korupTotal+=x;P.integritas=clamp(P.integritas-6,0,100);addLog('Amplop masuk kantong. Sedikit uang, sedikit nurani tergerus.'+fx({money:x,stress:+3,happy:-2}),'bad');}}
       ]}),
       ()=>{addLog('Anda berhasil mengungkap kasus besar. Nama Anda dipuji atasan.'+fx({happy:+5,smart:+2}),'good');naik();},
       ()=>ask({title:'BAKU TEMBAK',text:'Penggerebekan bandar narkoba berujung baku tembak.',opts:[
@@ -552,7 +584,7 @@ function dinasEvent(b){
     pns:[
       ()=>ask({title:'PROYEK PENGADAAN',text:'Anda memegang proyek. Rekanan menawarkan "fee" jika tendernya dimuluskan.',opts:[
         {t:'Tolak, jaga integritas',e:()=>addLog('Anda menjalankan tender bersih. Tidur Anda nyenyak.'+fx({happy:+2}),'good')},
-        {t:'Terima fee',e:()=>addLog('Fee proyek masuk rekening. Rumah Anda diam-diam membesar.'+fx({money:+ri(10,40)*1e6,stress:+4,happy:-2}),'bad')}
+        {t:'Terima fee',e:()=>{const x=ri(10,40)*1e6;P.korup=clamp(P.korup+14,0,100);P.korupTotal+=x;P.integritas=clamp(P.integritas-8,0,100);addLog('Fee proyek masuk rekening. Rumah Anda diam-diam membesar.'+fx({money:x,stress:+4,happy:-2}),'bad');}}
       ]}),
       ()=>addLog('Perjalanan dinas (SPPD) datang beruntun. Lumayan buat tambah-tambah.'+fx({money:+ri(3,10)*1e6,stress:-2})),
       ()=>{addLog('Kinerja Anda dinilai baik dalam evaluasi tahunan.'+fx({happy:+3}));naik();},
@@ -587,8 +619,7 @@ function dinasEvent(b){
 /* ================= KEHIDUPAN POLITIK ================= */
 function politikEvent(){
   if(!P.politik)return;
-  const t=PJAB[P.politik.idx];
-  P.politik.thn++;
+  const t=PJAB[P.politik.idx];   /* masa jabatan (thn) dihitung tiap tahun di drift() */
   /* korupsi tercium */
   if(P.korup>=40&&r()<P.korup/180){
     ask({title:'KASUS KORUPSI TERCIUM',text:'Aparat penegak hukum mulai mengendus aliran dana di masa jabatan Anda sebagai '+t.n+'.',opts:[
@@ -599,10 +630,12 @@ function politikEvent(){
           P.korup=clamp(P.korup-30,0,100); P.pamor=clamp(P.pamor-15,0,100);
           addLog('Anda lolos dari jerat hukum karena bukti dianggap kurang. Tapi nama Anda tercoreng di publik.'+fx({stress:+10,happy:-4}),'bad');
         } else {
-          const denda=Math.min(Math.max(P.money,0),Math.round(P.korupTotal*0.8));
-          P.money-=denda; const jn=t.n; P.politik=null; P.pamor=clamp(P.pamor-40,0,100); P.korup=0;
-          addLog('Anda terbukti korupsi. Jabatan '+jn+' dicopot, harta '+rp(denda)+' disita, nama hancur di mata publik.'+fx({happy:-20,stress:+20}),'bad');
-          stamp('TERSANGKA KORUPSI'); milestone('Tersandung korupsi, lengser dari '+jn);
+          /* uang pengganti dikejar sampai ke investasi & aset, lalu pidana penjara sesuai besarnya kerugian negara */
+          const denda=Math.min(Math.max(P.money,0)+totalInv()+P.aset.reduce((s,x)=>s+x.nilai*0.85-(x.kpr?x.kpr.sisa:0),0),Math.round(P.korupTotal*1.2));
+          P.money-=Math.round(denda); tagihUtang(); const jn=t.n, thn=clamp(2+Math.floor(P.korupTotal/500e6),2,12); P.pamor=clamp(P.pamor-40,0,100); P.korup=0;
+          addLog('Anda terbukti korupsi. Jabatan '+jn+' dicopot, harta '+rp(denda)+' disita, nama hancur di mata publik.','bad');
+          stamp('TERPIDANA KORUPSI'); milestone('Tersandung korupsi, lengser dari '+jn);
+          masukPenjara(thn,'korupsi');
         }
       }}
     ]});

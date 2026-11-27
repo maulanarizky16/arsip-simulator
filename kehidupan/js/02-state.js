@@ -26,7 +26,8 @@ function newGame(){
     politik:null, pamor:50, korup:0, korupTotal:0,
     selingkuh:false, anakRahasia:false, nafkah:null, sengketaWaris:false, kdrt:false,
     mafiaTanah:false, whistleKantor:false, umrohOrtu:false, ketuaRT:false,
-    ipk:0, reputasiKerja:50, mental:60, nikotin:0, integritas:60, finansialIQ:0
+    ipk:0, reputasiKerja:50, mental:60, nikotin:0, integritas:60, finansialIQ:0,
+    maxLv:0, penjara:0, pailit:0, tanpaPensiun:false
   };
   if(ID.nama)P.nama=ID.nama;
   if(ID.skin)P.skin=ID.skin;
@@ -126,6 +127,64 @@ function netWorth(){
   return Math.round(n);
 }
 function kidsU18(){ return P.kids.filter(k=>P.age-k.lahirAt<18).length; }
+function totalInv(){ return P.inv.depo+P.inv.emas+P.inv.saham+P.inv.kripto; }
+function jobNegeri(){ return !!(P.job&&NEGERI.includes(P.job.bidang)); }
+/* nama jabatan pada jenjang tertentu: aparat memakai pangkat, lainnya awalan Senior/Kepala/Direktur */
+function jabatan(lv){
+  if(!P.job)return '';
+  if(lv==null)lv=P.job.level;
+  const pk=PANGKAT[P.job.bidang];
+  return pk?pk[Math.min(lv,4)]+' ('+P.job.title.split(' (')[0]+')':LV[lv]+P.job.title;
+}
+/* penghasilan rutin setahun (untuk penilaian kredit bank) */
+function penghasilanRutin(){
+  let n=(P.job?P.job.g:0)+(P.retired?P.pensiun||0:0)+(P.politik?PJAB[P.politik.idx].tunj:0);
+  if(P.love&&P.love.married&&P.love.income)n+=P.love.income;
+  for(const a of P.aset)n+=(a.sewa||0)*0.8;
+  for(const b of P.biz)n+=b.modal*b.level*0.2;
+  return Math.round(n);
+}
+/* PPh orang pribadi, disederhanakan: PTKP 54 jt, lalu 5% / 15% / 25% / 30% */
+function pajakPenghasilan(g){
+  let kena=Math.max(0,g-54e6), p=0;
+  for(const [batas,tarif] of [[60e6,0.05],[190e6,0.15],[250e6,0.25],[Infinity,0.30]]){ const x=Math.min(kena,batas); p+=x*tarif; kena-=x; if(kena<=0)break; }
+  return Math.round(p);
+}
+/* masuk penjara: kehilangan pekerjaan & jabatan, aksi terkunci sampai bebas */
+function masukPenjara(thn,sebab){
+  P.penjara=thn; P.job=null; P.politik=null; P.kuliah=null; P.tanpaPensiun=true;
+  if(P.retired){ P.pensiun=0; }
+  addLog('Hakim mengetuk palu: <b>'+thn+' tahun penjara</b> karena '+sebab+'. Pintu sel menutup di belakang Anda.'+fx({happy:-20,stress:+15,relasi:-15}),'bad');
+  stamp('DIPENJARA'); milestone('Dipenjara '+thn+' tahun ('+sebab+')');
+  if(P.love){ P.love.rel=clamp(P.love.rel-25,0,100); }
+  if(P.kids.length)P.dekatAnak=clamp(P.dekatAnak-15,0,100);
+}
+/* uang tunai minus tidak bisa dibiarkan menumpuk: investasi dicairkan, aset disita/dilelang, lalu pailit */
+function tagihUtang(){
+  if(P.money>=0)return;
+  if(totalInv()>0){
+    let cair=0;
+    for(const k of ['depo','emas','saham','kripto']){ if(P.money>=0)break; const x=Math.min(P.inv[k],-P.money); if(x>0){ P.inv[k]-=x; P.money+=x; cair+=x; } }
+    if(cair>0)addLog('Kas minus — investasi senilai '+rp(cair)+' terpaksa dicairkan untuk menutup tagihan.','bad');
+  }
+  while(P.money<-60e6&&P.aset.length){
+    const a=P.aset.slice().sort((x,y)=>x.nilai-y.nilai).find(x=>x.nilai*0.85-(x.kpr?x.kpr.sisa:0)>=-P.money)||P.aset.slice().sort((x,y)=>y.nilai-x.nilai)[0];
+    const bersih=Math.max(0,Math.round(a.nilai*0.85-(a.kpr?a.kpr.sisa:0)));
+    P.aset.splice(P.aset.indexOf(a),1); P.money+=bersih;
+    addLog('Tagihan menunggak terlalu lama — <b>'+a.n+'</b> disita dan dilelang. Hasil bersih '+rp(bersih)+' langsung dipotong utang.'+fx({happy:-8,stress:+8}),'bad');
+    milestone(a.n+' disita karena utang');
+  }
+  if(P.money<-150e6&&!P.aset.length&&!totalInv()){
+    for(const b of P.biz.slice()){ P.money+=Math.round(bizValue(b)*0.4); addLog('Usaha '+b.nama+' dilikuidasi kurator untuk membayar kreditur.','bad'); }
+    P.biz=[];
+    if(P.money<-150e6){
+      const hapus=-P.money-25e6;
+      P.money=-25e6; P.kta=null; P.pailit=7;
+      addLog('Pengadilan niaga menyatakan Anda <b>pailit</b>. Utang '+rp(hapus)+' dihapus lewat restrukturisasi, tetapi nama Anda masuk daftar hitam bank selama 7 tahun.'+fx({happy:-15,stress:+10,relasi:-6}),'bad');
+      stamp('PAILIT'); milestone('Dinyatakan pailit');
+    }
+  }
+}
 
 /* ================= TAHUN BERJALAN ================= */
 function advance(){
@@ -176,7 +235,8 @@ function drift(){
   else if(P.nikotin>0){ P.nikotin=clamp(P.nikotin-3,0,100);
     if(P.nikotin>=40&&s.stress>=65&&r()<0.35){ P.rokok=true; addLog('Stres memuncak — tangan Anda meraih rokok lagi. Kambuh setelah sekian lama berhenti.'+fx({stress:+2,happy:-2}),'bad'); } }
   s.happy=clamp(s.happy+(s.happy>50?-1:1),0,100);
-  s.stress=clamp(s.stress-1,0,100);
+  /* stres mereda sendiri, makin tinggi makin cepat turun (tanpa ini stres menumpuk sampai 90-an seumur hidup) */
+  s.stress=clamp(s.stress-1-Math.floor(Math.max(0,s.stress-40)/12),0,100);
   if(a>=18)s.relasi=clamp(s.relasi-1,0,100);
   /* kesehatan mental: pulih saat tenang, tergerus saat stres; menyangga atau menekan suasana hati & integritas pelan kembali ke tengah */
   if(s.stress<50)P.mental=clamp(P.mental+1,0,100);
@@ -185,7 +245,8 @@ function drift(){
   else if(P.mental<=30){ s.happy=clamp(s.happy-1,0,100); s.stress=clamp(s.stress+1,0,100); }
   if(P.integritas<50&&r()<0.4)P.integritas=clamp(P.integritas+1,0,100);
   /* pamor publik memudar kalau tidak dirawat; korupsi mereda pelan kalau berhenti */
-  if(P.politik)P.pamor=clamp(P.pamor-1,0,100);
+  if(P.politik){ P.pamor=clamp(P.pamor-1,0,100); P.politik.thn=(P.politik.thn||0)+1; }
+  if(P.pailit>0)P.pailit--;
   if(P.korup>0&&!P.politik)P.korup=clamp(P.korup-3,0,100);
   if(P.gaya==='mewah'){s.happy=clamp(s.happy+2,0,100);s.charm=clamp(s.charm+1,0,100);}
   else if(P.gaya==='hemat'&&s.happy>40)s.happy=clamp(s.happy-1,0,100);
@@ -263,25 +324,28 @@ function drift(){
   /* keuangan (mulai 18) */
   if(a>=18){
     let masuk=0, keluar=0;
-    if(P.job){ P.job.g=Math.round(P.job.g*1.03); masuk+=P.job.g;
+    let kenaPajak=0, rutin=0;
+    if(P.job){ P.job.g=Math.round(P.job.g*1.03); masuk+=P.job.g; kenaPajak+=P.job.g;
       /* performa & reputasi kerja: lembur menjaganya; menganggur-pasif menggerusnya pelan */
       if(P._lemburTahunIni)P.reputasiKerja=clamp(P.reputasiKerja+1,0,100);
       else { if(r()<0.5)P.perf=clamp(P.perf-1,0,3); P.reputasiKerja=clamp(P.reputasiKerja-1,0,100); }
     }
     P._lemburTahunIni=false;
     if(P.retired&&P.pensiun)masuk+=P.pensiun;
-    if(P.politik)masuk+=PJAB[P.politik.idx].tunj;
+    if(P.politik){ masuk+=PJAB[P.politik.idx].tunj; kenaPajak+=PJAB[P.politik.idx].tunj; }
+    rutin=masuk;
     if(P.nafkah){ keluar+=P.nafkah.per; P.nafkah.sisa--; if(P.nafkah.sisa<=0){P.nafkah=null;addLog('Kewajiban nafkah anak Anda telah selesai.','sys');} }
-    if(P.love&&P.love.married&&P.love.income)masuk+=P.love.income;
+    if(P.love&&P.love.married&&P.love.income){ masuk+=P.love.income; rutin+=P.love.income; }
     if(P.love&&P.love.married&&P.love.sifat.k==='boros')keluar+=3e6;
     /* usaha */
     for(const b of P.biz.slice()){
       const gw=b.goodwill||0;
       const base=b.modal*b.level*(0.5+(s.smart+s.charm)/400)*(1+0.10*b.kary/(1+0.02*b.kary))*(1+0.2*b.hype)*(1+s.relasi/500)*(1+gw/180)*G.mkt.biz;
-      const rate=r()*(1.2+b.risk)-(0.35+b.risk*0.3)+gw/320;   /* basis pelanggan meredam rugi & menstabilkan usaha mapan */
+      const rate=r()*(1.2+b.risk)-(0.5+b.risk*0.35)+gw/320;   /* basis pelanggan meredam rugi & menstabilkan usaha mapan */
       const profit=Math.round(base*rate);
       keluar+=gajiKary(b)*b.kary;
-      if(profit>=0){ masuk+=profit; b.goodwill=clamp(gw+ri(3,7),0,100); addLog('Usaha '+b.nama+' untung '+rp(profit)+' tahun ini.','good'); }
+      if(profit>=0){ masuk+=profit; keluar+=Math.round(profit*0.1);   /* pajak usaha ±10% dari laba */
+        b.goodwill=clamp(gw+ri(3,7),0,100); addLog('Usaha '+b.nama+' untung '+rp(profit)+' tahun ini.','good'); }
       else { keluar+=-profit; b.goodwill=clamp(gw-ri(5,10),0,100); addLog('Usaha '+b.nama+' rugi '+rp(-profit)+'. Tahun yang berat.','bad'); }
       if(b.hype>0)b.hype--;
       if(b.kary>0)s.stress=clamp(s.stress-1,0,100);
@@ -291,10 +355,10 @@ function drift(){
     if(P.inv.depo>0){ const d=Math.round(P.inv.depo*0.04); P.inv.depo+=d; dInv+=d; }
     if(P.inv.emas>0){ const pct=ri(-4,14)+(G.mkt.label==='boom'?2:G.mkt.label==='krisis'?-5:0);
       const d=Math.round(P.inv.emas*pct/100); P.inv.emas+=d; dInv+=d; }
-    if(P.inv.saham>0){ let pct=G.mkt.label==='krisis'?ri(-45,-10):G.mkt.label==='boom'?ri(5,55):ri(-25,35);
+    if(P.inv.saham>0){ let pct=G.mkt.label==='krisis'?ri(-45,-10):G.mkt.label==='boom'?ri(5,55):ri(-22,38);
       pct+=Math.round(P.finansialIQ/22)+Math.round((s.smart-50)/16)+(P.jur==='ekonomi'?3:0);   /* literasi & kecerdasan = edge */
       const d=Math.round(P.inv.saham*pct/100); P.inv.saham+=d; dInv+=d; }
-    if(P.inv.kripto>0){ let pct=G.mkt.label==='krisis'?ri(-75,-20):ri(-65,130);
+    if(P.inv.kripto>0){ let pct=G.mkt.label==='krisis'?ri(-75,-20):ri(-70,110);
       if(pct<0)pct=Math.round(pct*(1-P.finansialIQ/260));   /* literasi mengurangi besarnya kerugian */
       const d=Math.round(P.inv.kripto*pct/100); P.inv.kripto+=d; dInv+=d; }
     if(P.inv.depo+P.inv.emas+P.inv.saham+P.inv.kripto>0&&r()<0.6)P.finansialIQ=clamp(P.finansialIQ+1,0,100);   /* belajar dari pengalaman berinvestasi */
@@ -303,8 +367,12 @@ function drift(){
     /* aset: apresiasi nilai, pendapatan sewa, cicilan KPR per-aset */
     let sewaTot=0;
     for(const a of P.aset){
-      if(a.tumbuh)a.nilai=Math.round(a.nilai*(1+a.tumbuh));
-      if(a.sewa){ masuk+=a.sewa; sewaTot+=a.sewa; }
+      if(a.kelas==='kendaraan'){   /* kendaraan menyusut tiap tahun sampai tinggal ±25% harga baru (aset dari save lama ikut menyusut 8%) */
+        const d=ASET.find(x=>x.k===a.k), lantai=d?d.harga*0.25:0;
+        if(a.nilai>lantai)a.nilai=Math.max(lantai,Math.round(a.nilai*(1+(a.tumbuh<0?a.tumbuh:-0.08))));
+      } else if(a.tumbuh)a.nilai=Math.round(a.nilai*(1+a.tumbuh));
+      if(a.kelas==='properti')keluar+=Math.round(a.nilai*0.005);   /* PBB & perawatan */
+      if(a.sewa){ const isi=Math.round(a.sewa*(G.mkt.label==='krisis'?ri(45,75):ri(70,100))/100/1e5)*1e5; masuk+=isi; sewaTot+=isi; rutin+=isi; }
       if(a.kpr){ keluar+=a.kpr.cicilan; a.kpr.sisa=Math.max(0,a.kpr.sisa-a.kpr.cicilan); a.kpr.thn--;
         if(a.kpr.thn<=0||a.kpr.sisa<=0){ a.kpr=null; addLog('Cicilan KPR '+a.n+' lunas. Aset itu kini 100% milik Anda.','good'); stamp('KPR LUNAS','green'); } }
     }
@@ -317,10 +385,16 @@ function drift(){
     else if(a>=23||(P.love&&P.love.married))hidup=punyaHunian?14e6:24e6;
     else hidup=8e6;
     hidup=Math.round(hidup*(P.gaya==='hemat'?0.7:P.gaya==='mewah'?1.8:1));
+    /* gaya hidup ikut naik seiring penghasilan rutin (rumah, sekolah, kendaraan, gengsi) */
+    hidup+=Math.round(Math.max(0,rutin-60e6)*(P.gaya==='hemat'?0.08:P.gaya==='mewah'?0.35:0.18));
+    const prihatin=P.money<0&&rutin<hidup&&!P.kuliah;
+    if(prihatin){ hidup=Math.round(hidup*0.5); s.happy=clamp(s.happy-2,0,100); }   /* tanpa penghasilan & tabungan: numpang, makan seadanya */
+    if(P.penjara>0)hidup=3e6;
     if(KOTA_METRO.includes(P.kota))hidup=Math.round(hidup*1.3);
     if(G.mkt.label==='krisis')hidup=Math.round(hidup*1.25);
     if(P.love&&P.love.married)hidup=Math.round(hidup*1.25);   /* rumah tangga: biaya rumah & gaya hidup bersama lebih besar */
-    keluar+=hidup+12e6*kidsU18();
+    keluar+=hidup+12e6*kidsU18()+pajakPenghasilan(kenaPajak);
+    if(P.money<0)keluar+=Math.round(-P.money*0.1);   /* bunga utang konsumtif ±10%/thn */
     if(P.asuransi)keluar+=6e6;
     if(P.pet)keluar+=1.5e6;
     if(P.kuliah&&P.kuliah.beasiswa===false&&P.kelas==='miskin')keluar+=P.kuliah.biaya;
@@ -329,11 +403,15 @@ function drift(){
       if(P.kta.thn<=0||P.kta.sisa<=0){ P.kta=null; addLog('Cicilan terakhir terbayar — KTA bank lunas.','good'); }
     }
     if(P.pinjol>0){ keluar+=6e6; P.pinjol--; s.stress=clamp(s.stress+6,0,100);
-      addLog('Tagihan pinjol menyedot '+rp(6e6)+'. DC meneror nomor Anda.','bad'); }
+      addLog(adaPinjol()?'Tagihan pinjol menyedot '+rp(6e6)+'. DC meneror nomor Anda.':'Rentenir menagih '+rp(6e6)+'. Penagihnya datang ke rumah tiap minggu.','bad'); }
     P.money+=masuk-keluar;
     addLog('Arus kas: pemasukan '+rp(masuk)+', pengeluaran '+rp(keluar)+'.','sys');
+    tagihUtang();
     if(P.money<0){ s.stress=clamp(s.stress+6,0,100);
       if(r()<0.5)addLog('Keuangan minus. Anda makan mi instan lebih sering dari yang sehat.','bad'); }
+    if(P.penjara>0){ P.penjara--;
+      if(P.penjara<=0){ addLog('Masa hukuman selesai. Anda melangkah keluar gerbang lapas membawa satu tas dan cap mantan narapidana.'+fx({happy:+8,stress:-5}),'sys'); stamp('BEBAS'); milestone('Bebas dari penjara'); P.reputasiKerja=clamp(P.reputasiKerja-25,0,100); }
+      else addLog('Satu tahun lagi lewat di balik jeruji. Sisa hukuman '+P.penjara+' tahun.'+fx({happy:-4,health:-2}),'bad'); }
   }
   const nw=netWorth(); if(nw>P.maxNet)P.maxNet=nw;
 }

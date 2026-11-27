@@ -3,7 +3,7 @@
 /* gaji disesuaikan sertifikasi, S2, dan kualitas kuliah (IPK) — lulusan cemerlang dibayar lebih */
 function salaryAdj(g){ return Math.round(g*(1+0.06*P.sert)*(P.s2?1.2:1)*(P.ipk>0?(1+(P.ipk-2.7)*0.07):1)); }
 function setJob(t,g){
-  P.job={title:t,g,level:0,bidang:'sipil'}; P.perf=0;
+  P.job={title:t,g,level:0,bidang:'sipil',mulai:P.age}; P.perf=0;
   addLog('Anda mulai bekerja sebagai <b>'+t+'</b>, gaji '+rp(Math.round(g/12))+'/bulan.','good');
   milestone('Mulai kerja: '+t);
 }
@@ -13,14 +13,14 @@ function pangkatNama(){
 }
 function daftarProfesi(){
   ask({title:'DAFTAR PROFESI NEGARA',text:'Pilih jalur seleksi. Tiap profesi punya syarat & tes sendiri. (Kesehatan '+Math.round(P.st.health)+', Kecerdasan '+Math.round(P.st.smart)+')',
-    opts:PROFESI.map(p=>({t:p.n,sub:'Min. sehat '+p.minH+' & cerdas '+p.minS+(p.biaya?' · biaya '+rp(p.biaya):'')+' · '+p.desc,
-      cond:()=>(!p.biaya||P.money>=p.biaya),
+    opts:PROFESI.map(p=>({t:p.n,sub:'Maks. umur '+maxUmurProfesi(p)+' · min. sehat '+p.minH+' & cerdas '+p.minS+(p.biaya?' · biaya '+rp(p.biaya):'')+' · '+p.desc,
+      cond:()=>(!p.biaya||P.money>=p.biaya)&&P.age<=maxUmurProfesi(p),
       e:()=>{
         if(P.st.health<p.minH||P.st.smart<p.minS){ addLog('Anda ikut seleksi '+p.n+', tapi gagal di tahap syarat dasar. Kurang siap.'+fx({stress:+4,happy:-3}),'bad'); return; }
         if(p.biaya)P.money-=p.biaya;
         if(p.k==='pns'&&typeof Kuis!=='undefined'){   /* PNS: lewat SKD sungguhan (TWK, TIU, TKP) */
           Kuis.skd(h=>{
-            if(h.lolos&&r()<0.5+P.st.smart/300){ P.job={title:p.n,g:salaryAdj(p.g),level:0,bidang:p.k}; P.perf=0;
+            if(h.lolos&&r()<0.5+P.st.smart/300){ P.job={title:p.n,g:salaryAdj(p.g),level:0,bidang:p.k,mulai:P.age}; P.perf=0;
               addLog('SELAMAT! Lolos SKD & SKB. Anda resmi menjadi <b>'+p.n+'</b>.'+fx({happy:+12,stress:+5}),'good'); stamp('LOLOS CPNS','green'); milestone('Diterima sebagai '+p.n); }
             else addLog(h.lolos?'Lolos SKD, tapi kalah peringkat di SKB. Coba lagi tahun depan.'+fx({stress:+5,happy:-3}):'Tidak lolos ambang batas SKD. Coba lagi tahun depan.'+fx({stress:+6,happy:-4}),'bad');
           });
@@ -28,16 +28,29 @@ function daftarProfesi(){
         }
         const peluang=0.35+(P.st.health-p.minH)/200+(P.st.smart-p.minS)/200+P.st.relasi/400;
         if(r()<clamp(peluang,0.15,0.9)){
-          P.job={title:p.n,g:salaryAdj(p.g),level:0,bidang:p.k}; P.perf=0;
+          P.job={title:p.n,g:salaryAdj(p.g),level:0,bidang:p.k,mulai:P.age}; P.perf=0;
           addLog('SELAMAT! Anda lolos seleksi dan resmi menjadi <b>'+p.n+'</b>.'+fx({happy:+12,stress:+5}),'good');
           stamp(p.n.toUpperCase(),'green'); milestone('Diterima sebagai '+p.n);
         } else addLog('Pengumuman seleksi '+p.n+' keluar: nama Anda tidak ada. Coba lagi tahun depan.'+fx({stress:+6,happy:-4}),'bad');
       }})).concat([{t:'Batal',e:()=>{}}])});
 }
+/* batas umur pendaftaran; lulusan sarjana mendapat kelonggaran 3 tahun di jalur perwira (polisi/tentara) */
+function maxUmurProfesi(p){ return (p.maxU||60)+((p.k==='polisi'||p.k==='tentara')&&P.eduLevel>=4?3:0); }
 /* ================= POLITIK / JABATAN PUBLIK ================= */
 function jabNama(){ return P.politik?PJAB[P.politik.idx].n:null; }
+/* Lurah ke atas adalah jabatan penuh waktu: tidak bisa dirangkap dengan pekerjaan */
+function jabatanPenuhWaktu(){ return !!(P.politik&&P.politik.idx>=2); }
 function majuPolitik(){
   const idx=P.politik?P.politik.idx+1:0;
+  /* aparat negara wajib mundur dari dinas sebelum mencalonkan diri (Lurah ke atas) */
+  if(idx>=2&&jobNegeri()){
+    const t0=jabatan();
+    ask({title:'WAJIB MUNDUR DARI DINAS',text:'Aturan melarang aparat negara aktif ikut pemilihan. Untuk maju sebagai '+PJAB[idx].n+', Anda harus mengundurkan diri dari '+t0+' — menang atau kalah, tidak bisa kembali.',opts:[
+      {t:'Mundur dari dinas & maju',e:()=>{ P.job=null; addLog('Anda menanggalkan seragam '+t0+' demi jalur politik.'+fx({stress:+5}),'sys'); milestone('Mundur dari '+t0+' untuk maju pemilihan'); majuPolitik(); }},
+      {t:'Batal, tetap berdinas',e:()=>{}}
+    ]});
+    return;
+  }
   if(idx>=PJAB.length){ addLog('Anda sudah berada di puncak jabatan publik.'); return; }
   const t=PJAB[idx];
   if(P.st.relasi<t.minRelasi||P.st.charm<t.minCharm){
@@ -57,6 +70,7 @@ function pilihMenang(idx,spent,base){
   pel=clamp(pel,0.08,0.92);
   if(r()<pel){
     P.politik={idx,thn:0};
+    if(idx>=2&&P.job){ const t0=jabatan(); P.job=null; addLog('Jabatan '+t.n+' menuntut waktu penuh — Anda melepas pekerjaan sebagai '+t0+'.','sys'); }
     addLog('MENANG! Anda resmi dilantik sebagai <b>'+t.n+'</b>. Tunjangan '+rp(Math.round(t.tunj/12))+'/bulan, dan amanah besar di pundak.'+fx({happy:+10,charm:+3,stress:+5}),'good');
     stamp(t.n.toUpperCase(),'gold'); milestone('Terpilih jadi '+t.n);
     P.pamor=clamp(P.pamor+5,0,100);
@@ -79,10 +93,11 @@ function buildPool(){
 }
 function jobOffers(pool,n,mult){
   mult=mult||1;
+  if(jabatanPenuhWaktu()){ addLog('Ada tawaran kerja, tapi jabatan '+jabNama()+' tidak bisa dirangkap. Anda menolaknya.'); return; }
   const list=pool.slice().sort(()=>r()-0.5).slice(0,n);
   ask({title:'PANGGILAN KERJA',text:'Beberapa lamaran Anda berbuah. Pilih satu:',
     opts:list.map(j=>{const g=Math.round(salaryAdj(j[1])*mult);
-      return {t:j[0],sub:'Gaji '+rp(Math.round(g/12))+'/bulan · lanjut wawancara',e:()=>wawancaraKerja(j[0],g)};})
+      return {t:eraNama(j[0]),sub:'Gaji '+rp(Math.round(g/12))+'/bulan · lanjut wawancara',e:()=>wawancaraKerja(eraNama(j[0]),g)};})
       .concat([{t:'Tolak semua, cari yang lebih baik',e:()=>addLog('Anda menolak semua tawaran. Semoga keputusan tepat.'+fx({stress:+4}))}])});
 }
 
@@ -90,7 +105,7 @@ function jobOffers(pool,n,mult){
 function bukaUsahaCard(){
   const bantu=(P.biz.length===0&&P.age<=27)?(P.kelas==='kaya'?60e6:P.kelas==='menengah'?20e6:8e6):0;
   ask({title:'BUKA USAHA',text:bantu>0?'Untuk usaha pertama, orang tua siap bantu modal '+rp(bantu)+'. Mau buka apa?':'Pilih bidang usaha (modal sendiri):',
-    opts:USAHA.map(u=>({t:u[0],sub:'Modal '+rp(u[1])+(u[2]>=1.5?' · risiko tinggi':u[2]<=0.9?' · stabil':''),
+    opts:USAHA.map(u=>[eraNama(u[0]),u[1],u[2]]).map(u=>({t:u[0],sub:'Modal '+rp(u[1])+(u[2]>=1.5?' · risiko tinggi':u[2]<=0.9?' · stabil':''),
       cond:()=>P.money+bantu>=u[1],
       e:()=>{
         P.money+=Math.min(bantu,u[1]); P.money-=u[1];
@@ -150,6 +165,7 @@ function cerai(){
   const adaAnakKecil=kidsU18()>0;
   /* gono-gini hanya membagi harta positif; utang tetap ditanggung sendiri (jangan sampai cerai malah menghapus utang) */
   if(P.money>0)P.money=Math.round(P.money/2);
+  for(const k in P.inv)P.inv[k]=Math.round(P.inv[k]/2);   /* tabungan investasi juga harta bersama */
   /* harta gono-gini: pasangan membawa separuh aset, mulai dari yang paling bernilai */
   let asetHilang=0;
   if(P.aset.length){
@@ -172,7 +188,12 @@ function beliAsetCard(d){
     const dp=Math.round(d.harga*0.2), sisa=Math.round(d.harga*1.2), cic=Math.round(d.harga*1.2/15);
     ask({title:'BELI '+d.n.toUpperCase(),text:d.n+' seharga '+rp(d.harga)+'. Bayar bagaimana?',opts:[
       {t:'Bayar cash',sub:rp(d.harga),cond:()=>P.money>=d.harga,e:()=>{P.money-=d.harga;P.aset.push(asetBaru(d));logBeli(d,false);}},
-      {t:'KPR 15 tahun',sub:'DP '+rp(dp)+' · cicilan '+rp(cic)+'/th',cond:()=>P.money>=dp,e:()=>{P.money-=dp;const a=asetBaru(d);a.kpr={sisa,cicilan:cic,thn:15};P.aset.push(a);logBeli(d,true);}},
+      {t:'KPR 15 tahun',sub:'DP '+rp(dp)+' · cicilan '+rp(cic)+'/th',cond:()=>P.money>=dp,e:()=>{
+        /* bank hanya menyetujui bila seluruh cicilan (KPR lain + KTA + ini) maksimal 40% penghasilan rutin */
+        const beban=cic+P.aset.reduce((s,x)=>s+(x.kpr?x.kpr.cicilan:0),0)+(P.kta?P.kta.cicilan:0);
+        if(P.pailit)return addLog('Pengajuan KPR ditolak: nama Anda masih di daftar hitam bank.','bad');
+        if(beban>penghasilanRutin()*0.4)return addLog('Pengajuan KPR '+d.n+' ditolak bank: total cicilan '+rp(beban)+'/thn melebihi 40% penghasilan rutin Anda ('+rp(penghasilanRutin())+'/thn).'+fx({stress:+3}),'bad');
+        P.money-=dp;const a=asetBaru(d);a.kpr={sisa,cicilan:cic,thn:15};P.aset.push(a);logBeli(d,true);}},
       {t:'Batal',e:()=>{}}
     ]});
   } else {
@@ -191,10 +212,10 @@ function buatTeman(){
 }
 /* kartu lamaran masuk (pemain perempuan menerima pinangan) */
 function lamaranMasuk(nm){
-  ask({title:nm.toUpperCase()+' MELAMAR ANDA',text:nm+' datang membawa cincin dan keluarganya. Ia ingin meminang Anda. Bagaimana?',opts:[
-    {t:'Terima — nikah sederhana',sub:'Biaya '+rp(30e6),cond:()=>P.money>=30e6,e:()=>nikah(30e6,8)},
-    {t:'Terima — pesta sedang',sub:'Biaya '+rp(80e6),cond:()=>P.money>=80e6,e:()=>nikah(80e6,11,2)},
-    {t:'Terima — pesta besar',sub:'Biaya '+rp(200e6),cond:()=>P.money>=200e6,e:()=>nikah(200e6,15,5)},
+  ask({title:nm.toUpperCase()+' MELAMAR ANDA',text:nm+' datang membawa cincin dan keluarganya. Ia ingin meminang Anda. Sebagian besar biaya ditanggung pihak laki-laki; Anda cukup menanggung bagian keluarga sendiri. Bagaimana?',opts:[
+    {t:'Terima — nikah sederhana',sub:'Bagian Anda '+rp(8e6),cond:()=>P.money>=8e6,e:()=>nikah(8e6,8)},
+    {t:'Terima — pesta sedang',sub:'Bagian Anda '+rp(30e6),cond:()=>P.money>=30e6,e:()=>nikah(30e6,11,2)},
+    {t:'Terima — pesta besar',sub:'Bagian Anda '+rp(80e6),cond:()=>P.money>=80e6,e:()=>nikah(80e6,15,5)},
     {t:'Belum siap — tolak halus',e:()=>{P.love.rel=clamp(P.love.rel-10,0,100);
       addLog('Anda menolak lamaran '+nm+' dengan halus. Ia mencoba mengerti, tapi suasana jadi canggung.'+fx({stress:+4,happy:-3}),'bad');}}
   ]});

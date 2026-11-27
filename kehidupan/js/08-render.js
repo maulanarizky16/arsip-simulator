@@ -77,7 +77,7 @@ function render(){
   const totKpr=P.aset.reduce((s,a)=>s+(a.kpr?a.kpr.sisa:0),0);
   if(totSewa>0)po+='<div class="fr"><span>Pendapatan sewa</span><span>'+rp(totSewa)+'/th</span></div>';
   if(totKpr>0)po+='<div class="fr"><span>Sisa KPR aset</span><span>−'+rp(totKpr)+'</span></div>';
-  if(P.pinjol>0)po+='<div class="fr"><span>Utang pinjol</span><span>'+P.pinjol+' th lagi</span></div>';
+  if(P.pinjol>0)po+='<div class="fr"><span>Utang '+namaUtangCepat()+'</span><span>'+P.pinjol+' th lagi</span></div>';
   if(P.nafkah)po+='<div class="fr"><span>Nafkah anak</span><span>−'+rp(P.nafkah.per)+'/th · '+P.nafkah.sisa+' th</span></div>';
   if(P.politik&&P.korup>=30)po+='<div class="fr"><span>Risiko korupsi</span><span><b>'+(P.korup>=60?'tinggi':'sedang')+'</b></span></div>';
   if(P.judi>=20)po+='<div class="fr"><span>Kecanduan judi</span><span><b>'+(P.judi>=55?'parah':P.judi>=40?'kuat':'mulai')+'</b></span></div>';

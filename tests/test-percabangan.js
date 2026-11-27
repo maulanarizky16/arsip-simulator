@@ -74,7 +74,7 @@ function testKehidupan() {
       if(!P.kids.length)P.kids.push({nama:'Bintang',lahirAt:15,didik:60});
       P.kids[0].lahirAt=15; delete P.kids[0].modalUsaha;
       if(!P.biz.length)P.biz.push({nama:'Kopi Lembah',modal:60e6,level:2,kary:1,hype:0,risk:0.2});
-      P.mafiaTanah=false; P.whistleKantor=false; P.umrohOrtu=false; P.ketuaRT=false;
+      P.mafiaTanah=false; P.whistleKantor=false; P.umrohOrtu=false; P.ketuaRT=false; P.politik=null; P.penjara=0;
     }
     for(let i=0;i<4000;i++){
       __force();

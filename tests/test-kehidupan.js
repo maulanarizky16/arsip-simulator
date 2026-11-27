@@ -89,6 +89,32 @@ run(c, `
   let nanAfter=false;
   for(let y=0;y<6;y++){ P.alive=true; G.over=false; G.current=null; G.queue=[]; try{drift()}catch(e){__ERRS.push('resumeDrift: '+e.message)} __drain(); if(!__finite())nanAfter=true; }
   __CHK.resumeNoNaN=!nanAfter&&isFinite(P.mental)&&isFinite(P.nikotin)&&isFinite(P.st.health)&&isFinite(P.reputasiKerja)&&isFinite(P.finansialIQ);
+  /* ---- perbaikan QA Kehidupan ---- */
+  // 2k utang: investasi dicairkan dulu, aset disita, lalu pailit (utang tidak menumpuk tanpa batas)
+  newGame(); __drain(); P.age=40; P.aset=[]; P.biz=[]; P.kta=null; P.money=-80e6; P.inv.depo=100e6;
+  tagihUtang(); __CHK.cairInv=[P.money,P.inv.depo];
+  P.money=-300e6; P.inv={depo:0,emas:0,saham:0,kripto:0}; P.aset=[{k:'rumah',n:'Rumah',nilai:400e6,kpr:null,sewa:0,tumbuh:0.05,kelas:'properti'}];
+  tagihUtang(); __CHK.sita=[P.money,P.aset.length];
+  P.money=-900e6; P.aset=[]; tagihUtang(); __CHK.pailit=[P.money,P.pailit];
+  // 2l KTA: penghasilan kecil → plafon kecil / ditolak; tanpa penghasilan besar tak bisa pinjam 500 jt
+  newGame(); __drain(); P.age=30; P.money=0; P.kta=null; P.biz=[]; P.aset=[]; P.love=null; P.politik=null; P.job={title:'Kurir paket',g:34e6,level:0,bidang:'sipil',mulai:25}; P.used={};
+  ACTS.find(a=>a.k==='kta').e(); __CHK.ktaMaks=G.current?Math.max(...G.current.opts.map(o=>{const m=o.t.match(/Rp ([0-9,]+) (jt|M)/);return m?parseFloat(m[1].replace(',','.'))*(m[2]==='M'?1000:1):0;})):0; while(G.current)choose(G.current.opts.length-1);
+  // 2m batas umur profesi negara: umur 45 tak bisa lagi daftar
+  newGame(); __drain(); P.age=45; P.job=null; P.kuliah=null; P.retired=false; P.politik=null; __CHK.profesi45=actAvail(ACTS.find(a=>a.k==='profesi')).ok;
+  P.age=22; __CHK.profesi22=actAvail(ACTS.find(a=>a.k==='profesi')).ok;
+  // 2n minta naik gaji maksimal 2x per jenjang
+  newGame(); __drain(); P.age=30; P.job={title:'X',g:100e6,level:0,bidang:'sipil',mulai:25}; P.perf=3; P.reputasiKerja=100; P.st.charm=100;
+  for(let i=0;i<40;i++){ P.perf=3; ACTS.find(a=>a.k==='naikGaji').e(); } __CHK.naikGaji=P.job.g;
+  // 2o penjara: aksi terkunci, bebas setelah masa hukuman
+  newGame(); __drain(); P.age=40; P.job={title:'X',g:100e6,level:0,bidang:'pns',mulai:25}; masukPenjara(2,'uji'); __drain();
+  __CHK.penjaraKunci=!ACTS.some(a=>actAvail(a).ok)&&P.job===null;
+  for(let y=0;y<2;y++){ P.alive=true; G.over=false; advance(); __drain(); } __CHK.penjaraBebas=P.penjara;
+  // 2p kendaraan menyusut, properti naik
+  newGame(); __drain(); P.age=30; P.money=1e9; P.aset=[asetBaru(ASET.find(x=>x.k==='mobil')),asetBaru(ASET.find(x=>x.k==='rumah'))];
+  for(let y=0;y<5;y++){ P.alive=true; drift(); __drain(); } __CHK.nilaiAset=[P.aset[0]?P.aset[0].nilai:0,P.aset[1]?P.aset[1].nilai:0];
+  // 2q aparat negara: pensiun bulanan lebih besar daripada swasta, dan nama jabatan memakai pangkat
+  function __pens(bidang){ newGame(); __drain(); P.alive=true; G.over=false; G.current=null; G.queue=[]; P.age=58; P.retired=false; P.kuliah=null; P.kids=[]; P.love=null; P.teman=[]; P.job={title:'T',g:100e6,level:1,bidang,mulai:25}; const j=jabatan(); events(); __drain(); return [P.pensiun,j]; }
+  __CHK.pensiun=[__pens('pns'),__pens('sipil')];
 `);
 const chk=JSON.parse(run(c,'JSON.stringify(__CHK)'));
 const ach=JSON.parse(run(c,'JSON.stringify(__ACH)'));
@@ -103,6 +129,15 @@ if(!(chk.integritas<60))fail.push('integritas-tak-turun');
 if(!chk.mentalNaik)fail.push('mental-tak-naik');
 if(!(chk.asetKendaraan<=9))fail.push('skor-kendaraan-tak-dibatasi');
 if(!chk.resumeNoNaN)fail.push('save-lama-NaN-setelah-resume');
+if(!(chk.cairInv[0]===0&&chk.cairInv[1]===20e6))fail.push('investasi-tak-dicairkan-saat-minus '+chk.cairInv);
+if(!(chk.sita[1]===0&&chk.sita[0]>0))fail.push('aset-tak-disita '+chk.sita);
+if(!(chk.pailit[0]===-25e6&&chk.pailit[1]===7))fail.push('pailit-tak-jalan '+chk.pailit);
+if(!(chk.ktaMaks<=85))fail.push('kta-plafon-tak-ikut-penghasilan ('+chk.ktaMaks+'jt)');
+if(chk.profesi45||!chk.profesi22)fail.push('batas-umur-profesi');
+if(!(chk.naikGaji<=100e6*1.12*1.12+2))fail.push('naik-gaji-tanpa-batas ('+chk.naikGaji/1e6+'jt)');
+if(!chk.penjaraKunci||chk.penjaraBebas!==0)fail.push('penjara '+chk.penjaraKunci+'/'+chk.penjaraBebas);
+if(!(chk.nilaiAset[0]<160e6&&chk.nilaiAset[1]>400e6))fail.push('penyusutan-aset '+chk.nilaiAset);
+if(!(chk.pensiun[0][0]>chk.pensiun[1][0]&&chk.pensiun[0][1].startsWith('Kasi')&&chk.pensiun[1][1]==='Senior T'))fail.push('pensiun/jabatan '+JSON.stringify(chk.pensiun));
 
 const nErr=run(c,'__ERRS.length');
 const errs=run(c,'__ERRS.slice(0,20)');

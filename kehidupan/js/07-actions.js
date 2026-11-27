@@ -79,7 +79,8 @@ const ACTS=[
 /* ---- ASMARA ---- */
 {k:'cari',tab:'asmara',lbl:'Cari pasangan',sub:'Buka hati, buka peluang',min:18,cond:()=>!P.love,e:()=>{
   ask({title:'CARI PASANGAN',text:'Mau lewat jalur mana?',opts:[
-    {t:'Aplikasi kencan',sub:'Gratis, untung-untungan',e:()=>caloni(0.25+P.st.charm/250,'lewat aplikasi kencan','Swipe kanan-kiri sebulan penuh, hasilnya cuma pegal jempol.',{happy:-2})},
+    tahunIni()>=2013?{t:'Aplikasi kencan',sub:'Gratis, untung-untungan',e:()=>caloni(0.25+P.st.charm/250,'lewat aplikasi kencan','Swipe kanan-kiri sebulan penuh, hasilnya cuma pegal jempol.',{happy:-2})}
+      :{t:'Chatting & SMS-an',sub:'Gratis, untung-untungan',e:()=>caloni(0.25+P.st.charm/250,'lewat chatting','Berminggu-minggu berbalas pesan, ternyata dia tinggal di pulau lain dan tak pernah mau bertemu.',{happy:-2})},
     {t:'Minta dikenalkan teman',sub:'Peluang lumayan',e:()=>caloni(0.45,'setelah dikenalkan teman','Teman Anda mengenalkan seseorang, tapi obrolan tidak nyambung.',{stress:+2})},
     {t:'Dekati kenalan langsung',sub:'Modal nekat & karisma',e:()=>caloni(0.15+P.st.charm/130,'setelah Anda dekati langsung','Pendekatan Anda ditolak halus. Sakit, tapi pengalaman.',{happy:-4,charm:+2,stress:+3},'bad')},
     {t:'Batal',e:()=>{}}
@@ -148,29 +149,30 @@ const ACTS=[
     {t:'Batalkan',e:()=>addLog('Anda menarik napas panjang dan memilih bertahan.')}
   ]});}},
 /* ---- KARIER ---- */
-{k:'lamarKerja',tab:'karier',lbl:'Lamar kerja',sub:'Sebar CV ke mana-mana',min:18,cond:()=>!P.job&&!P.kuliah&&!P.retired,e:()=>{
+{k:'lamarKerja',tab:'karier',lbl:'Lamar kerja',sub:'Sebar CV ke mana-mana',min:18,cond:()=>!P.job&&!P.kuliah&&!P.retired&&!jabatanPenuhWaktu(),e:()=>{
   if(r()<0.4+P.st.smart/250+P.st.charm/300+P.sert*0.05+P.st.relasi/500)jobOffers(buildPool(),ri(2,3));
   else addLog('Puluhan lamaran terkirim, belum ada panggilan. Sabar.'+fx({stress:+5,happy:-2}),'bad');}},
-{k:'profesi',tab:'karier',lbl:'Daftar profesi negara',sub:'Polri, TNI, Intel, PNS, Pilot, Pelaut, Damkar',min:18,cond:()=>!P.job&&!P.kuliah&&!P.retired,e:()=>daftarProfesi()},
+{k:'profesi',tab:'karier',lbl:'Daftar profesi negara',sub:'Polri, TNI, Intel, PNS, Pilot, Pelaut, Damkar · ada batas umur',min:18,cond:()=>!P.job&&!P.kuliah&&!P.retired&&!jabatanPenuhWaktu()&&P.age<=35,e:()=>daftarProfesi()},
 {k:'lembur',tab:'karier',lbl:'Kerja lembur setahun',sub:'Bonus, performa & reputasi kerja naik',min:18,cond:()=>!!P.job,e:()=>{
   const bonus=Math.round(P.job.g*0.12); P.perf=clamp(P.perf+1,0,3); P.reputasiKerja=clamp(P.reputasiKerja+ri(2,4),0,100); P._lemburTahunIni=true;
   addLog('Anda pasang badan setahun penuh — lembur jadi makanan harian. Atasan mencatat dedikasi Anda.'+fx({money:bonus,stress:+8,health:-2}));}},
-{k:'naikGaji',tab:'karier',lbl:'Minta naik gaji',sub:'Nego ke atasan',min:18,cond:()=>!!P.job,e:()=>{
+{k:'naikGaji',tab:'karier',lbl:'Minta naik gaji',sub:'Nego ke atasan · maks. 2× per jenjang',min:18,cond:()=>!!P.job&&!jobNegeri(),e:()=>{
+  if((P.job.naik||0)>=2){ addLog('Atasan menggeleng: gaji Anda sudah di batas atas untuk jenjang ini. "Kalau mau lebih, kejar promosi."'+fx({stress:+2})); return; }
   if(r()<0.22+P.perf*0.2+P.st.charm/300+(P.reputasiKerja-50)/400+(P.ipk>=3.3?0.05:0)){
-    P.job.g=Math.round(P.job.g*1.12); P.perf=0;
+    P.job.g=Math.round(P.job.g*1.12); P.perf=0; P.job.naik=(P.job.naik||0)+1;
     addLog('Negosiasi berhasil — gaji naik jadi '+rp(Math.round(P.job.g/12))+'/bulan.','good');
   } else addLog('Atasan bilang "kita lihat tahun depan, ya." Klasik.'+fx({stress:+4}),'bad');}},
-{k:'promosi',tab:'karier',lbl:'Ajukan promosi',sub:'Incar jabatan lebih tinggi',min:18,cond:()=>!!P.job&&P.job.level<4,e:()=>{
+{k:'promosi',tab:'karier',lbl:'Ajukan promosi',sub:'Incar jabatan lebih tinggi',min:18,cond:()=>!!P.job&&P.job.level<4&&!PANGKAT[P.job.bidang],e:()=>{
   if(r()<0.18+P.perf*0.25+P.st.smart/400+(P.s2?0.1:0)+(P.ipk>=3.3?0.08:0)+(P.reputasiKerja-50)/300){
-    P.job.level++; P.job.g=Math.round(P.job.g*1.35); P.perf=0; P.reputasiKerja=clamp(P.reputasiKerja+5,0,100);
-    addLog('Pengajuan diterima! Anda kini '+LV[P.job.level]+P.job.title+'.'+fx({stress:+8,happy:+6}),'good');
-    milestone('Promosi: '+LV[P.job.level]+P.job.title);
+    P.job.level++; P.job.g=Math.round(P.job.g*1.35); P.perf=0; P.job.naik=0; P.reputasiKerja=clamp(P.reputasiKerja+5,0,100);
+    addLog('Pengajuan diterima! Anda kini '+jabatan()+'.'+fx({stress:+8,happy:+6}),'good');
+    milestone('Promosi: '+jabatan());
   } else addLog('Promosi jatuh ke orang lain. Politik kantor memang kejam.'+fx({stress:+5,happy:-3}),'bad');}},
-{k:'pindah',tab:'karier',lbl:'Cari kerja baru',sub:'Lirik perusahaan lain',min:18,cond:()=>!!P.job,e:()=>{
+{k:'pindah',tab:'karier',lbl:'Cari kerja baru',sub:'Lirik perusahaan lain',min:18,cond:()=>!!P.job&&!jobNegeri(),e:()=>{
   if(r()<0.3+P.st.charm/300+P.sert*0.05+P.st.relasi/500)jobOffers(buildPool(),2,1.15);
   else addLog('Beberapa interview, belum ada yang lebih baik dari posisi sekarang.');}},
 {k:'resign',tab:'karier',lbl:'Resign',sub:'Tinggalkan pekerjaan',min:18,cond:()=>!!P.job,e:()=>{
-  ask({title:'RESIGN?',text:'Berhenti dari posisi '+LV[P.job.level]+P.job.title+' tanpa pegangan baru. Yakin?',opts:[
+  ask({title:'RESIGN?',text:'Berhenti dari posisi '+jabatan()+' tanpa pegangan baru. Yakin?',opts:[
     {t:'Ya, saya butuh hidup baru',e:()=>{addLog('Anda menyerahkan surat resign. Lega bercampur cemas.'+fx({stress:-10,happy:+4}));milestone('Resign dari '+P.job.title);P.job=null;}},
     {t:'Batal',e:()=>addLog('Anda menyimpan lagi surat resign di laci.')}
   ]});}},
@@ -182,14 +184,14 @@ const ACTS=[
   addLog('Dua tahun penuh tesis dan begadang — Anda resmi MAGISTER.'+fx({smart:+8,stress:+8}),'good');
   stamp('LULUS S2','green'); milestone('Lulus S2');}},
 /* ---- POLITIK & WARGA ---- */
-{k:'maju',tab:'politik',lbl:'Maju pemilihan jabatan',sub:'RT → RW → Lurah → DPRD → Bupati',min:25,cond:()=>(!P.politik||P.politik.idx<PJAB.length-1)&&!P.retired,e:()=>majuPolitik()},
+{k:'maju',tab:'politik',lbl:'Maju pemilihan jabatan',sub:'RT → RW → Lurah → DPRD → Bupati',min:25,cond:()=>(!P.politik||P.politik.idx<PJAB.length-1),e:()=>majuPolitik()},
 {k:'blusukan',tab:'politik',lbl:'Blusukan ke warga',sub:'Dengar keluhan, dongkrak pamor',min:25,multi:true,cond:()=>!!P.politik,e:()=>{
   P.pamor=clamp(P.pamor+ri(4,9),0,100);
   addLog('Anda turun ke gang-gang, menyalami warga, mendengar keluhan langsung. Mereka merasa diperhatikan.'+fx({relasi:+4,charm:+2,stress:+3,happy:+1}));}},
 {k:'sembako',tab:'politik',lbl:'Bagi sembako & baksos',sub:'Rp 20 jt · pamor melonjak',min:25,multi:true,cond:()=>!!P.politik&&P.money>=20e6,e:()=>{
   P.money-=20e6; P.pamor=clamp(P.pamor+ri(6,12),0,100);
   addLog('Anda menggelar bakti sosial dan bagi sembako. Warga bersorak, sebagian sibuk berswafoto.'+fx({relasi:+3,happy:+2}),'good');}},
-{k:'korupsi',tab:'politik',lbl:'Sunat anggaran',sub:'Perkaya diri diam-diam · sangat berisiko',min:25,multi:true,cond:()=>!!P.politik&&P.politik.idx>=1,e:()=>{
+{k:'korupsi',tab:'politik',lbl:'Sunat anggaran',sub:'Perkaya diri diam-diam · risiko penjara',min:25,cond:()=>!!P.politik&&P.politik.idx>=1,e:()=>{
   const ambil=ri(20,80)*1e6*(P.politik.idx+1);
   P.money+=ambil; P.korup=clamp(P.korup+ri(10,22),0,100); P.korupTotal+=ambil; P.pamor=clamp(P.pamor-2,0,100); P.integritas=clamp(P.integritas-ri(8,15),0,100);
   addLog('Anda menyunat anggaran lewat proyek fiktif — '+rp(ambil)+' masuk kantong pribadi. Rekening gemuk, tapi jejak (dan integritas) makin terkikis.'+fx({stress:+6,happy:-2}),'bad');}},
@@ -208,8 +210,9 @@ const ACTS=[
 {k:'rekrut',tab:'usaha',lbl:'Rekrut karyawan',sub:'Gaji per orang ikut skala usaha · tanpa batas',min:18,multi:true,cond:()=>P.biz.length>0,e:()=>pickBiz('REKRUT KARYAWAN',b=>{
   ask({title:'REKRUT UNTUK '+b.nama.toUpperCase(),text:'Saat ini '+b.kary+' karyawan. Berapa orang lagi? Catatan: makin gemuk tim, tambahan produktivitas per orang makin kecil — gaji di '+b.nama+' '+rp(gajiKary(b))+'/orang/thn.',
     opts:[1,3,5,10].map(n=>({t:n+' orang',sub:'Beban gaji +'+rp(gajiKary(b)*n)+'/thn',e:()=>{
-      b.kary+=n;
-      addLog(n+' karyawan baru bergabung di '+b.nama+' (total '+b.kary+' orang).'+fx({stress:-3}),'good');}}))
+      if(P.money<gajiKary(b)*n/4)return addLog('Kas tidak cukup untuk menggaji '+n+' orang baru (minimal pegang '+rp(Math.round(gajiKary(b)*n/4))+' untuk 3 bulan gaji pertama).','bad');
+      const pertama=b.kary===0; b.kary+=n;
+      addLog(n+' karyawan baru bergabung di '+b.nama+' (total '+b.kary+' orang).'+(pertama?fx({stress:-3}):''),'good');}}))
     .concat([{t:'Batal',e:()=>{}}])});})},
 {k:'pecat',tab:'usaha',lbl:'Kurangi karyawan',sub:'Pesangon Rp 5 jt/orang',min:18,multi:true,cond:()=>P.biz.some(b=>b.kary>0),e:()=>pickBiz('KURANGI KARYAWAN',b=>{
   if(b.kary<1)return addLog(b.nama+' tidak punya karyawan.');
@@ -235,9 +238,9 @@ const ACTS=[
     {t:'Tidak jadi',e:()=>addLog('Anda menolak tawaran. '+b.nama+' tetap milik Anda.')}
   ]});})},
 /* ---- UANG & ASET ---- */
-{k:'invest',tab:'uang',lbl:'Investasi',sub:'Deposito, emas, saham, kripto',min:18,multi:true,cond:()=>P.money>=10e6,e:()=>{
+{k:'invest',tab:'uang',lbl:'Investasi',get sub(){ return 'Deposito, emas, saham'+(P&&tahunIni()>=2014?', kripto':''); },min:18,multi:true,cond:()=>P.money>=10e6,e:()=>{
   ask({title:'PILIH INSTRUMEN',text:'Uang yang diinvestasikan akan tumbuh (atau menyusut) tiap tahun:',
-    opts:INV.map(v=>({t:v.n,sub:v.desc,e:()=>{
+    opts:INV.filter(v=>!v.sejak||tahunIni()>=v.sejak).map(v=>({t:v.n,sub:v.desc,e:()=>{
       const amts=[10e6,25e6,50e6,100e6,250e6,500e6,1e9].filter(x=>x<=P.money);
       ask({title:'SETOR KE '+v.n.toUpperCase(),text:'Berapa yang mau disetor? (Uang tunai: '+rp(P.money)+')',
         opts:amts.map(x=>({t:rp(x),e:()=>{P.money-=x;P.inv[v.k]+=x;
@@ -252,9 +255,9 @@ const ACTS=[
       const x=P.inv[v.k]; P.inv[v.k]=0; P.money+=x;
       addLog('Anda mencairkan '+v.n+' senilai '+rp(x)+'.','good');}}))
       .concat([{t:'Batal',e:()=>{}}])});}},
-{k:'judi',tab:'uang',lbl:'Judi online',sub:'"Cuan instan" — bikin kecanduan, sering buntung',min:18,multi:true,cond:()=>P.money>=2e6,e:()=>{
+{k:'judi',tab:'uang',get lbl(){ return adaJudol()?'Judi online':'Judi togel & bola'; },sub:'"Cuan instan" — bikin kecanduan, sering buntung',min:18,multi:true,cond:()=>P.money>=2e6,e:()=>{
   const tiers=[2e6,10e6,50e6].filter(x=>x<=P.money);
-  ask({title:'JUDI ONLINE',text:'Slot, sabung, bola — "sekali ini aja". Pasang berapa? (Menang jarang, kalah sering, kecanduan pasti.)',
+  ask({title:adaJudol()?'JUDI ONLINE':'JUDI TOGEL & BOLA',text:(adaJudol()?'Slot, sabung, bola':'Togel, bola, kartu di pos ronda')+' — "sekali ini aja". Pasang berapa? (Menang jarang, kalah sering, kecanduan pasti.)',
     opts:tiers.map(x=>({t:'Pasang '+rp(x),e:()=>{
       P.judi=clamp(P.judi+ri(8,16),0,100); P.judiTotal+=x;
       if(r()<0.34){const w=x*(r()<0.18?5:2);P.money+=(w-x);
@@ -262,9 +265,13 @@ const ACTS=[
       else {P.money-=x;
         addLog('Kalah. "Sekali lagi pasti balik," bisik setan kecil di kepala.'+fx({happy:-5,stress:+6}),'bad');}
     }})).concat([{t:'Batal',e:()=>{}}])});}},
-{k:'kta',tab:'uang',lbl:'Pinjam bank (KTA)',sub:'Bunga ±8%/thn flat · tenor 5 thn',min:21,cond:()=>!P.kta&&(!!P.job||P.biz.length>0),e:()=>{
-  ask({title:'KREDIT TANPA AGUNAN',text:'Bank menyetujui plafon berdasarkan profil Anda. Total pengembalian 140%, dicicil rata 5 tahun.',
-    opts:[50e6,100e6,250e6,500e6].map(x=>({t:'Pinjam '+rp(x),sub:'Cicilan '+rp(Math.round(x*1.4/5))+'/thn',e:()=>{
+{k:'kta',tab:'uang',lbl:'Pinjam bank (KTA)',sub:'Bunga ±8%/thn flat · tenor 5 thn · plafon ikut penghasilan',min:21,cond:()=>!P.kta&&!P.pailit&&(!!P.job||P.biz.length>0),e:()=>{
+  /* plafon maksimal ±2,5× penghasilan rutin setahun; uang minus memperkecil plafon */
+  const plafon=penghasilanRutin()*2.5+Math.min(P.money,0);
+  const pilihan=[10e6,25e6,50e6,100e6,250e6,500e6].filter(x=>x<=plafon).slice(-4);
+  if(!pilihan.length)return addLog('Pengajuan KTA ditolak bank: penghasilan rutin Anda ('+rp(penghasilanRutin())+'/thn) belum cukup untuk menanggung cicilan.'+fx({stress:+3}),'bad');
+  ask({title:'KREDIT TANPA AGUNAN',text:'Bank menghitung plafon dari penghasilan rutin Anda ('+rp(penghasilanRutin())+'/thn). Total pengembalian 140%, dicicil rata 5 tahun.',
+    opts:pilihan.map(x=>({t:'Pinjam '+rp(x),sub:'Cicilan '+rp(Math.round(x*1.4/5))+'/thn',e:()=>{
       P.money+=x; P.kta={sisa:Math.round(x*1.4),cicilan:Math.round(x*1.4/5),thn:5};
       addLog('Dana KTA '+rp(x)+' cair ke rekening. Gunakan dengan bijak — bank tidak kenal kata sungkan.'+fx({stress:+3}),'good');
       milestone('Ambil KTA '+rp(x));}}))
@@ -300,13 +307,13 @@ const ACTS=[
 {k:'stopAsuransi',tab:'uang',lbl:'Stop asuransi kesehatan',sub:'Hentikan premi tahunan',min:18,cond:()=>P.asuransi,e:()=>{
   P.asuransi=false;
   addLog('Polis asuransi dihentikan. Semoga badan bisa diajak kompromi.');}},
-{k:'lunasPinjol',tab:'uang',lbl:'Lunasi pinjol',sub:'Bayar tuntas, hidup tenang',min:18,cond:()=>P.pinjol>0&&P.money>=P.pinjol*6e6,e:()=>{
+{k:'lunasPinjol',tab:'uang',get lbl(){ return 'Lunasi '+namaUtangCepat(); },sub:'Bayar tuntas, hidup tenang',min:18,cond:()=>P.pinjol>0&&P.money>=P.pinjol*6e6,e:()=>{
   const x=P.pinjol*6e6;P.money-=x;P.pinjol=0;
-  addLog('Pinjol lunas total '+rp(x)+'. Nomor DC akhirnya bisa diblokir.'+fx({stress:-12,happy:+5}),'good');}},
+  addLog((adaPinjol()?'Pinjol lunas total '+rp(x)+'. Nomor DC akhirnya bisa diblokir.':'Utang rentenir lunas total '+rp(x)+'. Tak ada lagi yang menggedor pintu.')+fx({stress:-12,happy:+5}),'good');}},
 /* ---- HOBI ---- */
 {k:'mulaiHobi',tab:'hobi',lbl:'Mulai hobi baru',sub:'Maks. 4 hobi aktif',min:10,multi:true,cond:()=>P.hobi.length<4,e:()=>{
   ask({title:'HOBI BARU',text:'Hidup bukan cuma kerja. Mau menekuni apa?',
-    opts:HOBI.filter(h=>!P.hobi.some(x=>x.k===h.k)&&(!h.g||h.g===P.gender)).map(h=>({t:h.n,
+    opts:HOBI.filter(h=>!P.hobi.some(x=>x.k===h.k)&&(!h.g||h.g===P.gender)&&(!h.sejak||tahunIni()>=h.sejak)).map(h=>({t:h.n,
       sub:(h.mulai>0?'Modal awal '+rp(h.mulai):'Tanpa modal awal')+(h.b>0?' · biaya '+rp(h.b)+'/thn':''),
       cond:()=>P.age<18||P.money>=h.mulai,
       e:()=>{ if(P.age>=18)P.money-=h.mulai;
@@ -323,6 +330,7 @@ const ACTS=[
 ];
 
 function actAvail(a){
+  if(P.penjara>0)return {ok:false,why:'Sedang menjalani hukuman penjara'};
   if(P.age<a.min)return {ok:false,why:'Mulai umur '+a.min};
   if(a.cond&&!a.cond())return {ok:false,why:'Syarat belum terpenuhi'};
   if(!a.multi&&P.used[a.k])return {ok:false,why:'Sudah dilakukan tahun ini',used:true};
@@ -332,7 +340,7 @@ function doAct(k){
   if(!P||G.current||G.over||!P.alive)return;
   if(k.startsWith('tekuni:')){
     const hk=k.slice(7);
-    if(P.used[k]||!P.hobi.some(h=>h.k===hk))return;
+    if(P.used[k]||P.penjara>0||!P.hobi.some(h=>h.k===hk))return;
     P.used[k]=true; G.acted++;
     tekuni(hk);
   } else {

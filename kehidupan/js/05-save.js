@@ -34,6 +34,9 @@ function resumeGame(s){
   if(typeof P.nikotin!=='number')P.nikotin=0;
   if(typeof P.integritas!=='number')P.integritas=60;
   if(typeof P.finansialIQ!=='number')P.finansialIQ=0;
+  if(typeof P.maxLv!=='number')P.maxLv=P.job?P.job.level:0;
+  if(typeof P.penjara!=='number')P.penjara=0;
+  if(typeof P.pailit!=='number')P.pailit=0;
   for(const b of (P.biz||[]))if(typeof b.goodwill!=='number')b.goodwill=0;
   G.current=null; G.queue=[]; G.over=s.over||false; G.feed=s.feed||[]; G.tab=s.tab||'diri'; G.acted=0; G.mkt={biz:1,label:null};
   if(hasDoc){

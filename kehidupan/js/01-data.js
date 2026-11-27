@@ -20,14 +20,16 @@ const KARIER={
 const LV=['','Senior ','Spesialis ','Kepala ','Direktur '];
 /* profesi negara/khusus dengan tugas dinas sendiri */
 const PROFESI=[
-  {k:'polisi', n:'Polisi (Polri)',        g:62e6,  minH:65, minS:45, desc:'tes kesamaptaan & akademik'},
-  {k:'tentara',n:'Tentara (TNI)',         g:60e6,  minH:70, minS:42, desc:'tes fisik berat'},
-  {k:'intel',  n:'Intelijen (mata-mata)', g:80e6,  minH:65, minS:70, desc:'seleksi rahasia & ketat'},
-  {k:'pns',    n:'PNS / ASN',             g:50e6,  minH:40, minS:60, desc:'tes CPNS sengit'},
-  {k:'pilot',  n:'Pilot maskapai',        g:190e6, minH:75, minS:65, desc:'sekolah terbang mahal', biaya:300e6},
-  {k:'pelaut', n:'Pelaut / ABK kapal',    g:95e6,  minH:70, minS:40, desc:'berlayar berbulan-bulan'},
-  {k:'damkar', n:'Pemadam kebakaran',     g:52e6,  minH:70, minS:40, desc:'berani & sigap'}
+  {k:'polisi', n:'Polisi (Polri)',        g:62e6,  minH:65, minS:45, maxU:25, desc:'tes kesamaptaan & akademik'},
+  {k:'tentara',n:'Tentara (TNI)',         g:60e6,  minH:70, minS:42, maxU:25, desc:'tes fisik berat'},
+  {k:'intel',  n:'Intelijen (mata-mata)', g:80e6,  minH:65, minS:70, maxU:30, desc:'seleksi rahasia & ketat'},
+  {k:'pns',    n:'PNS / ASN',             g:50e6,  minH:40, minS:60, maxU:35, desc:'tes CPNS sengit'},
+  {k:'pilot',  n:'Pilot maskapai',        g:190e6, minH:75, minS:65, maxU:32, desc:'sekolah terbang mahal', biaya:300e6},
+  {k:'pelaut', n:'Pelaut / ABK kapal',    g:95e6,  minH:70, minS:40, maxU:35, desc:'berlayar berbulan-bulan'},
+  {k:'damkar', n:'Pemadam kebakaran',     g:52e6,  minH:70, minS:40, maxU:30, desc:'berani & sigap'}
 ];
+/* profesi aparatur negara: tidak kena PHK/dibajak, pensiun bulanan penuh, wajib mundur bila maju jabatan politik */
+const NEGERI=['polisi','tentara','intel','pns','damkar'];
 const PANGKAT={
   polisi:['Bripda','Brigadir','Inspektur','Komisaris','Komjen'],
   tentara:['Prajurit','Sersan','Letnan','Mayor','Jenderal'],
@@ -79,7 +81,7 @@ const HOBI=[
   {k:'nulis',n:'Menulis',mulai:0.5e6,b:0,fx:{smart:2,happy:2,stress:-2}},
   {k:'otomotif',n:'Otomotif / modifikasi',mulai:6e6,b:3e6,fx:{happy:3,charm:1},g:'L'},
   {k:'badminton',n:'Badminton',mulai:1e6,b:0.5e6,fx:{health:4,happy:2,stress:-3}},
-  {k:'konten',n:'Bikin konten',mulai:3e6,b:1e6,fx:{charm:2,happy:2,stress:1}},
+  {k:'konten',n:'Bikin konten',mulai:3e6,b:1e6,fx:{charm:2,happy:2,stress:1},sejak:2010},
   {k:'travel',n:'Traveling',mulai:0,b:8e6,fx:{happy:8,stress:-10,charm:1}},
   {k:'ikan',n:'Ikan hias',mulai:2e6,b:1e6,fx:{happy:3,stress:-4}},
   /* khusus cowok */
@@ -110,22 +112,33 @@ const TEMPAT_CALON=['perusahaan swasta','kantor pemerintah','BUMN','sebuah start
 const INV=[
   {k:'depo',n:'Deposito',desc:'Aman, ±4% per tahun'},
   {k:'emas',n:'Emas',desc:'Stabil, −4% s.d. +14% per tahun'},
-  {k:'saham',n:'Saham',desc:'Naik-turun, −25% s.d. +35%'},
-  {k:'kripto',n:'Kripto',desc:'Liar, −65% s.d. +130%'}
+  {k:'saham',n:'Saham',desc:'Naik-turun, −22% s.d. +38%'},
+  {k:'kripto',n:'Kripto',desc:'Liar, −70% s.d. +110%',sejak:2014}
 ];
-/* katalog aset yang bisa dibeli & dikoleksi tanpa batas. sewa = pendapatan pasif/thn, tumbuh = apresiasi nilai/thn, kpr = bisa dicicil */
+/* katalog aset yang bisa dibeli & dikoleksi tanpa batas. sewa = pendapatan sewa/thn saat terisi penuh (imbal 4,5–7,5%), tumbuh = perubahan nilai/thn
+   (kendaraan menyusut, properti naik), kpr = bisa dicicil */
 const ASET=[
-  {k:'motor',    n:'Motor',         harga:18e6,  kelas:'kendaraan'},
-  {k:'mobil',    n:'Mobil',         harga:160e6, kelas:'kendaraan'},
-  {k:'moge',     n:'Moge',          harga:280e6, kelas:'kendaraan'},
-  {k:'mewah',    n:'Mobil mewah',   harga:850e6, kelas:'kendaraan'},
+  {k:'motor',    n:'Motor',         harga:18e6,  kelas:'kendaraan', tumbuh:-0.10},
+  {k:'mobil',    n:'Mobil',         harga:160e6, kelas:'kendaraan', tumbuh:-0.08},
+  {k:'moge',     n:'Moge',          harga:280e6, kelas:'kendaraan', tumbuh:-0.08},
+  {k:'mewah',    n:'Mobil mewah',   harga:850e6, kelas:'kendaraan', tumbuh:-0.10},
   {k:'tanah',    n:'Tanah kavling', harga:100e6, kelas:'properti', tumbuh:0.08},
   {k:'rumah',    n:'Rumah',         harga:400e6, kelas:'properti', tumbuh:0.05, kpr:true},
-  {k:'apartemen',n:'Apartemen',     harga:550e6, kelas:'properti', tumbuh:0.04, sewa:38e6, kpr:true},
-  {k:'ruko',     n:'Ruko',          harga:650e6, kelas:'properti', tumbuh:0.05, sewa:55e6, kpr:true},
-  {k:'kos',      n:'Kos-kosan',     harga:800e6, kelas:'properti', tumbuh:0.04, sewa:95e6, kpr:true},
+  {k:'apartemen',n:'Apartemen',     harga:550e6, kelas:'properti', tumbuh:0.04, sewa:25e6, kpr:true},
+  {k:'ruko',     n:'Ruko',          harga:650e6, kelas:'properti', tumbuh:0.05, sewa:39e6, kpr:true},
+  {k:'kos',      n:'Kos-kosan',     harga:800e6, kelas:'properti', tumbuh:0.04, sewa:60e6, kpr:true},
   {k:'vila',     n:'Vila',          harga:1.2e9, kelas:'properti', tumbuh:0.05, sewa:65e6, kpr:true}
 ];
+/* nama yang mengikuti zaman: hal yang belum ada di tahun itu diganti padanannya (lihat tahunIni() di 03c-sekolah.js) */
+const ERA_NAMA=[
+  ['Driver ojek online',2015,'Tukang ojek pangkalan'],['Programmer startup',2010,'Programmer software house'],
+  ['Social media specialist',2011,'Staf periklanan'],['Content writer',2009,'Penulis lepas'],
+  ['Olshop fashion',2010,'Distro / butik kecil'],['Startup aplikasi',2010,'Warnet & rental komputer'],['Kafe kekinian',2012,'Kafe']
+];
+function eraNama(n){ const y=P?P.lahir+P.age:2020; for(const e of ERA_NAMA)if(e[0]===n&&y<e[1])return e[2]; return n; }
+function adaPinjol(){ return !P||P.lahir+P.age>=2016; }
+function namaUtangCepat(){ return adaPinjol()?'pinjol':'rentenir'; }
+function adaJudol(){ return !P||P.lahir+P.age>=2012; }
 const SEBAB_TUA=['sakit jantung','komplikasi penyakit','usia tua, wafat dengan tenang dalam tidur','stroke'];
 const ACH_DEF={
   sarjana:'Sarjana', magister:'Magister', direktur:'Pucuk Karier', miliarder:'Miliarder',

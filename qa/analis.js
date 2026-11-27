@@ -54,23 +54,27 @@ globalThis.__drain=function(){ let g=0; while(G.current&&g++<400){ const n=G.cur
 `);
 const pakaiErr=[];
 const pakai=s=>{ try{ return run(s); }catch(e){ pakaiErr.push(e.message+' @ '+s.slice(0,60)); return null; } };
-const AKSI_TERSEDIA=`JSON.stringify(ACTS.filter(a=>{ try{ return actAvail(a).ok; }catch(e){ return false; } }).map(a=>a.k))`;
+/* aksi di luar daftar ACTS (mis. menekuni hobi di Kehidupan: doAct('tekuni:<hobi>')) ikut dicoba, dilaporkan sebagai satu baris 'tekuni' */
+const AKSI_TERSEDIA=`JSON.stringify(ACTS.filter(a=>{ try{ return actAvail(a).ok; }catch(e){ return false; } }).map(a=>a.k).concat(typeof tekuni==='function'&&P&&P.hobi&&!(P.penjara>0)?P.hobi.map(h=>'tekuni:'+h.k).filter(k=>!P.used[k]):[]))`;
+const kunci=k=>k.startsWith('tekuni:')?'tekuni':k;
 
 /* ---------- satu putaran simulasi untuk satu profil ---------- */
 function jalankan(profil){
   run(`__reset(); __PROFIL=${JSON.stringify(profil)}; globalThis.__KUIS_PINTAR=${profil==='wajar'};`);
   const aksi={}, hidup=[], statEkstrem={};
   for(let h=0;h<N_HIDUP;h++){
-    pakai('newGame(); __drain();');
+    /* bila game punya lanjut-generasi (contAsChild), sepertiga hidup diteruskan sebagai anak → menguji warisan, silsilah, dinasti */
+    if(h>0&&run('typeof contAsChild==="function"&&!!P&&!!P.kids&&P.kids.length>0')&&Math.random()<0.35)pakai('contAsChild(); __drain();');
+    else pakai('newGame(); __drain();');
     let lama=0;
     for(let g=0;g<cfg.maks*1.5;g++){
       if(run('!P||!P.alive||G.over'))break;
-      for(const k of JSON.parse(pakai(AKSI_TERSEDIA)||'[]'))(aksi[k]=aksi[k]||{tersedia:0,dipakai:0,dUang:[]}).tersedia++;
+      for(const k of new Set(JSON.parse(pakai(AKSI_TERSEDIA)||'[]').map(kunci)))(aksi[k]=aksi[k]||{tersedia:0,dipakai:0,dUang:[]}).tersedia++;
       const nAksi=Math.floor(Math.random()*4);
       for(let i=0;i<nAksi;i++){
         const pil=JSON.parse(pakai(AKSI_TERSEDIA)||'[]'); if(!pil.length)break;
-        const k=pil[Math.floor(Math.random()*pil.length)];
-        const u0=run('__uang()'); pakai(`doAct(${JSON.stringify(k)}); __drain();`); const u1=run('__uang()');
+        const kAsli=pil[Math.floor(Math.random()*pil.length)], k=kunci(kAsli);
+        const u0=run('__uang()'); pakai(`doAct(${JSON.stringify(kAsli)}); __drain();`); const u1=run('__uang()');
         (aksi[k]=aksi[k]||{tersedia:1,dipakai:0,dUang:[]}).dipakai++; aksi[k].dUang.push(u1-u0);
         if(run('!P.alive||G.over'))break;
       }
@@ -93,6 +97,7 @@ const pct=(arr,p)=>{ const s=arr.slice().sort((a,b)=>a-b); return s.length?s[Mat
 const judulKode=new Set(); for(const m of src.matchAll(/title:\s*'([^'\\]+)'/g))judulKode.add(m[1]);
 const achDef=JSON.parse(pakai('JSON.stringify(typeof ACH_DEF!=="undefined"?ACH_DEF:{})')||'{}');
 const daftarAksi=JSON.parse(pakai('JSON.stringify(ACTS.map(a=>[a.k,a.lbl,a.tab]))')||'[]');
+if(hasil.some(h=>h.aksi.tekuni))daftarAksi.push(['tekuni','Tekuni hobi','hobi']);
 const semuaJudul={}, semuaAch={}; let rusak=[];
 for(const h of hasil){ for(const t in h.Q.judul)semuaJudul[t]=(semuaJudul[t]||0)+h.Q.judul[t]; for(const k in h.Q.ach)semuaAch[k]=(semuaAch[k]||0)+h.Q.ach[k]; rusak=rusak.concat(h.Q.rusak); }
 
@@ -143,7 +148,7 @@ const achTak=Object.keys(achDef).filter(k=>!semuaAch[k]);
 L('## Tanda jasa yang tak pernah didapat di kedua profil ('+achTak.length+'/'+Object.keys(achDef).length+')');
 L(achTak.length?achTak.map(k=>'- '+achDef[k]+' (`'+k+'`)').join('\n'):'- semua pernah didapat');
 L('');
-const takMuncul=[...judulKode].filter(t=>!semuaJudul[t]).sort();
+const _jl=Object.keys(semuaJudul); const takMuncul=[...judulKode].filter(t=>!semuaJudul[t]&&!(/[\s:—-]$/.test(t)&&_jl.some(x=>x.startsWith(t)))).sort();
 L('## Kartu (judul literal di kode) yang tak pernah muncul ('+takMuncul.length+'/'+judulKode.size+')');
 L(takMuncul.length?takMuncul.map(t=>'- '+t).join('\n'):'- semua muncul');
 L('');

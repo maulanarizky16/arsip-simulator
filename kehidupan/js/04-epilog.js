@@ -15,6 +15,7 @@ function deathCheck(){
   if(r()<p)die(h<35?'sakit yang sudah lama digerogoti':pick(SEBAB_TUA));
 }
 function checkAch(){
+  if(P.job&&P.job.level>(P.maxLv||0))P.maxLv=P.job.level;   /* jenjang karier tertinggi yang pernah dicapai */
   if(P.eduLevel>=4)ach('sarjana');
   if(P.s2)ach('magister');
   if(P.job&&P.job.level>=4)ach('direktur');
@@ -43,7 +44,7 @@ function checkAch(){
 function showEpilog(){
   const avgH=Math.round(P.sumHappy/Math.max(P.age,1));
   const nAch=Object.keys(P.ach).length;
-  const lvl=P.job?P.job.level:(P.riwayat.some(x=>x.t.startsWith('Promosi'))?2:0);
+  const lvl=Math.max(P.maxLv||0,P.job?P.job.level:0,P.riwayat.some(x=>x.t.startsWith('Promosi'))?1:0);
   const hobLv=P.hobi.reduce((s,h)=>s+h.level,0);
   /* aset dinilai per kelas (properti bernilai, kendaraan dibatasi) agar tak bisa di-spam aset murah */
   const skorAset=P.aset.filter(a=>a.kelas==='properti').length*10+Math.min(P.aset.filter(a=>a.kelas==='kendaraan').length,3)*3;

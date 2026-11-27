@@ -328,8 +328,40 @@ function topPreview(){
   });
 }
 
+/* ===== LANJUTKAN PERMAINAN: berkas yang belum ditutup (save tiap game di localStorage) ===== */
+function waktuLalu(ts){
+  const m=Math.max(0,Math.round((Date.now()-(ts||0))/60000));
+  if(!ts)return ''; if(m<2)return 'baru saja'; if(m<60)return m+' menit lalu';
+  const j=Math.round(m/60); if(j<24)return j+' jam lalu';
+  const h=Math.round(j/24); return h<31?h+' hari lalu':'lebih dari sebulan lalu';
+}
+function renderLanjut(){
+  const hero=document.querySelector('.arsip-hero'); if(!hero)return;
+  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const list=[];
+  for(const s of SIM){
+    if(!s.avail)continue;
+    let d=null; try{ d=JSON.parse(localStorage.getItem('arsip_'+s.id+'_save_v1')||'null'); }catch(e){}
+    if(!d||!d.P||d.over||d.P.alive===false)continue;
+    const prog=d.N&&d.N.ke?'bulan '+d.N.ke+'/36':(d.P.age!=null?'usia '+d.P.age:'');
+    list.push({s,P:d.P,ts:d.ts||0,prog});
+  }
+  if(!list.length)return;
+  list.sort((a,b)=>b.ts-a.ts);
+  const art=window.ArsipArt&&ArsipArt.SIM_ART||{};
+  const box=document.createElement('div');
+  box.className='aa-lanjut';
+  box.innerHTML='<h4>Lanjutkan permainanmu</h4>'+list.slice(0,3).map(x=>
+    '<a class="lj" href="'+x.s.file+'">'+(art[x.s.id]?ArsipArt.img(art[x.s.id].main,'lj-img'):'')+
+    '<span><b>'+esc(x.P.nama||'Tanpa nama')+'</b><small>'+esc([x.s.title,x.prog,waktuLalu(x.ts)].filter(Boolean).join(' · '))+'</small></span><i>»</i></a>').join('')+
+    (list.length>3?'<div class="lj-more">+'+(list.length-3)+' berkas lain</div>':'');
+  hero.appendChild(box);
+  hero.classList.add('has-lanjut');
+}
+
 /* ===== BOOT ===== */
 renderCards();
+renderLanjut();
 refreshProfile();
 topPreview();
 /* Sambutan identitas: cuma sekali, saat pertama buka */

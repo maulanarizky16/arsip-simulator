@@ -298,7 +298,7 @@ const KARTU_RULES=[
   [/kebakaran/, 'fire-engine'],
   [/banjir|badai|cuaca|bencana|gempa|longsor|tsunami/, 'cloud-with-lightning-and-rain'],
   [/di laut|kapal|berlayar/, 'ship'],
-  [/perang|militer|separatis|kudeta/, 'military-helmet'],
+  [/\bperang\b|militer|separatis|kudeta/, 'military-helmet'],   /* \b: jangan cocok di "perangkat" */
   [/pemilihan|pemilu|kampanye|dicalonkan|pilkada|debat|elektabilitas|ketua rt|ketua rw|koalisi/, 'ballot-box-with-ballot'],
   [/demo|keluhan warga|aspirasi|unjuk rasa|mogok/, pick('man-raising-hand','woman-raising-hand')],
   [/wartawan|jurnalis|media|viral|trending|tagar|skandal/, 'video-camera'],
@@ -429,14 +429,14 @@ function matchRule(rules,text,ctx){
   for(const r of rules){ if(r[0].test(text)){ return typeof r[1]==='function'?r[1](ctx):r[1]; } }
   return null;
 }
-const ACRO=/^(RT|RW|DPR|DPRD|KPK|KY|MA|PN|PT|IT|SD|SMP|SMA|KPR|KTA|ASN|PNS|TNI|POLRI|CTO|IPO|API|VPN|DNS|SSL|IOT|UKM|APBN|APBD|HAM|OTT|CEO|BUMN|SIP|PHK|ABK|S1|S2|S3|DDOS|LN|RI|MBG|IKN|NPL|SDM|UMKM|PKH|BPK|OJK|BI|IPA|IPS|SMK|UAS|UTS|KKN|UTBK|SNBT|SNBP|SBMPTN|SNMPTN|SPMB|UMPTN|UNBK|USBN|UASBN|EBTANAS|UAN|PTN|PTS|D3|PKM|BEM|PPPK|KPK|NIK)$/;
+const ACRO=/^(RT|RW|DPR|DPRD|KPK|KY|MA|PN|PT|IT|SD|SMP|SMA|KPR|KTA|ASN|PNS|TNI|POLRI|CTO|IPO|API|VPN|DNS|SSL|IOT|UKM|APBN|APBD|HAM|OTT|CEO|BUMN|SIP|PHK|ABK|S1|S2|S3|DDOS|LN|RI|MBG|IKN|NPL|SDM|UMKM|PKH|BPK|OJK|BI|IPA|IPS|SMK|UAS|UTS|KKN|UTBK|SNBT|SNBP|SBMPTN|SNMPTN|SPMB|UMPTN|UNBK|USBN|UASBN|EBTANAS|UAN|PTN|PTS|D3|PKM|BEM|PPPK|KPK|NIK|CPNS|SKD|TWK|TIU|TKP|SKB|CTF|SIM|CCST|CCNA|CCNP|CCIE|KCNA|CKAD|CKA|CKS|RHCSA|RHCE|RHCA|OSCP|OSCE|EJPT|PCEP|PCAP|PCPP1|PCPP2|CAPM|PSM|PMP|PGMP|ITIL|ITSM|LPIC|SAA|SQL|ISA)$/;
 function titleCase(s){
   if(s!==s.toUpperCase())return s;
   return s.split(/(\s+|[—\-\/:])/).map(w=>{
     const core=w.replace(/[^A-Za-z0-9]/g,'');
     if(!core||ACRO.test(core.toUpperCase())||!/[AIUEO]/.test(core))return w;
     return w.charAt(0)+w.slice(1).toLowerCase();
-  }).join('');
+  }).join('').replace(/\bIOT\b/g,'IoT').replace(/\bPGMP\b/g,'PgMP').replace(/\bEJPT\b/g,'eJPT').replace(/ (Of|And|Dan|Di|Ke|Dari|Yang|Untuk|Atau) /g,m=>m.toLowerCase());
 }
 let lastKartuSig='';
 function decorateKartu(game){

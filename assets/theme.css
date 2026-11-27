@@ -317,3 +317,40 @@ html .kartu .ang-row input[type=range]{width:100%;margin-top:6px;accent-color:#3
 }
 /* kolom isian selebar kotak tanpa meluber (padding & border dihitung di dalam lebar) */
 html .arsip-handle input,html .arsip-donate-box input,html .arsip-donate-box textarea,html .aa-creator input{box-sizing:border-box;max-width:100%}
+
+/* ---------- desktop (>940px): log & aksi tetap terlihat, pop-up soal lebih lega ---------- */
+@media (min-width:941px){
+  /* panel kanan jauh lebih tinggi dari kolom kiri: kolom kiri menempel saat halaman discroll */
+  /* z-index: sticky membuat konteks tumpukan baru; pop-up #kartu ada di dalam kolom ini dan harus tetap di atas panel kanan */
+  html main > section.doc{position:sticky;top:12px;align-self:flex-start;z-index:20}
+  /* log memanfaatkan tinggi layar (sebelumnya tetap ±40vh) */
+  html #feed{max-height:max(240px,calc(100vh - 490px))}   /* 490: Negara (meja aksi tertinggi) tetap muat di layar 768px */
+}
+@media (min-width:720px){
+  /* pop-up form soal, kartu hasil, menu sertifikasi: lebih lebar, opsi jawaban 2 kolom */
+  html .kartu:has(.kz),html .kartu:has(.kz-rev),html .kartu:has(.sg-punya){width:min(680px,100%)}
+  html .kartu .kz-q{display:grid;grid-template-columns:1fr 1fr;column-gap:8px;align-items:start}
+  html .kartu .kz-q .kz-t{grid-column:1/-1}
+  /* menu sertifikasi: tombol jalur 2 kolom; judul, teks & tombol terakhir (Nanti saja) selebar kartu */
+  html .kartu:has(.sg-punya){display:grid;grid-template-columns:1fr 1fr;column-gap:10px;align-content:start}
+  html .kartu:has(.sg-punya)>*:not(button),html .kartu:has(.sg-punya)>button:last-child{grid-column:1/-1}
+  html .kartu:has(.sg-punya)>button{margin:5px 0}
+}
+
+/* ---------- beranda: panel "Lanjutkan permainanmu" (berkas yang belum ditutup) ---------- */
+html .aa-lanjut{margin-top:14px;background:#fff;border-radius:20px;padding:12px 14px;box-shadow:0 4px 0 var(--c-white-d)}
+html .aa-lanjut h4{font:800 15px var(--disp);color:var(--ink);margin:0 0 6px}
+html .aa-lanjut .lj{display:flex;align-items:center;gap:10px;padding:7px 8px;margin:0 -6px;border-radius:14px;text-decoration:none;color:var(--ink);transition:background .1s}
+html .aa-lanjut .lj:hover{background:#fff6dc}
+html .aa-lanjut .lj .aa-lj-img{width:40px;height:40px;flex:0 0 auto;object-fit:contain}
+html .aa-lanjut .lj span{flex:1;min-width:0;display:flex;flex-direction:column}
+html .aa-lanjut .lj b{font:800 14.5px/1.2 var(--disp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html .aa-lanjut .lj small{font:600 12px/1.35 var(--type);color:var(--ink2)}
+html .aa-lanjut .lj i{font:800 18px var(--disp);font-style:normal;color:#fff;background:var(--c-green);border-radius:12px;padding:3px 11px;box-shadow:0 3px 0 var(--c-green-d)}
+html .aa-lanjut .lj-more{font:700 12px var(--type);color:var(--ink2);margin-top:4px}
+@media (min-width:900px){
+  /* desktop: panel mengisi sisi kanan kotak pembuka yang sebelumnya kosong */
+  html .arsip-hero.has-lanjut{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,360px);column-gap:28px;align-items:start}
+  html .arsip-hero.has-lanjut>*:not(.aa-lanjut):not(.rahasia){grid-column:1}
+  html .arsip-hero.has-lanjut>.aa-lanjut{grid-column:2;grid-row:1 / span 3;margin-top:0;align-self:center}
+}

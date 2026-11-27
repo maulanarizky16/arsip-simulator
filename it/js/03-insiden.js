@@ -2,11 +2,8 @@
 /* ================= KARIER (PROMOSI) ================= */
 /* sertifikasi yang relevan menambah peluang fix insiden di domainnya */
 function certBonus(c){
-  const dom=SKILL_INSIDEN[c.jenis.k]; let b=0;
-  if(dom==='keamanan'&&P.sertifikat&&P.sertifikat.indexOf('oscp')>=0)b+=0.05;
-  if(dom==='sistem'&&P.sertifikat&&(P.sertifikat.indexOf('cloud')>=0||P.sertifikat.indexOf('cka')>=0))b+=0.05;
-  if(dom==='jaringan'&&P.sertifikat&&P.sertifikat.indexOf('ccnp')>=0)b+=0.05;
-  return b;
+  /* grade tertinggi di jalur sedomain: Fundamental +1% · Associate +2,5% · Professional +5% · Expert +8% */
+  return sertBonusDomain(SKILL_INSIDEN[c.jenis.k]);
 }
 function cekPromosi(){
   if(P.retired||P.penjara>0||lvNow()>=6)return;
@@ -14,8 +11,9 @@ function cekPromosi(){
   const s=P.st, lv=lvNow();
   const skillInti=Math.round((s.ngoding+s.sistem+s.jaringan+s.keamanan)/4);
   const layak = P.tahunJab>=ri(2,4) && P.reputasi>=(28+lv*8) && skillInti>=(40+lv*7) && P.heat<55;
-  /* PMP melonggarkan syarat soft-skill untuk naik ke jalur kepemimpinan */
-  const softGate = (P.sertifikat&&P.sertifikat.indexOf('pmp')>=0)?(42+lv*5):(50+lv*5);
+  /* sertifikasi manajemen proyek / ITSM melonggarkan syarat soft-skill untuk jalur kepemimpinan */
+  const gPM=Math.max(sertGrade('pm'),sertGrade('itsm')-1);
+  const softGate = 50+lv*5-(gPM>=2?8:gPM>=1?4:0);
   const layakSoft = lv>=3 && s.soft>=softGate;
   const loyal = (P.tenure||0)>=3;   /* loyalitas mempercepat promosi */
   if(layak && (lv<3 || layakSoft) && r()<(loyal?0.7:0.55)){

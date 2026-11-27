@@ -3,8 +3,10 @@
 function renderKartu(){
   if(!hasDoc)return;
   const k=$('kartu');
-  if(!G.current){k.innerHTML='';return;}
+  if(!G.current){k.innerHTML='';k._kartu=null;return;}
   const d=G.current;
+  if(k._kartu===d&&k.firstChild)return;   /* kartu yang sama sudah tampil: jangan render ulang (centang jawaban form soal bisa hilang) */
+  k._kartu=d;
   k.innerHTML='<div class="kartu"><div class="kh">FORMULIR KEPUTUSAN — '+d.title+'</div>'+
     '<div class="kt">'+d.text+'</div>'+
     d.opts.map((o,i)=>'<button data-i="'+i+'"><span class="num">'+(i+1)+'.</span> '+o.t+(o.sub?'<small>'+o.sub+'</small>':'')+'</button>').join('')+

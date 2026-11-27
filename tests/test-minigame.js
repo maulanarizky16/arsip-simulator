@@ -33,14 +33,19 @@ cek('tawar-menawar selalu berakhir (≤ 8 ronde)',T.every(t=>t[0]&&t[2]<=8),T.fi
 cek('harga deal masuk akal (≤ harga buka, ≥ 60%)',T.filter(t=>t[1]!=null).every(t=>t[1]<=12e6&&t[1]>=7.2e6),T.filter(t=>t[1]!=null&&(t[1]>12e6||t[1]<7.2e6)).slice(0,3));
 cek('ada deal & ada yang gagal',T.some(t=>t[1]!=null)&&T.some(t=>t[1]==null));
 // CPNS: lolos SKD + menang SKB → jadi PNS
-w(`newGame(); __drain(0); P.skill=95; const __skd=Kuis.skd; Kuis.skd=d=>d({lolos:true,twk:5,tiu:5,tkp:25}); globalThis.__r0=Math.random; Math.random=()=>0.01; ikutCPNS(); Math.random=__r0; Kuis.skd=__skd;`);
-cek('CPNS: lolos → profesi PNS',w('P.profesi')==='pns',w('P.profesi'));
+// game memakai `const r=Math.random` yang terikat saat dimuat, jadi Math.random tak bisa diganti di sini.
+// Peluang menang SKB dengan skill 95 ≈ 83%: ulangi sampai lolos (maks. 40×) dan pastikan tiap kegagalan memang kalah di SKB.
+w(`newGame(); __drain(0); P.skill=95; const __skd=Kuis.skd; Kuis.skd=d=>d({lolos:true,twk:5,tiu:5,tkp:25});
+  globalThis.__cpns={coba:0,kalahSKB:0}; for(let i=0;i<40&&P.profesi!=='pns';i++){ const n=G.feed.length; ikutCPNS(); __cpns.coba++; if(P.profesi!=='pns'&&G.feed.slice(n).some(f=>/kalah peringkat di SKB/.test(f.html||'')))__cpns.kalahSKB++; }
+  Kuis.skd=__skd;`);
+cek('CPNS: lolos SKD + SKB → profesi PNS',w('P.profesi')==='pns'&&w('__cpns.kalahSKB===__cpns.coba-1'),w('JSON.stringify([P.profesi,__cpns])'));
 // anggaran
 w(`newGame(); __drain(0); P.profesi='karyawan'; P.gaji=6e6; P.saldo=20e6; P.tabungan=0; P.anggaran={tabung:20,ingin:10}; P.st.waras=80; P.st.sehat=80; advance(); __drain(0);`);
 cek('anggaran: tabungan otomatis terisi',w('P.tabungan')>=1e6,w('P.tabungan'));
 // wawancara sebelum diterima kerja
-w(`newGame(); __drain(0); __JUDUL.length=0; tawaranKerja('Uji'); __drain(0);`);
-cek('WNI: wawancara muncul sebelum diterima kerja',w('__JUDUL.includes("WAWANCARA KERJA")'),w('__JUDUL'));
+// tanpa "orang dalam" (nasib lahir acak bisa memberi jalur staf tanpa wawancara)
+w(`newGame(); __drain(0); P.orangDalam=false; __JUDUL.length=0; tawaranKerja('Uji'); __drain(0);`);
+cek('WNI: wawancara muncul sebelum diterima kerja',w('__JUDUL.includes("WAWANCARA KERJA")'),w('JSON.stringify(__JUDUL)'));
 // cek fakta
 w(`newGame(); __drain(0); __JUDUL.length=0; EVENTS.find(e=>e.k==='hoax').run(); __drain();`);
 cek('WNI: form cek fakta muncul',w('__JUDUL.includes("CEK FAKTA GRUP WA")'));

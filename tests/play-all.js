@@ -48,7 +48,10 @@ function playGame(game, shellFile, lives){
       if(Math.random()<0.3)click(q('.aa-creator [data-cr="dice"]'));
       click(ok); return true;
     }
-    function drain(){ let g=0; while((q('.aa-creator')||q('#kartu button[data-i]')) && g++<500){ if(creator())continue; const b=qa('#kartu button[data-i]'); click(b[Math.floor(Math.random()*b.length)]); } }
+    function jawabForm(){   // form soal (kuis.js) wajib dijawab semua sebelum dikumpulkan
+      for(const q of qa('#kartu .kz-q')){ const r=q.querySelectorAll('input[type=radio]'); if(!r.length||q.querySelector('input:checked'))continue; const x=r[Math.floor(Math.random()*r.length)]; x.checked=true; x.dispatchEvent(new window.Event('change',{bubbles:true})); }
+    }
+    function drain(){ let g=0; while((q('.aa-creator')||q('#kartu button[data-i]')) && g++<500){ if(creator())continue; jawabForm(); const b=qa('#kartu button[data-i]'); click(b[Math.floor(Math.random()*b.length)]); } }
     let advances=0, livesDone=0, guard=0;
     drain();
     while(livesDone<${lives} && guard++<8000){

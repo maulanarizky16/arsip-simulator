@@ -18,7 +18,17 @@ const hasil=[]; const cek=(n,ok,info)=>hasil.push([n,!!ok,info]);
 // bank soal
 const bank=JSON.parse(run('JSON.stringify(Object.entries(SOAL_IT).map(([k,a])=>[k,a.length,a.filter(s=>!s.o||s.o.length<2||new Set(s.o).size!==s.o.length||(s.w&&s.w.length!==s.o.length)).length]))'));
 for(const [k,n,rusak] of bank)cek('bank IT '+k+' cukup & valid',n>=(k==='sd'?3:5)&&!rusak,{n,rusak});
-cek('tiap spesialisasi & sertifikasi punya kategori soal',run('SPES.every(s=>KAT_SPES[s.k])&&SERT.every(s=>KAT_SERT[s.k]&&SOAL_IT[KAT_SERT[s.k]])'));
+cek('tiap spesialisasi punya kategori soal',run('SPES.every(s=>KAT_SPES[s.k]&&KAT_SPES[s.k].every(k=>SOAL_IT[k]))'));
+cek('jaringan & IoT punya bank soal terpisah (tak ada soal yang sama)',run('SOAL_IT.net&&SOAL_IT.iot&&!SOAL_IT.net.some(s=>SOAL_IT.iot.some(t=>t.q===s.q))'));
+cek('fokus belajar jaringan & IoT terpisah',run('FOKUS_IT.find(f=>f.k==="jaringan").kat.join()==="net"&&FOKUS_IT.find(f=>f.k==="iot").kat.join()==="iot"'));
+// tiap jalur sertifikasi: bank soal cukup untuk setiap tingkat (≥5 soal per tingkat 1/2/3), 4 gelar, biaya naik per grade
+const jal=JSON.parse(run(`JSON.stringify(SERT_JALUR.map(j=>{ const b=SOAL_IT[j.soal]||[]; const n=d=>b.filter(s=>(s.d||1)===d).length;
+  return {k:j.k,d1:n(1),d2:n(2),d3:n(3),gelar:j.gelar.length,naik:j.biaya.every((x,i)=>!i||x>j.biaya[i-1])}; }))`));
+for(const j of jal)cek('sertifikasi '+j.k+': 4 grade, biaya naik, soal per tingkat cukup',j.gelar===4&&j.naik&&j.d1>=5&&j.d2>=5&&j.d3>=5,j);
+cek('grade 0..3 bernama Fundamental → Expert, makin sulit',run(`GRADE.map(g=>g.n).join()==="Fundamental,Associate,Professional,Expert"&&GRADE.every((g,i)=>!i||(g.skill>=GRADE[i-1].skill&&g.mix.reduce((a,b)=>a+b)>GRADE[i-1].mix.reduce((a,b)=>a+b)))`));
+// soal ujian mengikuti tingkat grade
+run(`__baru(); globalThis.__mix=GRADE.map(g=>soalTingkat(['net'],g.mix).map(s=>s.d||1));`);
+cek('soal ujian sesuai tingkat grade (Fundamental semua dasar, Expert semua lanjut)',run('__mix[0].every(d=>d===1)&&__mix[3].every(d=>d===3)&&__mix.every(m=>m.length===5)'),run('__mix'));
 
 // latar acak
 run(`globalThis.__L={}; for(let i=0;i<200;i++){ __baru(); __L[P.latar]=(__L[P.latar]||0)+1; }`);
@@ -30,11 +40,32 @@ cek('usia mengikuti latar (SMK 19, switcher 27)',run(`(()=>{ for(let i=0;i<100;i
 run(`__baru(); __J.length=0; doAct('belajar'); __drain(0); __drain();`);
 cek('belajar memunculkan latihan soal',run('__J.some(t=>t.startsWith("LATIHAN"))'),run('__J'));
 
+// belajar IoT: soal hanya dari bank IoT
+run(`__baru(); __J.length=0; globalThis.__lembar=Kuis.lembar; globalThis.__soalIoT=null; Kuis.lembar=function(j,i,s,d,o){ if(/^LATIHAN/.test(j))__soalIoT=s.map(x=>x.q); return __lembar(j,i,s,d,o); };
+  doAct('belajar'); choose(FOKUS_IT.findIndex(f=>f.k==='iot')); __drain(0); Kuis.lembar=__lembar;`);
+cek('latihan IoT hanya berisi soal IoT',run('__soalIoT&&__soalIoT.length===3&&__soalIoT.every(q=>SOAL_IT.iot.some(s=>s.q===q))'),run('__soalIoT'));
+
 // sertifikasi: gagal → biaya hangus, pintar → lulus
-run(`__baru(); P.money=100e6; globalThis.__KUIS_PINTAR=false; ujianSertifikasi(SERT[0]); __drain(0); globalThis.__sertBayar=100e6-P.money;`);
-cek('sertifikasi: biaya ujian dipotong (lulus atau tidak)',run('__sertBayar>=SERT[0].biaya'),run('__sertBayar'));
-run(`__baru(); P.money=100e6; globalThis.__KUIS_PINTAR=true; ujianSertifikasi(SERT[1]); __drain(0); globalThis.__KUIS_PINTAR=false;`);
-cek('sertifikasi: pemain pintar lulus & dapat sertifikat',run('P.sertifikat.indexOf(SERT[1].k)>=0'));
+const NET='SERT_JALUR.find(j=>j.k==="net")';
+run(`__baru(); P.money=100e6; globalThis.__KUIS_PINTAR=false; ujianSertifikasi(${NET},0); __drain(0); globalThis.__sertBayar=100e6-P.money;`);
+cek('sertifikasi: biaya ujian dipotong (lulus atau tidak)',run(`__sertBayar>=${NET}.biaya[0]`),run('__sertBayar'));
+run(`__baru(); P.money=100e6; globalThis.__KUIS_PINTAR=true; ujianSertifikasi(${NET},0); __drain(0); globalThis.__KUIS_PINTAR=false;`);
+cek('sertifikasi: pemain pintar lulus Grade 0 (Fundamental)',run('sertGrade("net")===0'),run('JSON.stringify(P.sertifikat)'));
+// jenjang: grade berikutnya butuh grade sebelumnya + syarat skill + jenjang karier
+run(`__baru(); P.money=1e9; P.st.jaringan=30;`);
+cek('grade berikutnya = Associate, dikunci skill rendah',run(`(()=>{ P.sertifikat=['net0']; const b=sertBisa(${NET}); return b.g===1&&!b.ok&&/skill/.test(b.why); })()`),run(`JSON.stringify(sertBisa(${NET}))`));
+cek('Professional dikunci jenjang Junior',run(`(()=>{ P.sertifikat=['net0','net1']; P.st.jaringan=90; P.jab='junior'; const b=sertBisa(${NET}); return b.g===2&&!b.ok&&/jenjang/.test(b.why); })()`),run(`JSON.stringify(sertBisa(${NET}))`));
+cek('Expert terbuka untuk Senior berskill tinggi',run(`(()=>{ P.sertifikat=['net0','net1','net2']; P.st.jaringan=90; P.jab='senior'; const b=sertBisa(${NET}); return b.g===3&&b.ok; })()`));
+run(`globalThis.__KUIS_PINTAR=true; ujianSertifikasi(${NET},3); __drain(0); globalThis.__KUIS_PINTAR=false;`);
+cek('lulus Expert → grade 3 + tanda jasa',run('sertGrade("net")===3&&!!P.ach.sertExpert'));
+cek('setelah Expert, jalur itu tertutup (grade tertinggi)',run(`sertBisa(${NET}).max===true`));
+cek('bonus insiden & gaji naik mengikuti grade',run(`sertBonusDomain('jaringan')===GRADE[3].bonus&&sertBonusGaji()>0`));
+// menu sertifikasi: "Nanti saja" tidak menghabiskan jatah aksi tahunan
+run(`__baru(); P.money=50e6; __J.length=0; doAct('sertifikasi'); __drain(99);`);
+cek('menu sertifikasi muncul & "Nanti saja" mengembalikan jatah aksi',run('__J.includes("AMBIL SERTIFIKASI")&&!P.used.sertifikasi'),run('JSON.stringify([__J,P.used])'));
+// migrasi save lama (sebelum ada grade)
+run(`__baru(); P.sertifikat=['ccnp','oscp','cka','pmp','cloud','zzz']; migrasiSertifikat();`);
+cek('save lama dimigrasi ke jalur + grade',run('sertGrade("net")===2&&sertGrade("sec")===2&&sertGrade("k8s")===2&&sertGrade("pm")===2&&sertGrade("cloud")===1&&P.sertifikat.length===5'),run('JSON.stringify(P.sertifikat)'));
 
 // CTF
 run(`__baru(); P.st.keamanan=60; __J.length=0; doAct('ctf'); __drain();`);

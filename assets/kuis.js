@@ -1,6 +1,6 @@
 /* ARSIP Kuis — mini-game bersama untuk Simulator WNI & Kehidupan.
    Butuh fungsi global dari game: ask(), addLog(), rp(), r(); hasDoc (true di browser).
-   Semua form maks. 5 soal pilihan ganda, dikumpulkan sekaligus.
+   Semua form maks. 5 soal pilihan ganda, dikumpulkan sekaligus; semua soal wajib dijawab dulu.
    Jenis soal:
      biasa   {q, o:[...], a?:indeks benar (default 0), x?:pembahasan, fix?:urutan opsi tetap}
      berbobot{q, o:[...], w:[poin tiap opsi]}          → TKP, wawancara, calon mertua (tak ada benar/salah mutlak)
@@ -77,34 +77,91 @@ mertua:[
 
 function acak(a){ const b=a.slice(); for(let i=b.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); const t=b[i]; b[i]=b[j]; b[j]=t; } return b; }
 function ambil(kat,n){ return acak(BANK[kat]||[]).slice(0,Math.min(n,MAKS)); }
+const adaDoc=()=>typeof document!=='undefined'&&typeof hasDoc!=='undefined'&&hasDoc;
+
+/* ---------- jawaban dicatat SAAT dipilih ----------
+   Penting: choose() di tiap game mengosongkan #kartu SEBELUM menjalankan handler tombol, jadi
+   membaca radio dari DOM di dalam handler selalu menemukan "tidak dijawab" (bug lama: dijawab benar
+   semua tetap dinilai 0). Karena itu jawaban disimpan di JAWAB lewat event 'change'. */
+const JAWAB={};          /* nama grup radio → indeks opsi asli */
+const FORM={};           /* id form → jumlah soal (untuk cek kelengkapan) */
+function belumDijawab(id){ const out=[]; for(let qi=0;qi<(FORM[id]||0);qi++)if(JAWAB[id+'_'+qi]==null)out.push(qi); return out; }
+function formTampil(){ if(typeof document==='undefined')return null; const f=document.querySelector('#kartu .kz[data-kz]'); return f&&FORM[f.dataset.kz]!=null?f:null; }
+/* tahan pengumpulan kalau masih ada soal kosong: tandai soalnya & tampilkan peringatan. true = boleh kumpul */
+function cekLengkap(f){
+  const id=f.dataset.kz, kosong=belumDijawab(id);
+  f.querySelectorAll('.kz-q').forEach((q,qi)=>q.classList.toggle('kz-miss',kosong.indexOf(qi)>=0));
+  let w=f.querySelector('.kz-warn');
+  if(!kosong.length){ if(w)w.remove(); return true; }
+  if(!w){ w=document.createElement('div'); w.className='kz-warn'; w.setAttribute('role','alert'); f.appendChild(w); }
+  w.textContent='Masih ada '+kosong.length+' soal belum dijawab (No. '+kosong.map(i=>i+1).join(', ')+'). Jawab semua dulu sebelum dikumpulkan.';
+  const q=f.querySelectorAll('.kz-q')[kosong[0]];
+  if(q&&q.scrollIntoView)try{ q.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
+  return false;
+}
+if(typeof document!=='undefined'&&document.addEventListener){
+  document.addEventListener('change',e=>{
+    const t=e.target; if(!t||t.type!=='radio'||!t.name||!/^kq\d+_\d+$/.test(t.name))return;
+    JAWAB[t.name]=+t.value;
+    const q=t.closest&&t.closest('.kz-q'); if(q)q.classList.remove('kz-miss');
+    const f=t.closest&&t.closest('.kz[data-kz]'); const w=f&&f.querySelector('.kz-warn');
+    if(w&&!belumDijawab(f.dataset.kz).length)w.remove();
+  },true);
+  /* fase capture: jalan sebelum handler #kartu milik game */
+  document.addEventListener('click',e=>{
+    const b=e.target&&e.target.closest&&e.target.closest('#kartu button[data-i]'); if(!b)return;
+    const f=formTampil(); if(!f||cekLengkap(f))return;
+    e.preventDefault(); e.stopImmediatePropagation();
+  },true);
+  /* tombol angka 1–9 = pintasan "pilih opsi"; jangan sampai mengumpulkan form yang belum lengkap */
+  document.addEventListener('keydown',e=>{
+    if(!/^[1-9]$/.test(e.key))return;
+    const f=formTampil(); if(!f||cekLengkap(f))return;
+    e.preventDefault(); e.stopImmediatePropagation();
+  },true);
+}
+
 let uid=0;
-/* form pilihan ganda. done({benar, jumlah, poin, poinMaks, rasio}) */
+/* form pilihan ganda, maks. 5 soal, dikumpulkan sekaligus.
+   soal: {q, o:[...], a?:indeks benar (default 0), x?:pembahasan, fix?:urutan opsi tetap,
+          w?:[poin tiap opsi] (berbobot), lucu?:true + r:[tanggapan tiap opsi] (tidak dinilai)}
+   o: {diam?:tanpa log hasil, tombol?:label tombol}
+   done({benar, jumlah, poin, poinMaks, rasio, detail:[{qi, pilih, ok}]}) */
 function lembar(judul,intro,soal,done,o){
   o=o||{}; soal=soal.slice(0,MAKS);
   const id='kq'+(++uid);
+  FORM[id]=soal.length;
   const urut=soal.map(s=>s.fix?s.o.map((_,i)=>i):acak(s.o.map((_,i)=>i)));
-  let html=(intro?'<div class="kz-intro">'+intro+'</div>':'')+'<div class="kz">';
+  let html=(intro?'<div class="kz-intro">'+intro+'</div>':'')+'<div class="kz" data-kz="'+id+'">';
   soal.forEach((s,qi)=>{
-    html+='<div class="kz-q"><div class="kz-t"><b>'+(qi+1)+'.</b> '+s.q+'</div>'+
+    html+='<div class="kz-q" data-q="'+qi+'"><div class="kz-t"><b>'+(qi+1)+'.</b> '+s.q+'</div>'+
       urut[qi].map(oi=>'<label class="kz-o"><input type="radio" name="'+id+'_'+qi+'" value="'+oi+'"><span>'+s.o[oi]+'</span></label>').join('')+'</div>';
   });
   html+='</div>';
   ask({title:judul,text:html,opts:[{t:o.tombol||'Kumpulkan jawaban »',sub:soal.length+' soal pilihan ganda',e:()=>{
-    let benar=0,jumlah=0,poin=0,poinMaks=0; const cat=[];
+    let benar=0,jumlah=0,poin=0,poinMaks=0; const cat=[], detail=[];
     soal.forEach((s,qi)=>{
       let p=-1;
-      if(typeof hasDoc!=='undefined'&&hasDoc){ const el=document.querySelector('input[name="'+id+'_'+qi+'"]:checked'); if(el)p=+el.value; }
+      if(adaDoc()){
+        const nm=id+'_'+qi;
+        if(JAWAB[nm]!=null)p=JAWAB[nm];
+        else { const el=document.querySelector('input[name="'+nm+'"]:checked'); if(el)p=+el.value; }   /* cadangan bila DOM masih ada */
+      }
       else if(typeof globalThis!=='undefined'&&globalThis.__KUIS_PINTAR)p=s.w?s.w.indexOf(Math.max.apply(null,s.w)):(s.a||0);   /* khusus tes: pemain yang selalu menjawab terbaik */
       else p=urut[qi][Math.floor(r()*urut[qi].length)];
-      if(s.w){ poinMaks+=Math.max.apply(null,s.w); poin+=p>=0?s.w[p]:0; return; }
+      if(s.lucu){ if(p>=0&&s.r&&!o.diam)cat.push('<i>'+s.r[p]+'</i>'); detail.push({qi,pilih:p,ok:null}); return; }
+      if(s.w){ poinMaks+=Math.max.apply(null,s.w); poin+=p>=0?s.w[p]:0; detail.push({qi,pilih:p,ok:null}); return; }
       jumlah++; const a=s.a||0;
+      detail.push({qi,pilih:p,ok:p===a});
       if(p===a)benar++;
       else if(!o.diam)cat.push('No. '+(qi+1)+': '+(p<0?'tidak dijawab':'kurang tepat')+' — jawabannya <b>'+s.o[a]+'</b>. '+(s.x||''));
     });
+    for(let qi=0;qi<soal.length;qi++)delete JAWAB[id+'_'+qi];
+    delete FORM[id];
     const rasio=jumlah?benar/jumlah:(poinMaks?poin/poinMaks:0);
-    if(!o.diam)addLog('Hasil '+judul.toLowerCase()+': '+(jumlah?'<b>'+benar+' dari '+jumlah+' benar</b>.':'<b>'+poin+' dari '+poinMaks+' poin</b>.')+(cat.length?'<br>'+cat.join('<br>'):''),
-      rasio>=0.7?'good':rasio<0.4?'bad':'');
-    done({benar,jumlah,poin,poinMaks,rasio});
+    if(!o.diam)addLog('Hasil '+judul.toLowerCase()+': '+(jumlah?'<b>'+benar+' dari '+jumlah+' benar</b>.':poinMaks?'<b>'+poin+' dari '+poinMaks+' poin</b>.':'selesai.')+(cat.length?'<br>'+cat.join('<br>'):''),
+      !jumlah&&!poinMaks?'':rasio>=0.7?'good':rasio<0.4?'bad':'');
+    done({benar,jumlah,poin,poinMaks,rasio,detail});
   }}]});
 }
 
@@ -182,7 +239,7 @@ function tawar(barang,buka,done){
   function selesai(h){ addLog('Deal! '+barang+' kamu dapatkan seharga <b>'+rp(h)+'</b>'+(h<buka?' (hemat '+rp(buka-h)+' dari harga awal).':'.'),'good'); done(h); }
   putar('Penjual membuka harga dengan senyum lebar penuh strategi.');
 }
-const api={lembar,ambil,skd,wawancara,hoax,sim,simLengkap,mertua,tawar,BANK};
+const api={lembar,ambil,acak,skd,wawancara,hoax,sim,simLengkap,mertua,tawar,BANK};
 if(typeof window!=="undefined")window.Kuis=api;
 if(typeof globalThis!=="undefined")globalThis.Kuis=api;   /* harness tes (vm) memakai globalThis */
 })();

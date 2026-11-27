@@ -25,8 +25,10 @@ function advance(){
 function renderKartu(){
   if(!hasDoc)return;
   const k=$('kartu');
-  if(!G.current){k.innerHTML='';return;}
+  if(!G.current){k.innerHTML='';k._kartu=null;return;}
   const d=G.current;
+  if(k._kartu===d&&k.firstChild)return;   /* kartu yang sama sudah tampil: jangan render ulang (centang jawaban form soal bisa hilang) */
+  k._kartu=d;
   k.innerHTML='<div class="kartu"><div class="kh">LEMBAR KEPUTUSAN — '+d.title+'</div>'+
     '<div class="kt">'+d.text+'</div>'+
     d.opts.map((o,i)=>'<button data-i="'+i+'"><span class="num">'+(i+1)+'.</span> '+o.t+(o.sub?'<small>'+o.sub+'</small>':'')+'</button>').join('')+
@@ -92,7 +94,8 @@ function render(){
   /* riwayat */
   let f='';
   if(P.keluarga)f+='<div class="fr"><span>Keluarga</span><span>menikah'+(P.anak?' · '+P.anak+' anak':'')+'</span></div>';
-  if(P.sertifikat.length)f+='<div class="fr"><span>Sertifikasi</span><span>'+P.sertifikat.length+' lencana</span></div>';
+  if(P.sertifikat.length){ const top=SERT_JALUR.map(j=>({j,g:sertGrade(j.k)})).filter(x=>x.g>=0).sort((a,b)=>b.g-a.g);
+    f+='<div class="fr"><span>Sertifikasi</span><span>'+top.map(x=>x.j.gelar[x.g]+' <small>('+GRADE[x.g].n+')</small>').join(' · ')+'</span></div>'; }
   const rw=P.riwayat.slice(-6).reverse();
   for(const x of rw)f+='<div class="fr"><span>'+x.th+'</span><span>'+x.t+'</span></div>';
   $('riwayat').innerHTML=f||'<span class="muted">Belum ada catatan.</span>';

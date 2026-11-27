@@ -353,14 +353,33 @@ const INSIDEN=[
     ]}
 ];
 
-/* ===== SERTIFIKASI ===== */
-const SERT=[
-  {k:'cloud', n:'Sertifikasi Cloud (AWS/GCP)', biaya:15e6, st:{sistem:6,ngoding:2}},
-  {k:'cka',   n:'CKA — Kubernetes',            biaya:12e6, st:{sistem:7}},
-  {k:'ccnp',  n:'CCNP — Jaringan',             biaya:14e6, st:{jaringan:8}},
-  {k:'oscp',  n:'OSCP — Offensive Security',   biaya:20e6, st:{keamanan:9}},
-  {k:'pmp',   n:'PMP — Manajemen Proyek',      biaya:18e6, st:{soft:8}}
+/* ===== SERTIFIKASI BERJENJANG (GRADE) =====
+   Tiap jalur punya 4 grade: 0 Fundamental → 1 Associate → 2 Professional → 3 Expert.
+   Grade berikutnya butuh grade sebelumnya di jalur yang sama, skill minimum, dan jenjang karier minimum.
+   mix  = tingkat kesulitan tiap soal ujian (1 dasar, 2 menengah, 3 lanjut), selalu 5 soal.
+   lulus= minimal jawaban benar dari 5.  st = kenaikan skill utama.  bonus = tambahan peluang fix insiden di domainnya.
+   gaji = tambahan nilai jual (persen gaji tahunan) untuk grade Professional & Expert. */
+const GRADE=[
+  {g:0, n:'Fundamental',  d:'Konsep dasar, cocok untuk pemula yang baru masuk IT.',              mix:[1,1,1,1,1], lulus:3, skill:0,  lv:1, st:2, rep:0, bonus:0.01,  gaji:0},
+  {g:1, n:'Associate',    d:'Siap kerja: paham konsep & bisa mengerjakan tugas harian.',        mix:[1,1,2,2,2], lulus:4, skill:35, lv:1, st:4, rep:1, bonus:0.025, gaji:0},
+  {g:2, n:'Professional', d:'Mampu merancang & menangani masalah kompleks secara mandiri.',    mix:[2,2,3,3,3], lulus:4, skill:50, lv:2, st:6, rep:2, bonus:0.05,  gaji:0.02},
+  {g:3, n:'Expert',       d:'Level tertinggi: diakui sebagai pakar, ujian sangat sulit.',       mix:[3,3,3,3,3], lulus:4, skill:70, lv:3, st:9, rep:4, bonus:0.08,  gaji:0.05}
 ];
+/* skill = stat utama untuk syarat; stat = pembagian kenaikan skill; dom = domain insiden yang dibantu */
+const SERT_JALUR=[
+  {k:'net',   n:'Jaringan',             soal:'net',     skill:'jaringan', stat:{jaringan:1},           dom:'jaringan', biaya:[2e6,5e6,14e6,35e6],   gelar:['CCST Networking','CCNA','CCNP Enterprise','CCIE Enterprise Infrastructure']},
+  {k:'iot',   n:'Internet of Things',   soal:'iot',     skill:'jaringan', stat:{jaringan:0.6,ngoding:0.4}, dom:'jaringan', biaya:[2e6,5e6,12e6,30e6],   gelar:['IoT Fundamentals','IoT Developer Associate','IoT Solutions Professional','IoT Architect Expert']},
+  {k:'linux', n:'Linux & Server',       soal:'linux',   skill:'sistem',   stat:{sistem:1},             dom:'sistem',   biaya:[1.5e6,5e6,12e6,30e6], gelar:['Linux Essentials','RHCSA','RHCE','RHCA']},
+  {k:'cloud', n:'Cloud',                soal:'cloud',   skill:'sistem',   stat:{sistem:0.7,ngoding:0.3},  dom:'sistem',   biaya:[1.5e6,5e6,15e6,32e6], gelar:['Cloud Practitioner','Solutions Architect – Associate','Solutions Architect – Professional','Cloud Architect Expert']},
+  {k:'k8s',   n:'Kubernetes',           soal:'k8s',     skill:'sistem',   stat:{sistem:1},             dom:'sistem',   biaya:[3e6,6e6,12e6,25e6],   gelar:['KCNA','CKAD','CKA','CKS']},
+  {k:'sec',   n:'Keamanan Siber',       soal:'sec',     skill:'keamanan', stat:{keamanan:1},           dom:'keamanan', biaya:[3e6,6e6,20e6,40e6],   gelar:['CompTIA Security+','eJPT','OSCP','OSCE³']},
+  {k:'code',  n:'Pemrograman (Python)', soal:'code',    skill:'ngoding',  stat:{ngoding:1},            dom:'ngoding',  biaya:[1e6,3e6,8e6,15e6],    gelar:['PCEP','PCAP','PCPP1','PCPP2']},
+  {k:'data',  n:'Data Engineering',     soal:'data',    skill:'ngoding',  stat:{ngoding:0.6,sistem:0.4},  dom:'ngoding',  biaya:[1.5e6,5e6,12e6,28e6], gelar:['Data Fundamentals','Data Engineer Associate','Data Engineer Professional','Data Architect Expert']},
+  {k:'pm',    n:'Manajemen Proyek',     soal:'pm',      skill:'soft',     stat:{soft:1},               dom:null,       biaya:[3e6,5e6,18e6,30e6],   gelar:['CAPM','PSM I (Scrum Master)','PMP','PgMP']},
+  {k:'itsm',  n:'Layanan TI (ITSM)',    soal:'support', skill:'soft',     stat:{soft:0.5,sistem:0.5},  dom:null,       biaya:[2e6,4e6,12e6,25e6],   gelar:['CompTIA A+','ITIL 4 Foundation','ITIL 4 Managing Professional','ITIL 4 Master']}
+];
+/* sertifikat dari save lama (sebelum ada grade) → id jalur+grade */
+const SERT_LAMA={cloud:'cloud1',cka:'k8s2',ccnp:'net2',oscp:'sec2',pmp:'pm2'};
 
 const ACH_DEF={
   junior:'Commit Pertama', medior:'Naik Medior', senior:'Engineer Senior', lead:'Memimpin Tim',
@@ -371,7 +390,7 @@ const ACH_DEF={
   buronan:'Buronan Siber', jeruji:'Di Balik Jeruji Siber',
   sultanTech:'Sultan Tech', fire:'Pensiun Dini (FIRE)', exit:'Cuan dari Exit Startup',
   ossLegend:'Maintainer Open Source', mentor:'Mentor Para Junior', iotMaster:'Penjaga Armada',
-  sertifikat:'Kolektor Sertifikat', burnoutSurvivor:'Selamat dari Burnout', polyglot:'Full-Stack Sejati',
+  sertifikat:'Kolektor Sertifikat', sertExpert:'Bersertifikat Expert', burnoutSurvivor:'Selamat dari Burnout', polyglot:'Full-Stack Sejati',
   legend:'Engineer Legendaris', antiAI:'Bertahan dari Gelombang AI',
   lulusSertif:'Lulus Ujian Sertifikasi', ctfSempurna:'CTF Sempurna', wawancaraAce:'Wawancara Teknis Sempurna', gajiDolar:'Gaji Dolar',
   guruNgoding:'Guru Ngoding', techInfluencer:'Tech Influencer', blameless:'Budaya Blameless', exceeds:'Exceeds Expectations',

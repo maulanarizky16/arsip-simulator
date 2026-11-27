@@ -56,31 +56,12 @@ function ambilSoal(cat,n,lucu){
 }
 
 /* ---------- LEMBAR SOAL: form pilihan ganda (maks. 5), dikumpulkan sekaligus ----------
+   Memakai mesin bersama Kuis.lembar (assets/kuis.js) supaya jawaban terbaca benar & soal kosong ditahan.
+   Soal "lucu" tidak dinilai; opsi seperti "Semua di atas" urutannya dikunci agar tetap di bawah.
    done(benar, jumlahSoalNonLucu) */
-let lembarId=0;
 function lembarSoal(judul,intro,soal,done){
-  const id='kz'+(++lembarId);
-  const acak=soal.map(s=>s.o.map((_,i)=>i).sort(()=>r()-0.5));
-  let html=(intro?'<div class="kz-intro">'+intro+'</div>':'')+'<div class="kz" id="'+id+'">';
-  soal.forEach((s,qi)=>{
-    html+='<div class="kz-q"><div class="kz-t"><b>'+(qi+1)+'.</b> '+s.q+'</div>'+
-      acak[qi].map(oi=>'<label class="kz-o"><input type="radio" name="'+id+'_'+qi+'" value="'+oi+'"><span>'+s.o[oi]+'</span></label>').join('')+'</div>';
-  });
-  html+='</div>';
-  ask({title:judul,text:html,opts:[{t:'Kumpulkan jawaban »',sub:soal.length+' soal pilihan ganda',e:()=>{
-    let benar=0, nilai=0; const catatan=[];
-    soal.forEach((s,qi)=>{
-      let pilih=-1;
-      if(hasDoc){ const el=document.querySelector('input[name="'+id+'_'+qi+'"]:checked'); if(el)pilih=+el.value; }
-      else pilih=acak[qi][Math.floor(r()*acak[qi].length)];
-      if(s.lucu){ if(pilih>=0)catatan.push('<i>'+s.r[pilih]+'</i>'); return; }
-      nilai++;
-      if(pilih===0)benar++;
-      else catatan.push('No. '+(qi+1)+': '+(pilih<0?'tidak dijawab':'kurang tepat')+' — jawabannya <b>'+s.o[0]+'</b>. '+(s.x||''));
-    });
-    addLog('Hasil '+judul.toLowerCase()+': <b>'+benar+' dari '+nilai+' benar</b>.'+(catatan.length?'<br>'+catatan.join('<br>'):''),benar>=Math.ceil(nilai*0.7)?'good':benar<=Math.floor(nilai/3)?'bad':'');
-    done(benar,nilai);
-  }}]});
+  const siap=soal.slice(0,MAX_SOAL).map(s=>s.o.some(x=>/^Semua/i.test(x))?Object.assign({fix:true},s):s);
+  Kuis.lembar(judul,intro,siap,h=>done(h.benar,h.jumlah));
 }
 
 /* ---------- BELAJAR EKSTRA (aksi di meja) ---------- */

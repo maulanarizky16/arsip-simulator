@@ -24,7 +24,7 @@ function newGame(){
     infra:[], uptime:99,
     legK:0, legC:0, sumRep:0, years:0,
     heat:0, vonis:false, penjara:0, retired:false, dipecat:false, buronan:false,
-    keluarga:false, anak:0, sertifikat:[], openSource:false, mentorKali:0, startupSaham:false,
+    keluarga:false, anak:0, sertifikat:[], soalLihat:[], openSource:false, mentorKali:0, startupSaham:false,
     pelatihanAI:false,
     tenure:0, jobHops:0, coverUps:0, uptimeStreak:0, saasMRR:0, bluTeam:0, usedSkill:{},
     evAkuisisi:false, evMoonlight:false, evCounterOffer:false,
@@ -142,6 +142,7 @@ function gajiTahun(){
   const tm=TEMPAT.find(t=>t.k===P.tempat); if(tm)g*=tm.gajiX;
   g*= (N.pasar==='boom'?1.12:N.pasar==='krisis'?0.96:1);
   g*= (1+(P.reputasi-30)/300);
+  if(typeof sertBonusGaji==='function')g*=1+sertBonusGaji();   /* nilai jual sertifikasi Professional/Expert */
   return Math.round(g);
 }
 

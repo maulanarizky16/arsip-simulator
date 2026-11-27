@@ -16,7 +16,7 @@ function checkAch(){
   if(P.beres>=40)ach('pemadam');
   if(P.maxLv>=6)ach('cto');
   if(P.money+P.saham>=20e9)ach('sultanTech');
-  if(P.sertifikat.length>=4)ach('sertifikat');
+  if(P.sertifikat.filter(x=>+x.slice(-1)>=1).length>=4)ach('sertifikat');
   if(P.st.ngoding>=80&&P.st.sistem>=70&&P.st.jaringan>=65)ach('polyglot');
   if(P.spes==='iot'&&infraGet('iotfleet')&&infraGet('iotfleet').sehat>=85&&P.beres>=12)ach('iotMaster');
 }
@@ -65,7 +65,7 @@ function ringkasanKarier(){
   if(P.openSource)plus.push('Mewariskan proyek open source');
   if(P.mentorKali>=3)plus.push('Membimbing '+P.mentorKali+' kali generasi engineer berikutnya');
   if(P.hackWhite>0||P.bugBounty>0)plus.push('Berburu celah sebagai topi putih');
-  if(P.sertifikat.length>=3)plus.push('Mengantongi '+P.sertifikat.length+' sertifikasi');
+  { const st=sertTertinggi(); if(P.sertifikat.length>=3||(st&&st.g>=2))plus.push('Mengantongi '+P.sertifikat.length+' sertifikasi'+(st?', tertinggi '+sertNama(st.j,st.g):'')); }
   if(P.pelatihanAI)plus.push('Bertahan & berkembang di gelombang AI');
   if(P.saham>0||P.ach.exit)plus.push('Meraup cuan dari saham/exit');
   if(P.saasMRR>0)plus.push('Membangun produk SaaS berpenghasilan pasif');

@@ -18,6 +18,7 @@ function renderFeedItem(f){
 }
 function resumeGame(s){
   P=s.P; N=s.N;
+  migrasiSertifikat();   /* save lama: cloud/cka/ccnp/oscp/pmp → jalur + grade */
   G.current=null; G.queue=[]; G.over=s.over||false; G.feed=s.feed||[]; G.tab=s.tab||'skill'; G.acted=0;
   if(hasDoc){
     $('feed').innerHTML=''; $('kartu').innerHTML='';

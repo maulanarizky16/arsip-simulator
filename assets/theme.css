@@ -218,6 +218,17 @@ html .kartu .kz-o{display:flex;align-items:center;gap:8px;padding:6px 8px;margin
 html .kartu .kz-o:hover{background:#fff6dc}
 html .kartu .kz-o input{width:18px;height:18px;accent-color:#3dbb63;flex:0 0 auto;margin:0}
 html .kartu .kz-o:has(input:checked){background:#e8f8ea;color:#1f6e3a;font-weight:800}
+html .kartu .kz-q.kz-miss{box-shadow:0 0 0 2px #e8794f,0 3px 0 #f3c3ad;background:#fff4ef}
+html .kartu .kz-q.kz-miss .kz-t::after{content:" · belum dijawab";color:#c4532c;font-weight:800;font-size:12px}
+html .kartu .kz-warn{background:#fff1e8;border:2px dashed #e8794f;border-radius:14px;padding:8px 12px;font:800 13px/1.4 var(--type);color:#b14a25}
+/* lencana grade sertifikasi (Simulator IT) */
+html .kartu .sg-peta{display:flex;flex-direction:column;gap:6px;margin-top:10px;text-align:left}
+html .kartu .sg-row{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#fff;border-radius:12px;padding:6px 10px;box-shadow:0 2px 0 var(--c-white-d);font:700 13px/1.35 var(--type);color:var(--ink)}
+html .kartu .sg-row small{display:block;font-weight:600;color:#7a6a52}
+html .sg-pips{display:inline-flex;gap:3px;flex:0 0 auto}
+html .sg-pips i{width:12px;height:12px;border-radius:4px;background:#eadfca;display:inline-block}
+html .sg-pips i.on{background:#3dbb63}
+html .sg-pips i.on.g3{background:#e0a92b}
 
 /* ---------- atur anggaran (slider) ---------- */
 html .kartu .ang{display:flex;flex-direction:column;gap:10px;margin-top:12px;text-align:left}

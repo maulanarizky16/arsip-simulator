@@ -98,11 +98,13 @@ function render(){
     f+='<div class="fr"><span>Sertifikasi</span><span>'+top.map(x=>x.j.gelar[x.g]+' <small>('+GRADE[x.g].n+')</small>').join(' · ')+'</span></div>'; }
   const rw=P.riwayat.slice(-6).reverse();
   for(const x of rw)f+='<div class="fr"><span>'+x.th+'</span><span>'+x.t+'</span></div>';
+  renderTim();
   $('riwayat').innerHTML=f||'<span class="muted">Belum ada catatan.</span>';
   const ak=Object.keys(P.ach);
   $('ach').innerHTML=ak.length?ak.map(k=>'<span class="chip au">'+ACH_DEF[k]+'</span>').join(''):'<span class="muted">Belum ada.</span>';
   /* tabs */
-  $('tabs').innerHTML=TABS.map(t=>'<button data-tab="'+t[0]+'" class="'+(G.tab===t[0]?'on':'')+'" role="tab">'+t[1]+'</button>').join('');
+  if(G.tab==='tim'&&!adaTim())G.tab='skill';
+  $('tabs').innerHTML=TABS.filter(t=>t[0]!=='tim'||adaTim()).map(t=>'<button data-tab="'+t[0]+'" class="'+(G.tab===t[0]?'on':'')+'" role="tab">'+t[1]+'</button>').join('');
   /* meja aksi */
   const busy=!!G.current||G.over;
   let html='';
@@ -111,7 +113,7 @@ function render(){
     if(!av.ok&&a.cond&&!a.cond()&&!av.used&&av.why==='Syarat belum terpenuhi')continue;
     const dis=busy||!av.ok;
     html+='<button data-act="'+a.k+'" '+(dis?'disabled':'')+' class="'+(av.used?'used':'')+'" title="'+(av.ok?'':av.why||'')+'">'+
-      '<b>'+a.lbl+(a.multi?' ↻':'')+'</b><span>'+(a.sub||'')+'</span></button>';
+      '<b>'+a.lbl+(a.multi?' ↻':'')+'</b><span>'+((typeof a.sub==='function'?a.sub():a.sub)||'')+'</span></button>';
   }
   if(!html)html='<div class="empty">Tidak ada aksi tersedia di laci ini.</div>';
   $('acts').innerHTML=html;

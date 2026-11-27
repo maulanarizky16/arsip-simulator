@@ -5,27 +5,43 @@ function certBonus(c){
   /* grade tertinggi di jalur sedomain: Fundamental +1% · Associate +2,5% · Professional +5% · Expert +8% */
   return sertBonusDomain(SKILL_INSIDEN[c.jenis.k]);
 }
+/* skill karier = skill utama spesialisasi (65%) + skill pendukung kedua (35%), dari bonus SPES.
+   Dulu rata-rata 4 skill: spesialis (mis. Network Engineer) tertahan oleh skill di luar bidangnya,
+   sehingga 64% pemain wajar tak pernah lepas dari Junior dan 0% mencapai Lead. */
+function skillKarier(){
+  const sp=SPES.find(x=>x.k===P.spes);
+  const urut=Object.entries(sp?sp.boost:{ngoding:1}).filter(([k])=>k!=='soft').sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+  const a=urut[0]||'ngoding', b=urut[1]||a;
+  return Math.round(0.65*P.st[a]+0.35*P.st[b]);
+}
 function cekPromosi(){
   if(P.retired||P.penjara>0||lvNow()>=6)return;
   const next=JAB_NEXT[P.jab]; if(!next)return;
   const s=P.st, lv=lvNow();
-  const skillInti=Math.round((s.ngoding+s.sistem+s.jaringan+s.keamanan)/4);
-  const layak = P.tahunJab>=ri(2,4) && P.reputasi>=(28+lv*8) && skillInti>=(40+lv*7) && P.heat<55;
+  if(P.menganggur||P.dipecat||P.founder)return;   /* promosi hanya untuk karyawan aktif */
+  const skillInti=skillKarier();
+  /* Lead ke atas: kinerja tim yang dipimpin ikut menentukan (lihat 03c-tim.js) */
+  const timOk = lv<4 || timSkor()>=(lv>=5?60:45);   /* ke CTO: tim harus benar-benar kuat */
+  const layak = P.tahunJab>=ri(2,4) && P.reputasi>=(28+lv*8) && skillInti>=(40+lv*7) && P.heat<55 && timOk;
   /* sertifikasi manajemen proyek / ITSM melonggarkan syarat soft-skill untuk jalur kepemimpinan */
   const gPM=Math.max(sertGrade('pm'),sertGrade('itsm')-1);
   const softGate = 50+lv*5-(gPM>=2?8:gPM>=1?4:0);
   const layakSoft = lv>=3 && s.soft>=softGate;
   const loyal = (P.tenure||0)>=3;   /* loyalitas mempercepat promosi */
-  if(layak && (lv<3 || layakSoft) && r()<(loyal?0.7:0.55)){
+  const kursi = lv>=5 ? 0.3 : 1;   /* kursi CTO hanya satu: peluang jauh lebih kecil */
+  if(layak && (lv<3 || layakSoft) && r()<(loyal?0.7:0.55)*kursi){
     const titel=JAB[next].n+' '+P.spesN;
     ask({title:'TAWARAN PROMOSI',text:'Manajemen menilai Anda layak naik menjadi <b>'+titel+'</b>. Gaji & tanggung jawab naik bersamaan.',opts:[
       {t:'Terima promosi',e:()=>{naikJab(next);addLog('Anda dipromosikan menjadi <b>'+titel+'</b>. Cakupan tanggung jawab (dan tekanan) melebar.'+fx({stres:+6,reputasi:+3}),'good');leg(1,6);}},
-      {t:'Tolak, fokus jadi IC',sub:'Tetap di jalur teknis murni',e:()=>addLog('Anda menolak naik ke jalur manajemen, memilih tetap individual contributor. "Saya mau ngoding, bukan rapat."'+fx({stres:-3,reputasi:+1}),'sys')}
+      lv>=3
+        ?{t:'Tolak, fokus jadi IC',sub:'Tetap di jalur teknis murni, tanpa memimpin tim',e:()=>addLog('Anda menolak naik ke jalur manajemen, memilih tetap individual contributor. "Saya mau ngoding, bukan rapat."'+fx({stres:-3,reputasi:+1}),'sys')}
+        :{t:'Belum siap, perdalam skill dulu',sub:'Tawaran bisa datang lagi tahun depan',e:()=>addLog('Anda meminta waktu setahun lagi untuk memperdalam skill sebelum naik jenjang.'+fx({stres:-2}),'sys')}
     ]});
   }
 }
 function naikJab(k){
   P.jab=k; P.tahunJab=0; if(JAB[k].lv>P.maxLv)P.maxLv=JAB[k].lv;
+  if(JAB[k].lv>=4&&!P.tim)buatTimAwal();   /* mulai memimpin tim (03c-tim.js) */
   stamp((JAB[k].n+' '+P.spesN).toUpperCase(),'green'); milestone('Naik: '+JAB[k].n+' '+P.spesN);
   if(ACH_DEF[k])ach(k);
 }
@@ -157,7 +173,8 @@ function terapkan(c,opt){
   else p=0.2;
   p+=teliti*0.08 + (sk-50)/280 - parahPen + certBonus(c) - (P.lembur||0)/400;
   if(c.jenis.sec)p+=(P.bluTeam||0)/300;
-  p+=((P.budaya!=null?P.budaya:50)-50)/400;   /* tim yang saling percaya lebih cepat menemukan akar masalah */
+  p+=((P.budaya!=null?P.budaya:50)-50)/400;
+  p+=timBonusInsiden();   /* tim yang kuat & fokus stabilitas membantu pemulihan */   /* tim yang saling percaya lebih cepat menemukan akar masalah */
   p=clamp(p,0.05,0.95);
   /* tambalan cepat/hotfix meninggalkan utang teknis di aset itu */
   if(opt&&opt.quick&&c.target)c.target.debt=clamp((c.target.debt||0)+ri(4,8),0,100);

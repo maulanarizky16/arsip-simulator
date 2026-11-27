@@ -394,7 +394,7 @@ function wawancaraTeknis(konteks,done){
 /* ================= 4. JALUR KARIER BARU ================= */
 function lamarRemoteLN(){
   wawancaraTeknis('Perusahaan di Eropa membuka posisi remote. Wawancara dalam bahasa Inggris, jam 10 malam waktu Indonesia.',rs=>{
-    if(rs>=0.65){ P.tempat='remote'; P.tempatN='Remote untuk Perusahaan Luar'; P.tenure=0; P.jobHops=(P.jobHops||0)+1;
+    if(rs>=0.65){ P.tempat='remote'; P.tempatN='Remote untuk Perusahaan Luar'; P.tenure=0; P.jobHops=(P.jobHops||0)+1; kondisiKantorBaru();
       addLog('<b>Diterima kerja remote untuk perusahaan luar negeri!</b> Gaji dolar, meeting jam 11 malam.'+fx({reputasi:+3,stres:+3}),'good'); stamp('GAJI DOLAR','gold'); ach('gajiDolar'); milestone('Kerja remote perusahaan luar negeri'); leg(0,4); }
     else addLog('Email penolakan datang dengan bahasa yang sangat sopan: "We decided to move forward with other candidates."'+fx({stres:+4}),'bad');
   });
@@ -415,7 +415,7 @@ function postmortem(c,sukses){
 function penilaianKinerja(){
   const dB=P.beres-(P.revBeres||0), dG=P.gagal-(P.revGagal||0);
   P.revBeres=P.beres; P.revGagal=P.gagal;
-  let skor=50+dB*8-dG*10+(P.reputasi-40)/2+(P.st.soft-50)/3+((P.budaya||50)-50)/5+ri(-8,8);
+  let skor=50+dB*8-dG*10+(P.reputasi-40)/2+(P.st.soft-50)/3+((P.budaya||50)-50)/5+ri(-8,8)+(adaTim()?(timSkor()-50)/3:0);
   ask({title:'PENILAIAN KINERJA TAHUNAN',text:'Formulir self-assessment dibuka: tahun ini kamu menangani '+dB+' insiden dengan baik dan '+dG+' yang meleset. Cara mengisinya?',opts:[
     {t:'Jujur, lengkap dengan data & dampak',e:()=>hasilKinerja(skor+5)},
     {t:'Merendah: "biasa saja, Pak"',e:()=>hasilKinerja(skor-6)},
@@ -495,6 +495,7 @@ function eventsIT(){
   if(P.kuliahMalam&&!P.s1Malam&&r()<0.35){ P.s1Malam=true; P.kuliahMalam=false; addLog('Kamu diwisuda dari kelas karyawan. Syarat "minimal S1" bukan penghalang lagi.'+fx({reputasi:+4,stres:-5}),'good'); stamp('WISUDA S1','green'); milestone('Lulus S1 kelas karyawan'); }
   if(P.retired||P.dipecat||P.penjara>0)return;
   /* kehidupan kantor */
+  timTahunan();   /* tim: tumbuh, moral, resign, arahan (03c-tim.js) */
   if(P.jab&&P.tempat!=='remote'&&r()<0.75)penilaianKinerja();
   else if(P.jab&&r()<0.5)penilaianKinerja();
   if(P.jab&&r()<0.22)satuSatu();

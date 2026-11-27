@@ -394,5 +394,5 @@ const ACH_DEF={
   legend:'Engineer Legendaris', antiAI:'Bertahan dari Gelombang AI',
   lulusSertif:'Lulus Ujian Sertifikasi', ctfSempurna:'CTF Sempurna', wawancaraAce:'Wawancara Teknis Sempurna', gajiDolar:'Gaji Dolar',
   guruNgoding:'Guru Ngoding', techInfluencer:'Tech Influencer', blameless:'Budaya Blameless', exceeds:'Exceeds Expectations',
-  lolosPIP:'Lolos PIP', tukangServis:'Teknisi Satu RT'
+  lolosPIP:'Lolos PIP', tukangServis:'Teknisi Satu RT', pemburuBakat:'Pemburu Bakat', pemimpinTim:'Pemimpin yang Disayang Tim'
 };

@@ -53,7 +53,7 @@ function statKey(label){
 
 /* ---------- ikon tab meja aksi ---------- */
 const TAB={
-  diri:'bust-in-silhouette', asmara:'two-hearts', karier:'briefcase', politik:'classical-building',
+  tim:'busts-in-silhouette', diri:'bust-in-silhouette', asmara:'two-hearts', karier:'briefcase', politik:'classical-building',
   usaha:'convenience-store', uang:'money-bag', hobi:'artist-palette', gerakan:'megaphone',
   kebijakan:'scroll', siasat:'chess-pawn', skill:'laptop', infra:'desktop-computer', siber:'shield',
   ekspansi:'rocket', pribadi:'money-bag', kerja:'briefcase', sosial:'people-hugging', warga:'identification-card'
@@ -69,7 +69,7 @@ const H3={
   'republik nusantara':'globe-showing-asia-australia','riwayat & keluarga':'scroll','riwayat':'scroll',
   'meja hakim':'balance-scale','wibawa peradilan':'classical-building','sistem & aset dikelola':'desktop-computer',
   'skena & pasar teknologi':'globe-showing-asia-australia','portofolio usaha':'factory','ekonomi & pasar':'chart-increasing',
-  'ktp warga':'identification-card','dompet & cicilan':'credit-card','kondisi hidup':'house'
+  'ktp warga':'identification-card','tim saya':'busts-in-silhouette','dompet & cicilan':'credit-card','kondisi hidup':'house'
 };
 
 /* ---------- warna latar foto per game ---------- */

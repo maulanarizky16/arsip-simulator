@@ -67,6 +67,53 @@ cek('menu sertifikasi muncul & "Nanti saja" mengembalikan jatah aksi',run('__J.i
 run(`__baru(); P.sertifikat=['ccnp','oscp','cka','pmp','cloud','zzz']; migrasiSertifikat();`);
 cek('save lama dimigrasi ke jalur + grade',run('sertGrade("net")===2&&sertGrade("sec")===2&&sertGrade("k8s")===2&&sertGrade("pm")===2&&sertGrade("cloud")===1&&P.sertifikat.length===5'),run('JSON.stringify(P.sertifikat)'));
 
+// ASET KANTOR: monitoring & backup dibiayai perusahaan, bukan gaji karyawan
+run(`__baru(); P.money=50e6; __J.length=0; doAct('observability');`);
+cek('karyawan: pasang monitoring → kartu ajukan anggaran, bukan potong uang',run('__J.includes("AJUKAN ANGGARAN MONITORING & ALERTING")&&P.money===50e6'),run('JSON.stringify([__J,P.money])'));
+run(`choose(G.current.opts.length-1);`);
+cek('"Nanti saja" mengembalikan jatah aksi',run('!P.used.observability&&!P.obsv'));
+run(`globalThis.__uang=[]; for(let i=0;i<40&&!P.obsv;i++){ P.used={}; P.reputasi=90; P.st.soft=90; const m=P.money; doAct('observability'); choose(0); __uang.push(m-P.money); }`);
+cek('proposal bisa disetujui & biaya ditanggung kantor (uang pribadi utuh)',run('P.obsv&&__uang.every(x=>x===0)'),run('JSON.stringify([P.obsv,__uang.slice(0,5)])'));
+run(`__baru(); P.money=50e6; P.st.sistem=95; globalThis.__l0=P.lembur||0; for(let i=0;i<40&&!P.backupKuat;i++){ P.used={}; doAct('backup'); choose(1); }`);
+cek('jalur open-source: gratis tapi menambah lembur',run('P.backupKuat&&P.money===50e6&&P.lembur>__l0'),run('JSON.stringify([P.backupKuat,P.money,P.lembur])'));
+run(`__baru(); P.founder=true; P.money=50e6; __J.length=0; doAct('observability');`);
+cek('founder startup sendiri: bayar dari kas sendiri, tanpa proposal',run('P.obsv&&P.money===30e6&&!__J.some(t=>/ANGGARAN/.test(t))'),run('JSON.stringify([P.obsv,P.money,__J])'));
+cek('keterangan aksi menyebut siapa yang bayar',run(`(()=>{ const a=ACTS.find(x=>x.k==='backup'); P.founder=false; const s1=a.sub(); P.founder=true; const s2=a.sub(); return /Dibayar kantor/.test(s1)&&/kas startup/.test(s2); })()`));
+run(`globalThis.__kb=[]; for(let i=0;i<60;i++){ __baru(); P.obsv=true; P.backupKuat=true; P.founder=true; P.tempat='startup'; kondisiKantorBaru(); __kb.push([P.obsv,P.backupKuat,P.founder]); }`);
+cek('pindah kantor: monitoring/backup kantor lama tidak ikut terbawa',run('__kb.some(x=>!x[0])&&__kb.some(x=>!x[1])&&__kb.every(x=>!x[2])'));
+
+// PROMOSI: skill karier = skill utama spesialisasi, bukan rata-rata 4 skill
+run(`__baru(); P.spes='network'; P.st.jaringan=80; P.st.sistem=60; P.st.ngoding=10; P.st.keamanan=10;`);
+cek('skill karier spesialis jaringan tidak tertahan skill coding',run('skillKarier()>=70'),run('skillKarier()'));
+
+// TIM: mulai memimpin tim saat naik ke Lead
+run(`__baru(); naikJab('lead');`);
+cek('naik Lead → mewarisi tim 2–3 orang & laci TIM aktif',run('adaTim()&&P.tim.anggota.length>=2&&P.tim.anggota.length<=3&&ACTS.some(a=>a.tab==="tim"&&actAvail(a).ok)'),run('JSON.stringify(P.tim&&P.tim.anggota.length)'));
+// kandidat: CV yang melebih-lebihkan terungkap lewat tes teknis
+run(`globalThis.__oc=[]; for(let i=0;i<300;i++){ const k=buatKandidat('medior'); if(k.sifat==='overclaim')__oc.push(k.skillCV-k.skill); }`);
+cek('kandidat "melebih-lebihkan CV": skill asli jauh di bawah klaim',run('__oc.length>5&&__oc.every(d=>d>=10)'),run('__oc.slice(0,5)'));
+run(`globalThis.__k=buatKandidat('junior'); wawancaraKandidat(__k,[__k]); choose(0);`);
+cek('wawancara: pertanyaan "tes teknis" mengungkap skill asli',run('__k.tahu.skill===true&&__k.ditanya===1'));
+run('__drain(99);');
+// negosiasi: tawaran ≥ gaji minimal diterima, anggota masuk dengan gaji itu; rekan setara bergaji lebih rendah iri
+run(`P.tim.anggota=[]; const o=buatOrangTim('medior'); o.gaji=5e6; o.moral=70; P.tim.anggota.push(o); globalThis.__o=o;
+  globalThis.__terima=0; for(let i=0;i<20;i++){ const k=buatKandidat('medior'); P.tim.anggota=P.tim.anggota.filter(m=>m===__o); const n=P.tim.anggota.length; putuskanTawaran(k,Math.round(k.ask*1.1/1e5)*1e5,[k]); __drain(99); if(P.tim.anggota.length>n)__terima++; }`);
+cek('tawaran di atas permintaan hampir selalu diterima',run('__terima>=17'),run('__terima'));
+cek('rekan setara yang digaji lebih rendah jadi iri (moral turun)',run('__o.moral<70'),run('__o.moral'));
+run(`globalThis.__tolak=0; for(let i=0;i<40;i++){ const k=buatKandidat('senior'); const n=P.tim.anggota.length; putuskanTawaran(k,Math.round(k.min*0.7/1e5)*1e5,[k]); __drain(99); if(P.tim.anggota.length===n)__tolak++; else P.tim.anggota.pop(); }`);
+cek('tawaran jauh di bawah gaji minimal umumnya ditolak',run('__tolak>=30'),run('__tolak'));
+// proses tahunan: tumbuh, moral, resign — tanpa error selama puluhan tahun
+run(`__baru(); naikJab('lead'); globalThis.__ok=true; try{ for(let y=0;y<30;y++){ P.tim.arah=pick(Object.keys(ARAHAN_TIM)); timTahunan(); __drain(); if(P.tim.anggota.length<2)P.tim.anggota.push(buatOrangTim('junior')); } }catch(e){ __ok=e.message; }`);
+cek('30 tahun proses tim tanpa error',run('__ok===true'),run('__ok'));
+// founder membayar gaji tim dari kas sendiri; karyawan tidak
+run(`__baru(); P.founder=true; P.tim={anggota:[buatOrangTim('senior')],arah:'stabil',ekstra:0,tahun:0}; P.tim.anggota[0].gaji=20e6; P.tim.anggota[0].moral=100; P.tim.anggota[0].sifat='kolaboratif'; P.tim.anggota[0].hobi='baca'; P.tim.anggota[0].motif=2; P.tim.anggota[0].skill=60; P.money=1e9; timTahunan(); __drain(99); globalThis.__mf=1e9-P.money;`);
+cek('founder: gaji tim setahun dibayar dari kas startup',run('__mf>=240e6'),run('__mf'));
+run(`__baru(); naikJab('lead'); P.money=1e9; timTahunan(); __drain(99);`);
+cek('karyawan: gaji tim dibayar perusahaan (uang pribadi utuh)',run('P.money===1e9'),run('P.money'));
+// pindah kantor: tim lama tidak ikut, Lead mewarisi tim baru
+run(`__baru(); naikJab('lead'); const lama=P.tim.anggota.map(m=>m.id).join(); kondisiKantorBaru(); globalThis.__beda=P.tim&&P.tim.anggota.map(m=>m.id).join()!==lama;`);
+cek('pindah kantor sebagai Lead: tim lama ditinggal, tim baru diwarisi',run('__beda===true'));
+
 // CTF
 run(`__baru(); P.st.keamanan=60; __J.length=0; doAct('ctf'); __drain();`);
 cek('CTF memunculkan tantangan',run('__J.includes("KOMPETISI CTF")'));

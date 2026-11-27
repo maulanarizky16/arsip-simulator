@@ -192,6 +192,13 @@ function drift(){
     if(!(P.usedSkill&&P.usedSkill.saas))P.saasMRR=Math.round(P.saasMRR*(0.78+r()*0.18));   /* churn (selalu menyusut) kalau tak dirawat */
     if(P.saasMRR<1e6)P.saasMRR=0;
   }
+  /* pengalaman kerja: mengerjakan pekerjaan sehari-hari mengasah skill bidang spesialisasi (makin lambat bila sudah tinggi).
+     Tanpa ini, pemain berreputasi tinggi bisa tetap ber-skill 39 setelah 15 tahun dan tak pernah lepas dari Junior. */
+  if(!P.retired&&!P.menganggur&&!P.dipecat&&P.penjara<=0&&P.spes){
+    const sp=SPES.find(x=>x.k===P.spes);
+    const urut=Object.entries(sp?sp.boost:{}).filter(([k])=>k!=='soft').sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+    urut.slice(0,2).forEach((k,i)=>{ const naik=(i===0?ri(0,2):ri(0,1))*(s[k]<55?1:s[k]<75?0.5:0.15); s[k]=clamp(Math.round(s[k]+naik),0,100); P.usedSkill[k]=true; });
+  }
   /* skill rot — teknologi bergerak cepat; skill yang dipakai lebih awet, adopsi AI memperlambat keusangan */
   if(!P.retired){
     for(const k of ['ngoding','sistem','jaringan','keamanan']){

@@ -22,7 +22,7 @@ function events(){
       {t:'Ikut wawancara teknis, lalu pindah',sub:'Tawaran akhir tergantung hasil wawancara',e:()=>wawancaraTeknis('Recruiter menjadwalkan sesi teknis sebelum memberi tawaran resmi.',rs=>{
         if(rs<0.4){ addLog('Kamu tidak lolos wawancara teknis. Tawaran batal, kamu tetap di tempat lama.'+fx({stres:+3}),'bad'); return; }
         const naik2=Math.round(naik*(0.6+rs*0.6));
-        const tm=pick(TEMPAT); P.tempat=tm.k; P.tempatN=tm.n; P.tahunJab=Math.max(0,P.tahunJab-1); P.tenure=0; P.jobHops=(P.jobHops||0)+1;
+        const tm=pick(TEMPAT); P.tempat=tm.k; P.tempatN=tm.n; P.tahunJab=Math.max(0,P.tahunJab-1); P.tenure=0; P.jobHops=(P.jobHops||0)+1; kondisiKantorBaru();
         if(tm.k==='startup'){P.saham+=ri(2,8)*1e8;P.startupSaham=true;}
         addLog('Anda menerima tawaran dan pindah ke <b>'+tm.n+'</b>. Lembaran (dan tumpukan teknologi) baru.'+fx({money:+naik2,stres:+5,reputasi:+2}),'good');milestone('Pindah kerja ke '+tm.n);leg(0,3);})},
       {t:'Bertahan & minta counter-offer',e:()=>{P.evCounterOffer=true;
@@ -107,11 +107,11 @@ function cariKerja(){
   ask({title:'MENCARI KERJA',text:'Anda kini menganggur. Pasar sedang '+(N.pasar==='krisis'?'beku':N.pasar==='boom'?'panas':'biasa')+'. Langkah berikutnya?',opts:[
     {t:'Lamar & wawancara di banyak tempat',sub:'Grinding leetcode & system design',e:()=>wawancaraTeknis('Setelah lolos screening CV, kamu masuk tahap teknis.',rs=>{
       const p=clamp(0.2+rs*0.6+(P.reputasi-30)/150+(N.pasar==='boom'?0.15:N.pasar==='krisis'?-0.15:0)-(P.latar==='smk'&&!P.s1Malam?0.1:0),0.1,0.95);
-      if(r()<p){const tm=pick(TEMPAT);P.tempat=tm.k;P.tempatN=tm.n;P.tahunJab=0;P.tenure=0;P.jobHops=(P.jobHops||0)+1;
+      if(r()<p){const tm=pick(TEMPAT);P.tempat=tm.k;P.tempatN=tm.n;P.tahunJab=0;P.tenure=0;P.jobHops=(P.jobHops||0)+1;kondisiKantorBaru();
         addLog('Setelah belasan wawancara, Anda dapat tawaran di <b>'+tm.n+'</b>. Kembali punya penghasilan.'+fx({stres:-4,reputasi:+1}),'good');milestone('Diterima kerja di '+tm.n);
         if(tm.k==='startup'){P.saham+=ri(1,5)*1e8;P.startupSaham=true;}}
       else addLog('Belasan lamaran, banyak "kami akan kabari". Tahun ini Anda masih menganggur, makan tabungan.'+fx({stres:+8,money:-Math.round(gajiTahun()*0.2)}),'bad');})},
-    {t:'Banting setir jadi freelance/konsultan',e:()=>{P.tempat='remote';P.tempatN='Freelance / Konsultan';P.tahunJab=0;P.tenure=0;P.jobHops=(P.jobHops||0)+1;
+    {t:'Banting setir jadi freelance/konsultan',e:()=>{P.tempat='remote';P.tempatN='Freelance / Konsultan';P.tahunJab=0;P.tenure=0;P.jobHops=(P.jobHops||0)+1;kondisiKantorBaru();
       addLog('Anda jadi konsultan lepas, gaji tak menentu tapi merdeka.'+fx({stres:-2,reputasi:+1}),'sys');milestone('Jadi freelancer');}},
     {t:'Rehat dulu, kuras tabungan',e:()=>addLog('Anda memilih jeda. Tabungan menipis, tapi kepala lebih jernih.'+fx({stres:-8,money:-Math.round(gajiTahun()*0.25)}),'sys')}
   ]});

@@ -1,6 +1,56 @@
 'use strict';
 /* ================= AKSI ================= */
-const TABS=[['diri','DIRI'],['skill','SKILL & KARIER'],['infra','SISTEM & ASET'],['siber','SIBER & SIASAT'],['uang','UANG']];
+const TABS=[['diri','DIRI'],['skill','SKILL & KARIER'],['infra','SISTEM & ASET'],['siber','SIBER & SIASAT'],['uang','UANG'],['tim','TIM']];
+
+/* ================= ASET KANTOR: dibiayai perusahaan, bukan gaji pemain =================
+   Monitoring & backup adalah investasi milik perusahaan. Karyawan mengajukan anggaran ke manajemen
+   (bisa ditolak), atau membangun versi open-source sendiri (gratis, tapi butuh skill & lembur).
+   Hanya founder startup sendiri (P.founder) yang membayar dari kantong sendiri: perusahaannya memang miliknya. */
+const ASET_KANTOR={
+  obsv:{n:'monitoring & alerting',biaya:20e6,skill:'sistem',oss:'Prometheus, Grafana, dan Loki',
+    pasang(){ P.obsv=true; P.usedSkill.sistem=true;
+      addLog('Dashboard metrik, log terpusat, dan alert otomatis kini terpasang. Insiden ketahuan sebelum user mengeluh.'+ixAll(+5)+fx({sistem:+3,reputasi:+2}),'good'); milestone('Bangun observability'); leg(2,0); }},
+  backup:{n:'backup & disaster recovery',biaya:12e6,skill:'sistem',oss:'restic, snapshot terjadwal, dan salinan offline',
+    pasang(){ P.backupKuat=true; P.usedSkill.sistem=true;
+      addLog('Backup offline teruji & rencana disaster recovery disiapkan. Kalau ransomware datang, pemulihan dari backup bersih jadi andalan.'+fx({sistem:+2,reputasi:+1}),'good');
+      const db=infraGet('db'); if(db)addLog('Basis data kini punya salinan terjamin.'+ix(db,+6)); leg(2,0); }}
+};
+/* masih bekerja di suatu tempat (bukan pensiun, dipecat, atau di penjara) */
+function bisaAsetKantor(){ return !P.retired&&!P.dipecat&&P.penjara<=0&&!!P.tempat; }
+function subAnggaran(biaya,guna){ return P.founder?rp(biaya)+' dari kas startup-mu · '+guna:'Dibayar kantor (±'+rp(biaya)+') · '+guna; }
+/* peluang proposal disetujui: jenis kantor, reputasi, soft skill, jenjang, pasar, dan "baru kena insiden" */
+function peluangAnggaran(a){
+  const dasar={startup:0.42,korporat:0.5,bumn:0.32,agency:0.36,remote:0.58}[P.tempat]||0.4;
+  let p=dasar+(P.reputasi-40)/220+(P.st.soft-50)/260+(lvNow()-1)*0.05;
+  if(N.pasar==='krisis')p-=0.2; else if(N.pasar==='boom')p+=0.08;
+  if((P.outageBesar||0)>0||(P.dataHilang||0)>0)p+=0.15;   /* satire: anggaran baru cair setelah kebakaran */
+  return clamp(p,0.1,0.9);
+}
+function ajukanAnggaran(a){
+  if(P.founder){
+    if(P.money<a.biaya){ addLog('Kas startup-mu belum cukup untuk '+a.n+' ('+rp(a.biaya)+').','bad'); return; }
+    P.money-=a.biaya; addLog('Sebagai founder, kamu membiayai '+a.n+' dari kas startup sendiri: '+rp(a.biaya)+'.','sys'); a.pasang(); return;
+  }
+  const p=peluangAnggaran(a), pct=Math.round(p*100), sk=P.st[a.skill];
+  ask({title:'AJUKAN ANGGARAN '+a.n.toUpperCase(),text:'Sistem ini milik <b>'+(P.tempatN||'kantor')+'</b>, jadi biayanya (±'+rp(a.biaya)+') harus dari anggaran perusahaan, bukan gajimu. Bagaimana caramu mewujudkannya?',opts:[
+    {t:'Ajukan proposal ke manajemen',sub:'Pakai data risiko & biaya downtime · peluang disetujui ±'+pct+'%',e:()=>{
+      if(r()<p){ addLog('Proposal disetujui: anggaran '+rp(a.biaya)+' untuk '+a.n+' dibayar perusahaan.'+fx({soft:+1}),'good'); a.pasang(); }
+      else addLog(pick(['Proposal ditolak: "Selama ini belum pernah kejadian, kenapa harus keluar uang?"','Proposal ditolak: "Budget tahun ini sudah dikunci. Ajukan lagi tahun depan ya."','Proposal "dipertimbangkan" lalu hilang di antara 47 email lain.'])+fx({stres:+3}),'bad'); }},
+    {t:'Bangun sendiri pakai open-source',sub:a.oss+' · gratis, tapi lembur · butuh skill '+LBL[a.skill]+' ≥ 50 (kamu '+sk+')',e:()=>{
+      P.lembur=clamp((P.lembur||0)+12,0,100);
+      if(sk>=50&&r()<0.55+(sk-50)/100){ addLog('Kamu merakit '+a.n+' sendiri dengan '+a.oss+' di sela pekerjaan. Kantor tidak keluar uang sepeser pun.'+fx({stres:+6,[a.skill]:+2}),'good'); a.pasang(); }
+      else addLog('Kamu mencoba merakit '+a.n+' sendiri, tapi setengah jadi dan belum bisa diandalkan. Coba lagi setelah skill-mu bertambah.'+fx({stres:+6,[a.skill]:+1}),'bad'); }},
+    {t:'Nanti saja',e:()=>{ delete P.used[a===ASET_KANTOR.obsv?'observability':'backup']; G.acted=Math.max(0,G.acted-1); }}
+  ]});
+}
+/* pindah ke kantor baru: monitoring & backup milik kantor lama tidak ikut; kantor baru punya kondisinya sendiri */
+function kondisiKantorBaru(){
+  const sudahAda={korporat:0.6,remote:0.65,bumn:0.3,startup:0.35,agency:0.25}[P.tempat]||0.35;
+  P.obsv=r()<sudahAda; P.backupKuat=r()<sudahAda; P.founder=false;
+  /* tim kantor lama tidak ikut; Lead ke atas mewarisi tim di kantor baru */
+  P.tim=null; if(lvNow()>=4)buatTimAwal();
+  addLog('Kantor baru, sistem baru: '+(P.obsv?'monitoring sudah ada':'belum ada monitoring')+', '+(P.backupKuat?'backup sudah tertata':'backup masih seadanya')+'.','sys');
+}
 
 const ACTS=[
 /* ---- DIRI ---- */
@@ -51,13 +101,11 @@ const ACTS=[
 {k:'maintenance',tab:'infra',lbl:'Maintenance & patch rutin',sub:'Rawat sistem & cicil utang teknis',multi:true,cond:()=>!P.retired&&P.infra.length,e:()=>{
   for(const a of P.infra)a.debt=clamp((a.debt||0)-ri(5,10),0,100); P.usedSkill.sistem=true;
   addLog('Anda meluangkan waktu untuk patch, update dependency, dan bersih-bersih teknis. Tidak glamor, tapi utang teknis berkurang dan masa depan terselamatkan.'+ixAll(+ri(4,8))+fx({stres:+3,sistem:+1}),'good');leg(1,0);}},
-{k:'observability',tab:'infra',lbl:'Pasang monitoring & alerting',sub:'Rp 20 jt · deteksi dini insiden',cond:()=>!P.retired&&P.money>=20e6&&!P.obsv,e:()=>{P.money-=20e6;P.obsv=true;
-  addLog('Dashboard metrik, log terpusat, dan alert otomatis kini terpasang. Insiden ketahuan sebelum user mengeluh.'+ixAll(+5)+fx({sistem:+3,reputasi:+2}),'good');milestone('Bangun observability');leg(2,0);}},
+{k:'observability',tab:'infra',lbl:'Pasang monitoring & alerting',sub:()=>subAnggaran(20e6,'deteksi dini insiden'),cond:()=>bisaAsetKantor()&&!P.obsv,e:()=>ajukanAnggaran(ASET_KANTOR.obsv)},
 {k:'automate',tab:'infra',lbl:'Otomatiskan operasi',sub:'IaC & CI/CD · kurangi kerja & utang teknis',multi:true,cond:()=>!P.retired&&(P.st.ngoding>=50||P.st.sistem>=55),e:()=>{
   for(const a of P.infra)a.debt=clamp((a.debt||0)-ri(3,7),0,100); P.usedSkill.ngoding=true; P.usedSkill.sistem=true;
   addLog('Anda menulis skrip & pipeline yang menggantikan kerja manual berulang. "Kalau dikerjakan dua kali, otomatiskan."'+ixAll(+ri(5,9))+fx({ngoding:+2,sistem:+2,stres:-2}),'good');ach('otomasi');leg(2,1);}},
-{k:'backup',tab:'infra',lbl:'Perkuat backup & DR',sub:'Rp 12 jt · penangkal ransomware',cond:()=>!P.retired&&P.money>=12e6,e:()=>{P.money-=12e6;P.backupKuat=true;P.usedSkill.sistem=true;
-  addLog('Backup offline teruji & rencana disaster recovery disiapkan. Kalau ransomware datang, pemulihan dari backup bersih jadi andalan.'+fx({sistem:+2,reputasi:+1}),'good');const db=infraGet('db');if(db)addLog('Basis data kini punya salinan terjamin.'+ix(db,+6));leg(2,0);}},
+{k:'backup',tab:'infra',lbl:'Perkuat backup & DR',sub:()=>subAnggaran(12e6,'penangkal ransomware'),cond:()=>bisaAsetKantor()&&!P.backupKuat,e:()=>ajukanAnggaran(ASET_KANTOR.backup)},
 {k:'hardening',tab:'infra',lbl:'Security hardening',sub:'Bangun postur blue-team',multi:true,cond:()=>!P.retired&&P.st.keamanan>=40,e:()=>{
   P.bluTeam=clamp((P.bluTeam||0)+ri(7,13),0,100); P.usedSkill.keamanan=true;
   addLog('Anda menambal celah, perketat akses, dan audit konfigurasi keamanan. Postur pertahanan menguat — insiden keamanan lebih jarang & lebih mudah ditangani.'+ixAll(+ri(3,6))+fx({keamanan:+3,reputasi:+1}),'good');leg(1,0);}},
@@ -107,7 +155,7 @@ const ACTS=[
   addLog('Anda mendanai beasiswa coding & sponsor proyek open source. Ilmu yang dibagi tak pernah habis.'+fx({reputasi:+3,stres:-2}),'good');leg(3,0);}},
 {k:'startupSendiri',tab:'uang',lbl:'Rintis startup sendiri',sub:'Rp 100 jt · taruhan besar',cond:()=>!P.retired&&P.money>=100e6&&P.st.ngoding>=55&&P.maxLv>=3,e:()=>{P.money-=100e6;
   ask({title:'RINTIS STARTUP SENDIRI',text:'Anda nekat keluar zona nyaman dan membangun produk sendiri. Pertaruhan tabungan, waktu, dan ego.',opts:[
-    {t:'All-in, kejar pertumbuhan',e:()=>{ if(r()<0.4){P.saham+=ri(20,60)*1e8;P.startupSaham=true;P.tempat='startup';P.tempatN='Startup (Founder)';P.tenure=0;
+    {t:'All-in, kejar pertumbuhan',e:()=>{ if(r()<0.4){P.saham+=ri(20,60)*1e8;P.startupSaham=true;P.tempat='startup';P.tempatN='Startup (Founder)';P.tenure=0;P.founder=true;P.obsv=false;P.backupKuat=false;P.tim={anggota:[],arah:'delivery',ekstra:0,tahun:0};
         addLog('Produk Anda dapat traksi & pendanaan awal. Valuasi di atas kertas melonjak.'+fx({reputasi:+6,stres:+10}),'good');milestone('Mendirikan startup');leg(2,5);}
       else {addLog('Setelah setahun membakar uang, produk sepi pengguna. Startup Anda mati pelan-pelan.'+fx({stres:+12,reputasi:-2}),'bad');milestone('Startup gagal (shutdown)');leg(0,-3);}}},
     {t:'Bangun pelan sambil tetap kerja',e:()=>{ P.usedSkill.saas=true; if(r()<0.5){P.money+=ri(20,80)*1e6;P.saasMRR=Math.min(200e6,(P.saasMRR||0)+ri(5,18)*1e6);addLog('Side-project Anda menghasilkan pendapatan kecil tapi stabil — MRR mulai mengalir (~'+rp(P.saasMRR)+'/bln).'+fx({reputasi:+3,stres:+5}),'good');}
@@ -115,6 +163,7 @@ const ACTS=[
   ]});}}
 ];
 
+ACTS.push(...ACTS_TIM);   /* laci TIM (03c-tim.js) */
 function actAvail(a){
   if(P.penjara>0)return {ok:false,why:'Anda di dalam lapas'};
   if(a.cond&&!a.cond())return {ok:false,why:'Syarat belum terpenuhi'};

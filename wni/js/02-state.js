@@ -11,7 +11,7 @@ function newGame(){
   const lt=acakLatar();
   N={ tahun:2026, bulan:1, ke:1, harga:1, bbmNaik:false };
   P={
-    nama:namaOrang(g), gender:g, kota:kota.n, kotaIdx:kota.idx, macet:kota.macet, banjirP:kota.banjir,
+    nama:namaOrang(g), gender:g, kota:kota.n, kotaIdx:kota.idx, umrF:+((kota.umr||UMR_ACUAN)/UMR_ACUAN).toFixed(3), macet:kota.macet, banjirP:kota.banjir,
     age:ri(23,27), alive:true, sebab:null, ending:null,
     latar:lt.k, latarN:lt.n, kiriman:lt.kiriman||0, kirimanTotal:0, orangDalam:!!lt.orangDalam, makanDiskon:lt.makanDiskon||0,
     profesi:null, profesiN:'—', gaji:0, bulanKerja:0, kontrakSisa:0, pernahPHK:false,
@@ -30,6 +30,7 @@ function newGame(){
   if(ID.skin)P.skin=ID.skin;
   for(const k in lt.st)P.st[k]=clamp(P.st[k]+lt.st[k],0,100);
   if(lt.gaya)P.gaya=lt.gaya;
+  if(P.kiriman<0)P.kiriman=Math.round(P.kiriman*(0.5+0.5*P.umrF)/5e4)*5e4;   /* kiriman ke kampung menyesuaikan upah kota */
   P.modalAwal=P.saldo;
   P.lahir=N.tahun-P.age;
   P.arsipNo='NIK '+ri(31,64)+ri(10,99)+ri(10,99)+'-'+ri(100000,999999)+'-'+ri(1000,9999);
@@ -45,12 +46,12 @@ function newGame(){
   milestone('Mulai berjuang di '+P.kota+' ('+lt.n+')');
   arahanWni();
   const kirimTxt=lt.kiriman>0?'<br><br>Setiap bulan orang tua mentransfer <b>'+rp(lt.kiriman)+'</b>. Hidup terasa adil, untukmu.':
-    lt.kiriman<0?'<br><br>Setiap bulan kamu wajib mengirim <b>'+rp(-lt.kiriman)+'</b> ke keluarga.':'';
+    lt.kiriman<0?'<br><br>Setiap bulan kamu wajib mengirim <b>'+rp(-P.kiriman)+'</b> ke keluarga.':'';
   ask({title:'NASIB LAHIR',text:'<b>'+lt.judul+'.</b><br><br>'+lt.d+kirimTxt+'<br><br>Saldo awal: <b>'+rp(P.saldo)+'</b>'+(lt.orangDalam?' · Punya <b>orang dalam</b> di mana-mana.':'')+'.',
     opts:[{t:'Terima nasib »',e:()=>{}}]});
   ask({title:'PEKERJAAN SEKARANG',text:'Sehari-hari kamu cari nafkah sebagai apa?'+(lt.orangDalam?' (Ada juga jalur "khusus" untukmu.)':''),
-    opts:PROFESI.filter(p=>!p.khusus||p.khusus===lt.k).map(p=>({t:p.n,sub:p.d+' · '+(p.vari?'±':'')+rp(p.gaji)+'/bln',e:()=>{
-      setProfesi(p.k,p.gaji,true);
+    opts:PROFESI.filter(p=>!p.khusus||p.khusus===lt.k).map(p=>({t:p.n,sub:p.d+' · '+(p.vari?'±':'')+rp(gajiKota(p))+'/bln di '+P.kota,e:()=>{
+      setProfesi(p.k,gajiKota(p),true);
       for(const k in p.st)P.st[k]=clamp(P.st[k]+p.st[k],0,100);
       P.skill=p.skill; if(p.motor){ P.motor=true; P.sim=r()<0.6; }
       if(p.k==='outsourcing')P.kontrakSisa=12;

@@ -17,7 +17,8 @@ function renderFeedItem(f){
   $('feed').appendChild(d);
 }
 function resumeGame(s){
-  P=s.P; N=s.N;
+  P=s.P;
+  if(typeof P.umrF!=='number')P.umrF=1;   /* save lama: gaji belum ikut UMR kota */ N=s.N;
   G.current=null; G.queue=[]; G.over=s.over||false; G.feed=s.feed||[]; G.tab=s.tab||'diri'; G.acted=0;
   if(hasDoc){
     $('feed').innerHTML=''; $('kartu').innerHTML='';

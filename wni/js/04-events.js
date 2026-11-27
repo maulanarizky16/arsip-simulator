@@ -3,6 +3,12 @@
    Tiap kejadian: k (kunci), w (bobot), cd (jeda bulan sebelum bisa muncul lagi), cond, run. */
 const kerjaKantor=()=>P.profesi==='karyawan'||P.profesi==='outsourcing'||P.profesi==='guru';
 const EVENTS=[
+/* serangan fajar: pemilihan kepala desa / ketua RW bisa terjadi kapan saja (tanda jasa "Tolak Serangan Fajar" dulu tak punya pemicu) */
+{k:'fajar',w:1,cd:14,run:()=>ask({title:'SERANGAN FAJAR',text:'Besok pemilihan kepala desa di kampung halaman / ketua RW di lingkunganmu. Subuh-subuh pintu kos diketuk: seorang "tim sukses" menyodorkan amplop berisi '+rp(150e3)+'. "Titip suara ya. Ingat nomor dua."',opts:[
+  {t:'Tolak amplopnya',e:()=>{ ach('tolakAmplop'); addLog('Kamu menolak dengan sopan. Si tim sukses bengong, lalu pindah ke pintu sebelah yang langsung dibuka lebar.'+fx({waras:+3,gengsi:+1}),'good'); }},
+  {t:'Ambil uangnya, pilih sesuka hati',e:()=>addLog('"Ambil uangnya, jangan pilih orangnya," katamu dalam hati. Rp 150 ribu habis untuk token listrik dan gas. Lima tahun ke depan jalan depan gang tetap berlubang.'+fx({saldo:150e3,nrimo:+2}),'sys')},
+  {t:'Ambil & benar-benar pilih nomor dua',e:()=>addLog('Kamu menepati "janji". Calon nomor dua menang, dan modal amplopnya harus balik dari suatu tempat.'+fx({saldo:150e3,waras:-2}),'bad')}
+]})},
 {k:'token',w:3,cd:4,run:()=>ask({title:'TOKEN LISTRIK BUNYI',text:'Jam 23.15. "Tit... tit... tit..." Meteran listrik menjerit, token tinggal 2 kWh. Semua orang di rumah pura-pura tidak dengar.',opts:[
   {t:'Beli token sekarang',sub:'Rp 100 rb',e:()=>addLog('Kamu beli token lewat m-banking sambil berdiri di depan meteran seperti penjinak bom.'+fx({saldo:-Math.round(100e3*N.harga)}))},
   {t:'Tahan sampai gajian',e:()=>addLog('Listrik padam jam 3 pagi. Kipas mati, nyamuk berpesta, kamu bangun dengan mood tanggal tua.'+fx({waras:-4,sehat:-2}),'bad')}]})},
@@ -165,7 +171,7 @@ function tawaranKerja(pengantar){
   const pool=(P.orangDalam?['staf']:[]).concat(['karyawan','outsourcing','ojol','olshop','freelancer','guru']);
   for(const k of pool){
     if(opsi.length>=3)break;
-    if(r()<0.6||k==='ojol'||k==='staf'){ const p=PROF[k]; const g=Math.round(p.gaji*N.harga*(0.9+P.skill/250)); opsi.push({k,g}); }
+    if(r()<0.6||k==='ojol'||k==='staf'){ const p=PROF[k]; const g=Math.round(gajiKota(p)*N.harga*(0.9+P.skill/250)); opsi.push({k,g}); }
   }
   ask({title:'PANGGILAN KERJA',text:pengantar+' Pilihannya (syarat-syarat absurd sudah kamu abaikan, seperti "maks. 25 tahun, pengalaman 5 tahun"):',
     opts:opsi.map(o=>({t:PROF[o.k].n,sub:'±'+rp(o.g)+'/bulan'+(o.k==='staf'?' · tanpa wawancara':' · lanjut wawancara'),e:()=>{

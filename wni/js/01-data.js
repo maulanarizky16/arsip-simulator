@@ -1,12 +1,17 @@
 'use strict';
 /* ================= DATA ================= */
-/* kota: idx = pengali biaya hidup (kos, makan, transport); macet = peluang event macet */
+/* kota: idx = pengali biaya hidup (kos, makan, transport); macet = peluang event macet; umr = upah minimum kota (±2026).
+   Gaji mengikuti UMR kota (dulu Rp 5,2 jt di semua kota, padahal UMR Solo/Yogya separuh Jakarta) dan idx disetel supaya
+   biaya hidup lajang ±0,9–1,1× UMR setempat: Bekasi paling longgar, Jakarta/Balikpapan/Yogya paling mepet. */
+const UMR_ACUAN=5.4e6;
 const KOTA=[
-  {n:'Jakarta',idx:1.35,macet:0.6,banjir:0.5},{n:'Bekasi',idx:1.15,macet:0.55,banjir:0.45},{n:'Tangerang',idx:1.15,macet:0.45,banjir:0.35},
-  {n:'Depok',idx:1.1,macet:0.45,banjir:0.25},{n:'Bandung',idx:1.0,macet:0.45,banjir:0.25},{n:'Surabaya',idx:1.05,macet:0.35,banjir:0.25},
-  {n:'Semarang',idx:0.9,macet:0.25,banjir:0.45},{n:'Medan',idx:0.95,macet:0.35,banjir:0.35},{n:'Makassar',idx:0.95,macet:0.3,banjir:0.25},
-  {n:'Balikpapan',idx:1.05,macet:0.15,banjir:0.25},{n:'Yogyakarta',idx:0.85,macet:0.25,banjir:0.1},{n:'Solo',idx:0.8,macet:0.15,banjir:0.15}
+  {n:'Jakarta',idx:1.35,macet:0.6,banjir:0.5,umr:5.4e6},{n:'Bekasi',idx:1.15,macet:0.55,banjir:0.45,umr:5.7e6},{n:'Tangerang',idx:1.15,macet:0.45,banjir:0.35,umr:5.1e6},
+  {n:'Depok',idx:1.1,macet:0.45,banjir:0.25,umr:5.0e6},{n:'Bandung',idx:1.0,macet:0.45,banjir:0.25,umr:4.2e6},{n:'Surabaya',idx:1.05,macet:0.35,banjir:0.25,umr:5.0e6},
+  {n:'Semarang',idx:0.82,macet:0.25,banjir:0.45,umr:3.5e6},{n:'Medan',idx:0.93,macet:0.35,banjir:0.35,umr:4.0e6},{n:'Makassar',idx:0.92,macet:0.3,banjir:0.25,umr:3.9e6},
+  {n:'Balikpapan',idx:0.95,macet:0.15,banjir:0.25,umr:3.7e6},{n:'Yogyakarta',idx:0.66,macet:0.25,banjir:0.1,umr:2.7e6},{n:'Solo',idx:0.6,macet:0.15,banjir:0.15,umr:2.4e6}
 ];
+/* gaji pokok sebuah profesi di kota pemain. PNS, staf titipan & kreator tidak ikut UMR; guru honorer hanya sedikit terpengaruh. */
+function gajiKota(p){ const f=(typeof P!=='undefined'&&P&&P.umrF)||1; const ikut=(p.k==='pns'||p.k==='staf'||p.k==='kreator')?0:p.k==='guru'?0.3:1; return Math.round(p.gaji*(1-ikut+ikut*f)/1e4)*1e4; }
 /* profesi awal. gaji = pokok/bulan; vari = rentang naik-turun (0 = tetap); thr = dapat THR; phk = peluang PHK/bulan */
 const PROFESI=[
   {k:'karyawan',n:'Karyawan Swasta (UMR)',d:'Gaji tetap, jam kerja "fleksibel" (artinya boleh lembur kapan saja).',gaji:5.2e6,vari:0,thr:true,phk:0.010,st:{waras:0,gengsi:+5},skill:45,motor:true},

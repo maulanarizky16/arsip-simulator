@@ -19,6 +19,10 @@ function renderFeedItem(f){
 function resumeGame(s){
   P=s.P; N=s.N;
   migrasiSertifikat();   /* save lama: cloud/cka/ccnp/oscp/pmp → jalur + grade */
+  /* save lama: field baru (ekuitas startup terpisah dari investasi, kenaikan gaji persisten, status menganggur) */
+  if(P.ekuitas==null)P.ekuitas=0; if(P.gajiAdj==null)P.gajiAdj=1; if(P.menganggur==null)P.menganggur=false; if(P.dicuciTotal==null)P.dicuciTotal=0;
+  if(P.tempat==='remote'&&P.tempatN==='Freelance / Konsultan')P.tempat='freelance';
+  if(N&&!trenAktif().some(t=>t.n===N.tren))N.tren=pickTren();
   G.current=null; G.queue=[]; G.over=s.over||false; G.feed=s.feed||[]; G.tab=s.tab||'skill'; G.acted=0;
   if(hasDoc){
     $('feed').innerHTML=''; $('kartu').innerHTML='';

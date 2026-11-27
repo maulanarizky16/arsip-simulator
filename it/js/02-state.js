@@ -7,7 +7,7 @@ function newGame(){
   if(window.ArsipArt&&ArsipArt.creator('it',newGame))return;   /* pop-up buat karakter dulu */
   const ID=window.ArsipArt?ArsipArt.identity():{};
   const g=ID.gender||(r()<0.62?'L':'P');
-  N={ tahun:2008, pasar:'normal', tren:pick(TREN), ancaman:ri(40,60) };
+  N={ tahun:2008, pasar:'normal', tren:'', ancaman:ri(40,60) }; N.tren=pickTren();
   P={
     nama:namaOrang(g), gender:g, kota:pick(KOTA),
     age:22, lahir:1986, alive:true, sebab:null,
@@ -15,7 +15,7 @@ function newGame(){
     jab:'junior', tahunJab:0, maxLv:1, lastLv:1,
     st:{ngoding:ri(28,42),sistem:ri(28,42),jaringan:ri(25,40),keamanan:ri(18,32),soft:ri(25,45),kesehatan:ri(80,95),stres:ri(8,20)},
     reputasi:ri(12,24),
-    money:0, gelap:0, gelapTotal:0, saham:0,
+    money:0, gelap:0, gelapTotal:0, dicuciTotal:0, saham:0, ekuitas:0, gajiAdj:1,   /* saham = investasi pribadi (reksadana); ekuitas = ESOP/saham startup tempat kerja */
     topi:'putih',
     insidenTotal:0, beres:0, gagal:0, outageBesar:0, dataHilang:0, eskalasi:0,
     deployTotal:0, deployGagal:0,
@@ -23,7 +23,7 @@ function newGame(){
     burnoutKali:0, lembur:0,
     infra:[], uptime:99,
     legK:0, legC:0, sumRep:0, years:0,
-    heat:0, vonis:false, penjara:0, retired:false, dipecat:false, buronan:false,
+    heat:0, vonis:false, penjara:0, retired:false, dipecat:false, menganggur:false, buronan:false,
     keluarga:false, anak:0, sertifikat:[], soalLihat:[], openSource:false, mentorKali:0, startupSaham:false,
     pelatihanAI:false,
     tenure:0, jobHops:0, coverUps:0, uptimeStreak:0, saasMRR:0, bluTeam:0, usedSkill:{},
@@ -59,9 +59,9 @@ function newGame(){
 function pilihTempat(){
   ask({title:'TEMPAT KERJA PERTAMA',text:'Tawaran kerja pertama datang. Tempat kerja menentukan gaji, gaya hidup, dan tekanan:',
     opts:TEMPAT.map(t=>({t:t.n,sub:t.d,e:()=>{
-      P.tempat=t.k; P.tempatN=t.n;
-      if(t.k==='startup'||t.sahamX>0)P.startupSaham=t.k==='startup';
-      P.infra=(INFRA_AWAL[P.spes]||['server','app','jaringan']).map(k=>({k,n:INFRA_DEF[k].n,sehat:ri(78,95),nilai:ri(2,6)*1e8,kritis:true,debt:ri(0,15)}));
+      P.tempat=t.k; P.tempatN=t.n; P.menganggur=false; P.gajiAdj=1;
+      P.startupSaham=t.k==='startup'; if(P.startupSaham)P.ekuitas=esopBaru(0.2,0.5);   /* ESOP kecil untuk junior */
+      P.infra=bangunInfra('awal');
       addLog('Anda diterima di <b>'+t.n+'</b> sebagai '+JAB.junior.n+' '+P.spesN+'. '+t.d,'good');
       milestone('Kerja di '+t.n);
       ach('junior');
@@ -140,10 +140,21 @@ function setTopi(){
 function gajiTahun(){
   let g=JAB[P.jab].gaji;
   const tm=TEMPAT.find(t=>t.k===P.tempat); if(tm)g*=tm.gajiX;
+  if(P.tempat==='freelance')g*=(P.flX!=null?P.flX:0.85);   /* freelance: proyek tak menentu, diacak 0,4–1,3 tiap tahun (lihat drift) */
+  g*=(P.gajiAdj||1);   /* kenaikan gaji persisten (headhunt, counter-offer, 1-on-1) */
   g*= (N.pasar==='boom'?1.12:N.pasar==='krisis'?0.96:1);
   g*= (1+(P.reputasi-30)/300);
   if(typeof sertBonusGaji==='function')g*=1+sertBonusGaji();   /* nilai jual sertifikasi Professional/Expert */
   return Math.round(g);
+}
+/* ESOP saat diterima di startup: proporsional gaji jenjang (junior puluhan juta, CTO ratusan juta) */
+function esopBaru(a,b){ return Math.round(JAB[P.jab].gaji*(a+r()*(b-a))/1e6)*1e6; }
+/* sistem yang dikelola di kantor baru: kondisi & utang teknis tergantung jenis tempat */
+const INFRA_KONDISI={korporat:[70,90,15,40],bumn:[55,80,25,55],startup:[60,85,10,35],agency:[60,85,15,40],remote:[75,95,5,25],freelance:[65,90,10,30],founder:[85,96,0,8],awal:[78,95,0,15]};
+function infraNama(k){ if(k==='cloud')return N.tahun<2011?'Cluster Virtualisasi (VM)':N.tahun<2016?'Cluster Cloud (VM)':INFRA_DEF.cloud.n; return INFRA_DEF[k].n; }
+function bangunInfra(jenis){
+  const c=INFRA_KONDISI[jenis]||[70,92,0,20];
+  return (INFRA_AWAL[P.spes]||['server','app','jaringan']).map(k=>({k,n:infraNama(k),sehat:ri(c[0],c[1]),nilai:ri(2,6)*1e8,kritis:true,debt:ri(c[2],c[3])}));
 }
 
 /* ================= KARTU ================= */
@@ -167,7 +178,7 @@ function rollPasar(){
   if(x<0.12){ N.pasar='krisis'; addLog('<b>WINTER TEKNOLOGI.</b> Layoff massal melanda industri, pendanaan startup mengering.','bad'); }
   else if(x<0.32){ N.pasar='boom'; addLog('Industri sedang panas — perusahaan rebutan talenta, gaji naik, lowongan di mana-mana.','good'); }
   else N.pasar='normal';
-  if(r()<0.6)N.tren=pick(TREN);
+  if(r()<0.6||!trenAktif().some(t=>t.n===N.tren))N.tren=pickTren();
   N.ancaman=clamp(N.ancaman+ri(-6,8),20,95);
 }
 function drift(){
@@ -181,10 +192,17 @@ function drift(){
     return;
   }
   /* gaji & saham + masa kerja (tenure) */
-  if(!P.retired&&P.jab){ P.money+=gajiTahun(); P.tahunJab++; P.tenure=(P.tenure||0)+1; }
+  if(P.tempat==='freelance')P.flX=0.4+r()*0.9;   /* pendapatan freelance tahun ini */
+  if(!P.retired&&P.jab&&!P.menganggur&&!P.dipecat){ P.money+=gajiTahun(); P.tahunJab++; P.tenure=(P.tenure||0)+1; }
+  /* investasi pribadi (reksadana/saham bursa) ikut pasar */
   if(P.saham>0){
     const pct=N.pasar==='boom'?ri(0,40):N.pasar==='krisis'?ri(-45,-5):ri(-12,28);
     const d=Math.round(P.saham*pct/100); P.saham=Math.max(0,P.saham+d);
+  }
+  /* valuasi ekuitas startup (di atas kertas) hanya bergerak selama masih di startup itu */
+  if((P.ekuitas||0)>0&&P.startupSaham){
+    const pct=N.pasar==='boom'?ri(0,30):N.pasar==='krisis'?ri(-40,0):ri(-10,20);
+    P.ekuitas=Math.max(0,Math.round(P.ekuitas*(1+pct/100)));
   }
   /* pendapatan pasif produk sampingan (SaaS/MRR) — bisa tumbuh atau menyusut kalau ditelantarkan */
   if(P.saasMRR>0){

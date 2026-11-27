@@ -229,15 +229,19 @@ const KAT_SPES={support:['support','net'],sysadmin:['linux','net'],devops:['clou
 /* fokus belajar: kategori soal + ke mana kenaikan skill dibagi (jaringan & IoT terpisah) */
 const FOKUS_IT=[
   {k:'ngoding',  n:'Coding & scripting',              kat:['code','data'],          stat:{ngoding:1}},
-  {k:'sistem',   n:'Linux, server, cloud & Kubernetes', kat:['linux','cloud','k8s'], stat:{sistem:1}},
+  {k:'sistem',   n:'Linux, server & cloud',           kat:['linux','cloud','k8s'], stat:{sistem:1}},
   {k:'jaringan', n:'Jaringan komputer',               kat:['net'],                  stat:{jaringan:1}},
   {k:'iot',      n:'Internet of Things (IoT)',        kat:['iot'],                  stat:{jaringan:0.6,ngoding:0.4}},
   {k:'keamanan', n:'Keamanan siber',                  kat:['sec'],                  stat:{keamanan:1}},
   {k:'manajemen',n:'Manajemen proyek & layanan TI',   kat:['pm','support'],         stat:{soft:1}}
 ];
 const TINGKAT_LBL=['','dasar','menengah','lanjut'];
+/* kategori soal yang teknologinya belum lahir di tahun berjalan tidak dipakai (Kubernetes rilis 2014-15, cloud publik ~2010) */
+const KAT_TAHUN={k8s:2015,cloud:2010};
+function katAda(k){ return !(KAT_TAHUN[k]&&N&&N.tahun<KAT_TAHUN[k]); }
 /* ambil soal sesuai daftar tingkat kesulitan (mix), utamakan soal yang belum lama keluar */
 function soalTingkat(kats,mix){
+  const ada=kats.filter(katAda); if(ada.length)kats=ada;   /* jangan sampai daftar soal kosong */
   const semua=[]; for(const k of kats)for(const s of (SOAL_IT[k]||[]))semua.push(s);
   const lihat=(P&&P.soalLihat)||[];
   const acak=Kuis.acak(semua);
@@ -262,9 +266,9 @@ function bagiStat(st,total){ const o={}; for(const k in st)o[k]=Math.max(1,Math.
 /* ================= 3. LATAR BELAKANG ACAK ================= */
 const LATAR_IT=[
   {k:'kampus',n:'Lulusan Informatika kampus top',w:22,age:22,st:{ngoding:+8,sistem:+5,soft:+3},rep:+6,money:5e6,
-    d:'Kamu lulus dari jurusan Informatika kampus negeri ternama. Grup alumni penuh senior di unicorn dan perusahaan luar negeri.'},
-  {k:'bootcamp',n:'Lulusan bootcamp',w:22,age:24,st:{ngoding:+6,soft:+6},rep:+2,money:-15e6,
-    d:'Kuliahmu jurusan lain. Kamu banting setir lewat bootcamp coding 3 bulan dengan skema bayar belakangan (ISA): biaya dipotong dari gaji nanti.'},
+    d:'Kamu lulus dari jurusan Informatika kampus negeri ternama. Grup alumni penuh senior di perusahaan besar dan perusahaan luar negeri.'},
+  {k:'bootcamp',n:'Lulusan kursus coding intensif',w:22,age:24,st:{ngoding:+6,soft:+6},rep:+2,money:0,
+    d:'Kuliahmu jurusan lain. Kamu banting setir lewat kursus coding intensif 3 bulan tanpa biaya di muka: cicilannya dipotong dari gaji selama 2 tahun setelah kamu bekerja.'},
   {k:'otodidak',n:'Otodidak dari YouTube & forum',w:20,age:21,st:{ngoding:+4,keamanan:+5,sistem:+3},rep:-2,money:2e6,
     d:'Semua ilmu dari tutorial YouTube, dokumentasi, dan forum tengah malam. Tanpa ijazah IT, modal portofolio GitHub.'},
   {k:'smk',n:'Lulusan SMK TKJ',w:20,age:19,st:{jaringan:+10,sistem:+6},rep:0,money:1e6,
@@ -279,7 +283,7 @@ function terapkanLatarIT(){
   P.age=l.age; P.lahir=N.tahun-l.age;
   for(const k in l.st)P.st[k]=clamp(P.st[k]+l.st[k],0,100);
   P.reputasi=clamp(P.reputasi+l.rep,0,100); P.money+=l.money;
-  if(l.k==='bootcamp')P.isa=24;              /* cicilan ISA 2 tahun */
+  if(l.k==='bootcamp')P.isa=24;              /* cicilan kursus 2 tahun dipotong gaji (satu-satunya biaya kursus) */
   addLog('Latar belakang: <b>'+l.n+'</b>. '+l.d,'sys');
   milestone('Latar: '+l.n);
   ask({title:'LATAR BELAKANG',text:'<b>'+l.n.toUpperCase()+'</b><br><br>'+l.d+'<br><br>Usia mulai: <b>'+l.age+' tahun</b>'+(l.money?' · Uang awal: <b>'+rp(l.money)+'</b>':'')+'.',opts:[{t:'Lanjut »',e:()=>{}}]});
@@ -321,6 +325,7 @@ function migrasiSertifikat(){
 function sertBisa(j){
   const g=sertGrade(j.k)+1;
   if(g>3)return {ok:false,g,max:true,why:'Sudah grade tertinggi'};
+  if(j.th&&N.tahun<j.th)return {ok:false,g,why:'belum ada (mulai '+j.th+')'};
   const gr=GRADE[g], biaya=j.biaya[g];
   if(P.st[j.skill]<gr.skill)return {ok:false,g,why:'butuh skill '+LBL[j.skill]+' ≥ '+gr.skill};
   if(lvNow()<gr.lv)return {ok:false,g,why:'butuh jenjang '+Object.values(JAB).find(x=>x.lv===gr.lv).n};
@@ -384,7 +389,7 @@ function wawancaraTeknis(konteks,done){
   const lv=P.jab?lvNow():1;
   const mix=lv<=1?[1,1]:lv===2?[1,2]:lv<=4?[2,3]:[3,3];
   const soal=soalTingkat(KAT_SPES[P.spes]||['code'],mix).concat(soalIT(['sd'],1));
-  Kuis.lembar('WAWANCARA TEKNIS',konteks+' Dua engineer senior di layar Zoom membuka sesi teknis:',soal,h=>{
+  Kuis.lembar('WAWANCARA TEKNIS',konteks+' Dua engineer senior di layar video call membuka sesi teknis:',soal,h=>{
     const rasio=(h.jumlah?h.benar/h.jumlah:0.5)*0.6+(h.poinMaks?h.poin/h.poinMaks:0.5)*0.4;
     if(rasio>=0.95)ach('wawancaraAce');
     done(rasio);
@@ -394,7 +399,7 @@ function wawancaraTeknis(konteks,done){
 /* ================= 4. JALUR KARIER BARU ================= */
 function lamarRemoteLN(){
   wawancaraTeknis('Perusahaan di Eropa membuka posisi remote. Wawancara dalam bahasa Inggris, jam 10 malam waktu Indonesia.',rs=>{
-    if(rs>=0.65){ P.tempat='remote'; P.tempatN='Remote untuk Perusahaan Luar'; P.tenure=0; P.jobHops=(P.jobHops||0)+1; kondisiKantorBaru();
+    if(rs>=0.65){ P.tempat='remote'; P.tempatN='Remote untuk Perusahaan Luar'; P.jobHops=(P.jobHops||0)+1; kondisiKantorBaru();
       addLog('<b>Diterima kerja remote untuk perusahaan luar negeri!</b> Gaji dolar, meeting jam 11 malam.'+fx({reputasi:+3,stres:+3}),'good'); stamp('GAJI DOLAR','gold'); ach('gajiDolar'); milestone('Kerja remote perusahaan luar negeri'); leg(0,4); }
     else addLog('Email penolakan datang dengan bahasa yang sangat sopan: "We decided to move forward with other candidates."'+fx({stres:+4}),'bad');
   });
@@ -429,14 +434,18 @@ function hasilKinerja(skor){
   else { P.pip=(P.pip||0)+1; addLog('Rating: <b>Below Expectations</b>. "Kita perlu bicara soal performa."'+fx({stres:+8,reputasi:-2}),'bad');
     if(P.pip>=2)ask({title:'PERFORMANCE IMPROVEMENT PLAN',text:'Kamu resmi masuk <b>PIP</b> 90 hari: target mingguan, check-in setiap Jumat, dan semua orang tahu artinya.',opts:[
       {t:'Jalani PIP dengan serius',sub:'Lembur, tapi kesempatan bertahan',e:()=>{ if(r()<0.55+P.st.soft/300){ P.pip=0; addLog('Kamu lolos PIP. Manajer bilang "kerja bagus", tanpa senyum.'+fx({stres:+10,reputasi:+2}),'good'); ach('lolosPIP'); }
-        else { addLog('PIP tidak terlewati. Undangan Zoom 5 menit dari HR tiba hari Senin pagi.'+fx({stres:+12,reputasi:-3}),'bad'); milestone('Diberhentikan setelah PIP'); cariKerja(); } }},
+        else { addLog('PIP tidak terlewati. Undangan video call 5 menit dari HR tiba hari Senin pagi.'+fx({stres:+12,reputasi:-3}),'bad'); milestone('Diberhentikan setelah PIP'); cariKerja(); } }},
       {t:'Resign duluan dengan kepala tegak',e:()=>{ addLog('Kamu mengundurkan diri sebelum PIP selesai. Lega, sekaligus deg-degan.'+fx({stres:-5}),'sys'); milestone('Resign saat PIP'); cariKerja(); }}
     ]});
   }
 }
 function satuSatu(){
   ask({title:'1-ON-1 DENGAN MANAJER',text:'Manajer membuka kalender: "Gimana kabarnya? Ada yang mau dibahas?"',opts:[
-    {t:'Minta naik gaji, bawa data pencapaian',e:()=>{ if(r()<0.25+P.reputasi/250+(P.pip?-0.2:0)){ const n=Math.round(gajiTahun()*0.1); addLog('Manajer setuju mengajukan penyesuaian gaji '+rp(n)+'/tahun.'+fx({money:+n,stres:-2}),'good'); }
+    {t:'Minta naik gaji, bawa data pencapaian',e:()=>{
+      /* kenaikan permanen, tapi tetap dalam rentang gaji jenjang (maks. +30%) dan paling sering tiap 2 tahun */
+      if((P.gajiAdj||1)>=1.3){ addLog('"Gajimu sudah di batas atas rentang untuk jenjang ini. Kalau mau naik lagi, kejar promosi dulu."'+fx({stres:+2}),'sys'); return; }
+      if(N.tahun-(P.naikGajiTh||-99)<2){ addLog('"Kan baru naik tahun lalu. Kita lihat lagi di siklus berikutnya ya."'+fx({stres:+2}),'sys'); return; }
+      if(r()<0.25+P.reputasi/250+(P.pip?-0.2:0)){ const n=Math.round(gajiTahun()*0.1); P.gajiAdj=Math.min(1.3,(P.gajiAdj||1)*1.1); P.naikGajiTh=N.tahun; addLog('Manajer setuju menaikkan gajimu 10% (±'+rp(n)+'/tahun, berlaku seterusnya).'+fx({stres:-2}),'good'); }
       else addLog('"Budget tahun ini sudah dikunci. Nanti kita lihat di siklus berikutnya ya."'+fx({stres:+3}),'bad'); }},
     {t:'Curhat beban kerja & on-call',e:()=>{ P.lembur=clamp((P.lembur||0)-15,0,100); addLog('Manajer mengatur ulang rotasi on-call. Akhirnya ada yang mendengar.'+fx({stres:-6,soft:+1}),'good'); }},
     {t:'Minta jalur belajar & mentor',e:()=>addLog('Kamu dijadwalkan mentoring rutin dengan engineer senior.'+fx({ngoding:+2,sistem:+2,soft:+1}),'good')},
@@ -445,60 +454,70 @@ function satuSatu(){
 }
 
 /* ================= 2. KEJADIAN SATIR & KHUSUS LATAR ================= */
-const kerjaAktif=()=>!P.retired&&!P.dipecat&&P.penjara<=0;
+/* status kerja: kerjaAktif = punya penghasilan (bukan pensiun, dipecat/tercoreng, menganggur, atau di penjara);
+   adaKantor = punya kantor (karyawan atau founder, bukan freelancer); punyaAtasan = karyawan yang punya manajer & HR */
+const kerjaAktif=()=>!!P&&!P.retired&&!P.dipecat&&!P.menganggur&&P.penjara<=0;
+const adaKantor=()=>kerjaAktif()&&P.tempat!=='freelance';
+const punyaAtasan=()=>adaKantor()&&!P.founder;
 const EV_IT=[
 {k:'printer',w:3,cd:3,run:()=>ask({title:'"KAMU ANAK IT, KAN?"',text:'Tetangga datang membawa printer macet, HP yang "kena virus", dan password WiFi yang lupa. "Kamu kan kerja di IT, pasti bisa."',opts:[
   {t:'Bantu semuanya',e:()=>{ P.servisKali=(P.servisKali||0)+1; addLog('Printer jalan lagi setelah dicabut-colok. Kamu dibayar pisang goreng dan reputasi "teknisi satu RT".'+fx({soft:+2,stres:+3}),'good'); if(P.servisKali>=3)ach('tukangServis'); }},
   {t:'"Itu bukan bidangku, Bu"',e:()=>addLog('Tetangga tidak percaya. "Masa anak IT nggak bisa benerin printer?"'+fx({soft:-1}))},
   {t:'Pura-pura sedang on-call',e:()=>addLog('Kamu kabur dengan alasan "server kantor down". Kali ini bohong, besok mungkin kenyataan.'+fx({stres:-1}))}]})},
-{k:'jumat',w:3,cd:3,cond:kerjaAktif,run:()=>ask({title:'DEPLOY JUMAT SORE',text:'Jumat, 16.30. Atasan: "Fiturnya deploy sekarang aja ya, biar Senin klien bisa lihat."',opts:[
+{k:'jumat',w:3,cd:3,cond:punyaAtasan,run:()=>ask({title:'DEPLOY JUMAT SORE',text:'Jumat, 16.30. Atasan: "Fiturnya deploy sekarang aja ya, biar Senin klien bisa lihat."',opts:[
   {t:'Tolak sopan, jadwalkan Senin pagi',e:()=>{ if(r()<0.6)addLog('Atasan setuju setelah kamu jelaskan risikonya. Akhir pekan tetap damai.'+fx({soft:+2,stres:-2}),'good'); else addLog('Atasan kesal: "Kok susah banget sih?" Tapi akhir pekanmu aman.'+fx({reputasi:-1})); }},
   {t:'Deploy sekarang',e:()=>{ if(r()<0.4){ P.deployGagal++; addLog('Deploy gagal jam 18.00. Akhir pekanmu hilang di depan log error.'+fx({stres:+10,kesehatan:-2,reputasi:-1}),'bad'); } else addLog('Deploy lancar. Kamu tetap tidak bisa tidur nyenyak sampai Senin.'+fx({stres:+3})); }}]})},
-{k:'kondangan',w:2,cd:4,cond:kerjaAktif,run:()=>ask({title:'PRODUCTION DOWN SAAT KONDANGAN',text:'Kamu sedang antre prasmanan di kondangan sepupu. HP bergetar: "SEV-1: checkout error 100%".',opts:[
+{k:'kondangan',w:2,cd:4,cond:adaKantor,run:()=>ask({title:'PRODUCTION DOWN SAAT KONDANGAN',text:'Kamu sedang antre prasmanan di kondangan sepupu. HP bergetar: "SEV-1: checkout error 100%".',opts:[
   {t:'Buka laptop di parkiran',e:()=>addLog('Kamu memulihkan layanan dari jok motor, berbaju batik, ditemani suara organ tunggal.'+fx({reputasi:+2,stres:+5}),'good')},
   {t:'Serahkan ke rekan on-call',e:()=>{ if((P.budaya||50)>=50)addLog('Rekanmu sigap menangani. Kamu kembali ke antrean rendang.'+fx({stres:-1}),'good'); else addLog('Rekanmu panik dan menelepon balik 9 kali. Rendangnya keburu habis.'+fx({stres:+5})); }}]})},
 {k:'lowongan',w:2,cd:6,run:()=>addLog('Lowongan di LinkedIn: "Dibutuhkan Senior Engineer, pengalaman 5 tahun di framework yang baru rilis 2 tahun lalu, menguasai 14 bahasa pemrograman, gaji UMR, suasana kekeluargaan." Kamu menutup tab dengan tenang.'+fx({stres:+1}),'sys')},
-{k:'logo',w:3,cd:4,cond:()=>kerjaAktif()&&(P.tempat==='agency'||P.tempat==='remote'),run:()=>ask({title:'"LOGONYA DIBESARKAN, TAPI JANGAN TERLALU BESAR"',text:'Klien mengirim revisi ke-11: "Warnanya lebih ngejreng tapi elegan. Pokoknya yang wow tapi simpel."',opts:[
+{k:'logo',w:3,cd:4,cond:()=>kerjaAktif()&&(P.tempat==='agency'||P.tempat==='remote'||P.tempat==='freelance'),run:()=>ask({title:'"LOGONYA DIBESARKAN, TAPI JANGAN TERLALU BESAR"',text:'Klien mengirim revisi ke-11: "Warnanya lebih ngejreng tapi elegan. Pokoknya yang wow tapi simpel."',opts:[
   {t:'Kerjakan dengan sabar',e:()=>addLog('Revisi ke-12 akhirnya disetujui. Isinya sama persis dengan versi pertama.'+fx({soft:+2,stres:+5}))},
   {t:'Ajak diskusi: tanya tujuan bisnisnya',e:()=>addLog('Setelah diskusi, klien sadar yang dia butuhkan bukan logo baru, tapi landing page yang cepat. Proyek berubah jadi lebih masuk akal.'+fx({soft:+3,reputasi:+2}),'good')}]})},
-{k:'aiBos',w:2,cd:6,cond:kerjaAktif,run:()=>ask({title:'"PAKAI AI UNTUK SEMUA"',text:'Atasan baru pulang seminar: "Mulai besok semua kerjaan pakai AI ya. Kalau AI bisa, kenapa harus kita?"',opts:[
+{k:'aiBos',w:2,cd:6,cond:()=>punyaAtasan()&&N.tahun>=2023,run:()=>ask({title:'"PAKAI AI UNTUK SEMUA"',text:'Atasan baru pulang seminar: "Mulai besok semua kerjaan pakai AI ya. Kalau AI bisa, kenapa harus kita?"',opts:[
   {t:'Susun panduan pemakaian AI yang aman',e:()=>{ P.pelatihanAI=true; addLog('Kamu membuat panduan: kapan AI membantu, kapan berbahaya (data rahasia, kode tanpa review). Atasan menyebutnya "visioner".'+fx({reputasi:+3,soft:+2}),'good'); }},
   {t:'Copy-paste semua jawaban AI ke produksi',e:()=>addLog('Kode hasil AI jalan... sampai tidak. Ada fungsi yang memanggil library yang tidak pernah ada.'+fx({stres:+6,reputasi:-2}),'bad')}]})},
-{k:'standup',w:2,cd:4,cond:kerjaAktif,run:()=>addLog('Stand-up meeting "15 menit" berlangsung 1 jam 10 menit. Separuhnya membahas siapa yang menghabiskan galon di pantry.'+fx({stres:+2}),'sys')},
-{k:'winupdate',w:2,cd:6,cond:kerjaAktif,run:()=>addLog('Laptop kantor memaksa update Windows tepat 5 menit sebelum demo ke klien. "Jangan matikan komputer Anda. 3% selesai."'+fx({stres:+4}),'bad')},
-{k:'legacy',w:2,cd:5,cond:kerjaAktif,run:()=>ask({title:'KODE WARISAN TANPA DOKUMENTASI',text:'Kamu mewarisi modul pembayaran berumur 9 tahun. Satu-satunya komentar: <code>// jangan diubah, nggak tahu kenapa bisa jalan</code>',opts:[
+{k:'standup',w:2,cd:4,cond:adaKantor,run:()=>addLog('Stand-up meeting "15 menit" berlangsung 1 jam 10 menit. Separuhnya membahas siapa yang menghabiskan galon di pantry.'+fx({stres:+2}),'sys')},
+{k:'winupdate',w:2,cd:6,cond:adaKantor,run:()=>addLog('Laptop kantor memaksa update Windows tepat 5 menit sebelum demo ke klien. "Jangan matikan komputer Anda. 3% selesai."'+fx({stres:+4}),'bad')},
+{k:'legacy',w:2,cd:5,cond:adaKantor,run:()=>ask({title:'KODE WARISAN TANPA DOKUMENTASI',text:'Kamu mewarisi modul pembayaran berumur 9 tahun. Satu-satunya komentar: <code>// jangan diubah, nggak tahu kenapa bisa jalan</code>',opts:[
   {t:'Tulis tes dulu, refactor pelan-pelan',e:()=>{ const app=infraGet('app'); if(app)app.debt=clamp((app.debt||0)-10,0,100); addLog('Butuh berminggu-minggu, tapi sekarang modul itu punya tes dan dokumentasi.'+fx({ngoding:+3,stres:+3,reputasi:+1}),'good'); }},
   {t:'Ikuti petunjuk komentar: jangan diubah',e:()=>addLog('Modul itu tetap jalan. Entah sampai kapan.'+fx({stres:-1}))}]})},
 {k:'hackIG',w:2,cd:8,run:()=>ask({title:'"BISA HACK IG MANTANKU?"',text:'Teman lama tiba-tiba chat: "Bro/Sis, kamu kan anak IT. Bisa bantu buka IG mantanku? Bayar deh."',opts:[
   {t:'Tolak, jelaskan itu melanggar hukum',e:()=>addLog('Kamu menolak dan menjelaskan soal UU ITE. Temanmu membalas "yaelah, serius amat".'+fx({soft:+1}),'good')},
   {t:'Ajari dia pasang 2FA di akunnya sendiri',e:()=>addLog('Topik beralih ke keamanan akunnya sendiri. Dia malah berterima kasih.'+fx({soft:+2,keamanan:+1}),'good')},
-  {t:'Terima bayarannya',e:()=>{ P.hackBlack++; addLog('Kamu mengerjakannya diam-diam. Uangnya kecil, risikonya besar, nuraninya sedikit tercoreng.'+fx({money:+2e6,heat:+4}),'bad'); setTopi(); }}]})},
-{k:'onCallLibur',w:2,cd:5,cond:kerjaAktif,run:()=>addLog('Liburan keluarga ke pantai. Kamu menghabiskan hari kedua di lobi hotel demi sinyal stabil, menangani alert yang ternyata false positive.'+fx({stres:+5,kesehatan:-1}),'bad')},
-{k:'gojek',w:2,cd:8,run:()=>addLog('Om di arisan keluarga: "Kerja IT bertahun-tahun kok belum bikin aplikasi kayak Gojek sendiri?" Kamu tersenyum dan mengambil kue lagi.'+fx({stres:+1}),'sys')},
+  {t:'Terima bayarannya',e:()=>{ P.hackBlack++; addLog('Kamu mengerjakannya diam-diam. Uangnya kecil, risikonya besar, nuraninya sedikit tercoreng.'+fx({gelap:+2e6,heat:+4}),'bad'); setTopi(); }}]})},
+{k:'onCallLibur',w:2,cd:5,cond:adaKantor,run:()=>addLog('Liburan keluarga ke pantai. Kamu menghabiskan hari kedua di lobi hotel demi sinyal stabil, menangani alert yang ternyata false positive.'+fx({stres:+5,kesehatan:-1}),'bad')},
+{k:'gojek',w:2,cd:8,cond:()=>N.tahun>=2016,run:()=>addLog('Om di arisan keluarga: "Kerja IT bertahun-tahun kok belum bikin aplikasi kayak Gojek sendiri?" Kamu tersenyum dan mengambil kue lagi.'+fx({stres:+1}),'sys')},
 {k:'remoteMalam',w:3,cd:3,cond:()=>kerjaAktif()&&P.tempat==='remote',run:()=>addLog('Meeting sinkron tim global jam 23.00 WIB. Kamu presentasi dengan kopi ketiga sementara rekanmu di Eropa baru sarapan.'+fx({stres:+4,kesehatan:-1}),'sys')},
-{k:'budayaBuruk',w:3,cd:6,cond:()=>kerjaAktif()&&(P.budaya||50)<35,run:()=>{ addLog('Engineer terbaik di timmu resign. Di exit interview dia bilang: "Di sini salah sedikit langsung disalahkan."'+fx({stres:+6,reputasi:-2}),'bad'); for(const a of P.infra)a.debt=clamp((a.debt||0)+4,0,100); }},
+{k:'budayaBuruk',w:3,cd:6,cond:()=>adaKantor()&&(P.budaya||50)<35,run:()=>{ addLog('Engineer terbaik di timmu resign. Di exit interview dia bilang: "Di sini salah sedikit langsung disalahkan."'+fx({stres:+6,reputasi:-2}),'bad'); for(const a of P.infra)a.debt=clamp((a.debt||0)+4,0,100); }},
 /* --- khusus latar --- */
-{k:'minS1',w:4,cd:99,cond:()=>P.latar==='smk'&&kerjaAktif(),run:()=>ask({title:'"MINIMAL S1"',text:'Tawaran naik posisi tertahan: sistem HR menolak otomatis karena syarat "minimal S1".',opts:[
-  {t:'Kuliah sambil kerja (kelas karyawan)',sub:'Rp 20 jt/tahun, lelah, tapi syarat terpenuhi',e:()=>{ P.money-=20e6; P.kuliahMalam=true; addLog('Kamu mendaftar kuliah kelas karyawan. Senin-Jumat kerja, Sabtu-Minggu kuliah.'+fx({stres:+8,soft:+3}),'sys'); milestone('Kuliah sambil kerja'); }},
+{k:'minS1',w:4,cd:99,cond:()=>P.latar==='smk'&&punyaAtasan()&&!P.kuliahMalam&&!P.s1Malam,run:()=>ask({title:'"MINIMAL S1"',text:'Tawaran naik posisi tertahan: sistem HR menolak otomatis karena syarat "minimal S1".',opts:[
+  {t:'Kuliah sambil kerja (kelas karyawan)',sub:'Rp 20 jt/tahun selama ±4 tahun, lelah, tapi syarat terpenuhi',e:()=>{ P.money-=20e6; P.kuliahMalam=true; P.kuliahMulai=N.tahun; addLog('Kamu mendaftar kuliah kelas karyawan dan membayar semester pertama ('+rp(20e6)+'/tahun). Senin-Jumat kerja, Sabtu-Minggu kuliah.'+fx({stres:+8,soft:+3}),'sys'); milestone('Kuliah sambil kerja'); }},
   {t:'Buktikan lewat portofolio & sertifikasi',e:()=>addLog('Kamu menyusun portofolio proyek nyata. Beberapa perusahaan mulai melihat kemampuan, bukan ijazah.'+fx({reputasi:+3}),'good')}]})},
-{k:'impostor',w:3,cd:12,cond:()=>(P.latar==='otodidak'||P.latar==='bootcamp')&&kerjaAktif(),run:()=>ask({title:'IMPOSTOR SYNDROME',text:'Di rapat teknis, rekan lulusan kampus top membahas istilah yang belum pernah kamu dengar. "Jangan-jangan aku memang tidak pantas di sini?"',opts:[
+{k:'impostor',w:3,cd:12,cond:()=>(P.latar==='otodidak'||P.latar==='bootcamp')&&adaKantor(),run:()=>ask({title:'IMPOSTOR SYNDROME',text:'Di rapat teknis, rekan lulusan kampus top membahas istilah yang belum pernah kamu dengar. "Jangan-jangan aku memang tidak pantas di sini?"',opts:[
   {t:'Tanya, lalu pelajari malamnya',e:()=>addLog('Ternyata rekanmu juga baru membacanya minggu lalu. Semua orang sedang belajar.'+fx({soft:+2,ngoding:+2,stres:-2}),'good')},
   {t:'Diam & pura-pura paham',e:()=>addLog('Kamu mengangguk sepanjang rapat dan pulang dengan kepala penuh tanda tanya.'+fx({stres:+5}))}]})},
 {k:'alumni',w:3,cd:12,cond:()=>P.latar==='kampus'&&kerjaAktif()&&P.reputasi>=30,run:()=>addLog('Grup alumni ramai: senior di perusahaan besar membagikan lowongan internal dan menawarkan referral. Jaringan kampus memang aset.'+fx({reputasi:+3}),'good')},
-{k:'mantanAkuntan',w:3,cd:12,cond:()=>P.latar==='switcher'&&kerjaAktif(),run:()=>addLog('"Kamu kan dulu akuntan? Sekalian bantu cek laporan pajak tim ya." Pengalaman lamamu ternyata membuatmu jadi jembatan antara tim teknis dan bisnis.'+fx({soft:+3,reputasi:+2}),'good')}
+{k:'mantanAkuntan',w:3,cd:12,cond:()=>P.latar==='switcher'&&adaKantor(),run:()=>addLog('"Kamu kan dulu akuntan? Sekalian bantu cek laporan pajak tim ya." Pengalaman lamamu ternyata membuatmu jadi jembatan antara tim teknis dan bisnis.'+fx({soft:+3,reputasi:+2}),'good')}
 ];
 function eventsIT(){
   P.cd=P.cd||{};
   if(P.budaya==null)P.budaya=50;
-  /* cicilan ISA bootcamp */
-  if(P.isa>0&&P.jab){ P.isa-=12; const pot=Math.round(gajiTahun()*0.12); P.money-=pot; addLog('Cicilan ISA bootcamp memotong '+rp(pot)+' dari gajimu tahun ini'+(P.isa<=0?'. Akhirnya lunas!':'.'),'sys'); }
-  if(P.kuliahMalam&&!P.s1Malam&&r()<0.35){ P.s1Malam=true; P.kuliahMalam=false; addLog('Kamu diwisuda dari kelas karyawan. Syarat "minimal S1" bukan penghalang lagi.'+fx({reputasi:+4,stres:-5}),'good'); stamp('WISUDA S1','green'); milestone('Lulus S1 kelas karyawan'); }
-  if(P.retired||P.dipecat||P.penjara>0)return;
+  /* cicilan kursus coding: dipotong dari gaji (hanya saat ada penghasilan) */
+  if(P.isa>0&&P.jab&&kerjaAktif()){ P.isa-=12; const pot=Math.round(gajiTahun()*0.12); P.money-=pot; addLog('Cicilan kursus coding memotong '+rp(pot)+' dari gajimu tahun ini'+(P.isa<=0?'. Akhirnya lunas!':'.'),'sys'); }
+  /* kuliah kelas karyawan: bayar tiap tahun, wisuda paling cepat setelah 4 tahun */
+  if(P.kuliahMalam&&!P.s1Malam){
+    if(P.kuliahMulai==null)P.kuliahMulai=N.tahun;   /* save lama */
+    const lama=N.tahun-P.kuliahMulai;
+    if(lama>=4&&r()<0.7){ P.s1Malam=true; P.kuliahMalam=false; addLog('Setelah '+lama+' tahun kuliah di akhir pekan, kamu diwisuda dari kelas karyawan. Syarat "minimal S1" bukan penghalang lagi.'+fx({reputasi:+4,stres:-5}),'good'); stamp('WISUDA S1','green'); milestone('Lulus S1 kelas karyawan'); }
+    else { P.money-=20e6; addLog('Biaya kuliah kelas karyawan tahun ke-'+(lama+1)+': '+rp(20e6)+'.'+fx({stres:+2}),'sys'); }
+  }
+  if(!kerjaAktif())return;   /* pensiun, dipecat, menganggur, atau di penjara: tak ada urusan kantor */
   /* kehidupan kantor */
   timTahunan();   /* tim: tumbuh, moral, resign, arahan (03c-tim.js) */
-  if(P.jab&&P.tempat!=='remote'&&r()<0.75)penilaianKinerja();
-  else if(P.jab&&r()<0.5)penilaianKinerja();
-  if(P.jab&&r()<0.22)satuSatu();
+  /* penilaian kinerja, PIP & 1-on-1 hanya untuk karyawan (bukan founder atau freelancer) */
+  if(punyaAtasan()&&P.jab&&r()<(P.tempat==='remote'?0.5:0.875))penilaianKinerja();
+  if(punyaAtasan()&&P.jab&&r()<0.22)satuSatu();
   if((P.budaya||50)>=75)ach('blameless');
   /* satu kejadian satir/latar per tahun */
   if(r()<0.85){

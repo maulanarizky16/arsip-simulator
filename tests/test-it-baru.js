@@ -141,6 +141,60 @@ cek('kinerja bagus → Exceeds',run('!!P.ach.exceeds'));
 run(`(()=>{ for(let i=0;i<100;i++){ __baru(); if(P.latar==='bootcamp')break; } })(); P.isa=24; const m=P.money; eventsIT(); __drain(0); globalThis.__isa=[P.isa,m-P.money];`);
 cek('ISA bootcamp memotong gaji',run('__isa[0]===12'),run('__isa'));
 
+// A2: biaya perusahaan bukan uang pribadi karyawan; membayar tebusan bukan pidana
+const RANSOM='{jenis:INSIDEN.find(x=>x.k==="ransom"),target:null,parah:"sedang",clues:[],diagnosed:{},done:false}';
+run(`__baru(); P.founder=false; P.money=1e9; P.heat=0; terapkan(${RANSOM},{dark:'ransom'}); __drain(0); globalThis.__a2=[P.money,P.heat];`);
+cek('A2 karyawan: tebusan dibayar manajemen (uang pribadi utuh, tanpa sorotan hukum)',run('__a2[0]===1e9&&__a2[1]===0'),run('__a2'));
+run(`__baru(); P.founder=true; P.money=5e9; terapkan(${RANSOM},{dark:'ransom'}); __drain(0); globalThis.__a2f=P.money;`);
+cek('A2 founder: tebusan dari kas startup sendiri',run('__a2f<5e9'),run('__a2f'));
+run(`__baru(); P.founder=false; globalThis.__a2t=[]; for(let i=0;i<40;i++){ P.money=1e9; P.coverUps=8; terapkan({jenis:INSIDEN.find(x=>x.k==='breach'),target:null,parah:'besar',clues:[],diagnosed:{},done:false},{dark:'tutup'}); __drain(0); __a2t.push(P.money); }
+  P.money=1e9; eskalasi({jenis:INSIDEN[0],target:null,parah:'besar',clues:[],diagnosed:{},done:false}); __drain(0); __a2t.push(P.money);`);
+cek('A2 karyawan: sanksi kebocoran & tagihan vendor eskalasi tidak memotong uang pribadi',run('__a2t.every(x=>x===1e9)'),run('__a2t.filter(x=>x!==1e9).slice(0,3)'));
+
+// A3: menganggur = tanpa gaji, insiden, & urusan kantor; tiap tahun ditawari mencari kerja lagi
+run(`__baru(); P.saasMRR=0; P.tempat='korporat'; cariKerja(); choose(2); __drain(0);
+  globalThis.__m3=P.money; globalThis.__t3=P.insidenTotal; drift(); insiden(); __drain(0);
+  globalThis.__a3=[P.menganggur,P.money===__m3,P.insidenTotal===__t3,kerjaAktif(),P.tempatN,jabLabel()];
+  __J.length=0; events(); globalThis.__a3j=__J.slice(); G.current=null; G.queue=[];`);
+cek('A3 "rehat dulu" → menganggur: tanpa gaji & tanpa insiden, posisi tampil "Menganggur"',run('__a3[0]&&__a3[1]&&__a3[2]&&!__a3[3]&&__a3[4]==="Menganggur"&&/Menganggur/.test(__a3[5])'),run('__a3'));
+cek('A3 tahun berikutnya ditawari mencari kerja, tanpa penilaian kinerja/1-on-1',run('__a3j.includes("MENCARI KERJA")&&!__a3j.includes("PENILAIAN KINERJA TAHUNAN")&&!__a3j.includes("1-ON-1 DENGAN MANAJER")'),run('__a3j'));
+run(`globalThis.__KUIS_PINTAR=true; for(let i=0;i<20&&P.menganggur;i++){ cariKerja(); __drain(0); } globalThis.__KUIS_PINTAR=false;`);
+cek('A3 diterima kerja → status menganggur hilang',run('!P.menganggur&&!!P.tempat&&kerjaAktif()'),run('[P.menganggur,P.tempat]'));
+// A4: eks-terpidana / tercoreng tetap bisa kena razia
+run(`globalThis.__a4=0; for(let i=0;i<40;i++){ __baru(); P.dipecat=true; P.heat=90; P.hackBlack=6; __J.length=0; razia(); if(__J.includes('DIGITAL FORENSICS MENGETUK PINTU'))__a4++; G.current=null; G.queue=[]; }`);
+cek('A4 status dipecat tidak lagi mematikan razia',run('__a4>0'),run('__a4'));
+
+// B5: investasi pribadi (P.saham) terpisah dari ekuitas startup (P.ekuitas)
+run(`__baru(); globalThis.__b5=[P.tempat,P.ekuitas,P.saham];`);
+cek('B5 junior diterima di startup: ESOP puluhan juta di P.ekuitas, investasi pribadi 0',run('__b5[0]==="startup"&&__b5[1]>=1e7&&__b5[1]<1e8&&__b5[2]===0'),run('__b5'));
+run(`__baru(); P.saham=5e8; P.ekuitas=2e8; P.startupSaham=true; P.tenure=2; cariKerja(); G.current=null; G.queue=[]; globalThis.__b5l=[P.saham,P.ekuitas,P.startupSaham];`);
+cek('B5 keluar dari startup: hanya ekuitas belum vesting yang hangus (reksadana utuh)',run('__b5l[0]===5e8&&__b5l[1]===1e8&&__b5l[2]===false'),run('__b5l'));
+run(`globalThis.__b5x=null; for(let i=0;i<400&&!__b5x;i++){ __baru(); P.saham=3e8; P.ekuitas=1e8; P.startupSaham=true; P.evAkuisisi=false; N.pasar='normal'; const m=P.money; events(); G.current=null; G.queue=[]; if(P.evAkuisisi)__b5x=[P.saham,P.ekuitas,P.money-m]; }`);
+cek('B5 exit startup melipatgandakan ekuitas saja (reksadana tidak ikut)',run('__b5x&&__b5x[0]===3e8&&__b5x[1]===0&&__b5x[2]>=2e8'),run('__b5x'));
+run(`globalThis.__b5n=0; for(let i=0;i<300;i++){ __baru(); P.ekuitas=1e8; P.startupSaham=false; P.evAkuisisi=false; events(); G.current=null; G.queue=[]; if(P.evAkuisisi)__b5n++; }`);
+cek('B5 ekuitas startup lama (sudah pindah) tidak ikut exit',run('__b5n===0'),run('__b5n'));
+cek('B5 harta akhir menjumlah investasi & ekuitas',run('(()=>{ P.money=0; P.saham=1e9; P.ekuitas=5e8; P.saasMRR=0; return nilaiAkhir().harta===1.5e9; })()'));
+
+// B7: freelance bukan "remote", pendapatan tak menentu, tanpa atasan
+run(`__baru(); cariKerja(); choose(1); __drain(0); globalThis.__b7g=[]; for(let i=0;i<20;i++){ drift(); __b7g.push(gajiTahun()); }
+  P.st.soft=70; P.st.ngoding=80; __J.length=0; for(let i=0;i<8;i++){ eventsIT(); G.current=null; G.queue=[]; }
+  globalThis.__b7=[P.tempat,P.tempatN,adaKantor(),punyaAtasan(),actAvail(ACTS.find(a=>a.k==='remoteLN')).ok,actAvail(ACTS.find(a=>a.k==='oneOnOne')).ok,__J.includes('PENILAIAN KINERJA TAHUNAN')];`);
+cek('B7 freelance: tempat "freelance", tak ada di TEMPAT, tanpa atasan & penilaian kinerja, boleh lamar remote LN',run('__b7[0]==="freelance"&&__b7[1]==="Freelance / Konsultan"&&!TEMPAT.some(t=>t.k==="freelance")&&!__b7[2]&&!__b7[3]&&__b7[4]&&!__b7[5]&&!__b7[6]'),run('__b7'));
+cek('B7 pendapatan freelance naik-turun tiap tahun (0,4–1,3× gaji jenjang)',run('Math.max(...__b7g)/Math.min(...__b7g)>1.5'),run('__b7g.map(x=>Math.round(x/1e6))'));
+
+// B10: tak ada anakronisme di 2008
+run(`__baru(); N.tahun=2008; globalThis.__b10=[]; for(let i=0;i<300;i++)__b10.push(pickTren()); globalThis.__b10i=[]; for(let i=0;i<400;i++)__b10i.push(buatInsiden().jenis.k);
+  globalThis.__b10s=soalTingkat(['linux','cloud','k8s'],[1,2,2,3,3]); globalThis.__b10k=sertBisa(SERT_JALUR.find(j=>j.k==='k8s'));`);
+cek('B10 tren 2008 tak ada AI/LLM (dan tren awal permainan pun bukan AI)',run('__b10.every(t=>!/AI/.test(t))&&TREN.filter(t=>/AI/.test(t.n)).every(t=>t.th>=2023)'),run('[...new Set(__b10)]'));
+cek('B10 insiden 2008 tanpa Kubernetes/ransomware kripto/supply-chain/tagihan cloud',run('!__b10i.some(k=>["k8scrash","ransom","supplychain","cloudbill"].includes(k))'));
+cek('B10 soal 2008 tanpa Kubernetes & cloud; sertifikasi Kubernetes "belum ada"',run('__b10s.length===5&&__b10s.every(s=>SOAL_IT.linux.includes(s))&&!__b10k.ok&&/belum ada \\(mulai 2021\\)/.test(__b10k.why)'),run('__b10k'));
+run(`N.tahun=2025; globalThis.__b10b=[]; for(let i=0;i<300;i++)__b10b.push(pickTren());`);
+cek('B10 tren AI muncul di era 2023+',run('__b10b.some(t=>/AI/.test(t))'));
+
+// P3b: aksi ↻ berpenghasilan maksimal 2× setahun
+run(`__baru(); P.st.keamanan=80; P.reputasi=60; P.used={}; G.acted=0; globalThis.__h3=P.hackWhite; for(let i=0;i<4;i++){ doAct('pentest'); __drain(0); } globalThis.__p3b=[P.hackWhite-__h3,actAvail(ACTS.find(a=>a.k==='pentest')).why]; P.used={};`);
+cek('P3b kontrak pentest maksimal 2× per tahun',run('__p3b[0]===2&&/2×/.test(__p3b[1])&&actAvail(ACTS.find(a=>a.k==="pentest")).ok'),run('__p3b'));
+
 // banyak karier acak: satir & kantor muncul, tanpa error
 run(`globalThis.__E=[]; for(let i=0;i<120;i++){ try{ __baru(); let g=0; while(P.alive&&!G.over&&g++<40){ const av=ACTS.filter(a=>actAvail(a).ok); for(let k=0;k<2&&av.length;k++){ try{ doAct(av[Math.floor(Math.random()*av.length)].k); }catch(e){ __E.push(e.message); } __drain(); } try{ advance(); }catch(e){ __E.push('advance: '+e.message); break; } __drain(); } }catch(e){ __E.push(e.message); } }`);
 cek('120 karier acak tanpa error',run('__E.length')===0,run('__E.slice(0,5)'));

@@ -18,7 +18,7 @@ function cekPromosi(){
   if(P.retired||P.penjara>0||lvNow()>=6)return;
   const next=JAB_NEXT[P.jab]; if(!next)return;
   const s=P.st, lv=lvNow();
-  if(P.menganggur||P.dipecat||P.founder)return;   /* promosi hanya untuk karyawan aktif */
+  if(P.menganggur||P.dipecat||P.founder||P.tempat==='freelance')return;   /* promosi hanya untuk karyawan aktif (freelancer & founder tak punya atasan) */
   const skillInti=skillKarier();
   /* Lead ke atas: kinerja tim yang dipimpin ikut menentukan (lihat 03c-tim.js) */
   const timOk = lv<4 || timSkor()>=(lv>=5?60:45);   /* ke CTO: tim harus benar-benar kuat */
@@ -40,7 +40,10 @@ function cekPromosi(){
   }
 }
 function naikJab(k){
+  const lama=P.jab?gajiTahun():0;
   P.jab=k; P.tahunJab=0; if(JAB[k].lv>P.maxLv)P.maxLv=JAB[k].lv;
+  /* kenaikan gaji hasil negosiasi terserap ke rentang gaji jenjang baru: gaji baru = maks(band baru, gaji lama +5%) */
+  if((P.gajiAdj||1)!==1){ P.gajiAdj=1; const baru=gajiTahun(); if(lama*1.05>baru)P.gajiAdj=lama*1.05/baru; }
   if(JAB[k].lv>=4&&!P.tim)buatTimAwal();   /* mulai memimpin tim (03c-tim.js) */
   stamp((JAB[k].n+' '+P.spesN).toUpperCase(),'green'); milestone('Naik: '+JAB[k].n+' '+P.spesN);
   if(ACH_DEF[k])ach(k);
@@ -58,6 +61,7 @@ function buatInsiden(){
   /* bobot: insiden cocok spesialisasi & infra lebih sering; insiden keamanan ikut ancaman global */
   let pool=[];
   for(const j of INSIDEN){
+    if(j.th&&N.tahun<j.th)continue;   /* teknologinya belum lazim (mis. Kubernetes sebelum 2016) */
     let w=1;
     if(infraGet(j.infra))w+=2;
     if(j.sec)w+=Math.round((N.ancaman-40)/15)-Math.round((P.bluTeam||0)/30);   /* postur blue-team menekan insiden keamanan */
@@ -80,6 +84,7 @@ function buatInsiden(){
 }
 function insiden(){
   if(P.penjara>0||P.retired||!P.alive||G.over)return;
+  if(!kerjaAktif())return;   /* menganggur / dipecat: tak ada sistem yang dijaga, tak ada on-call */
   let n=1;
   if(r()<0.42)n++;
   if(r()<0.12)n=0;                         /* tahun yang relatif tenang */
@@ -153,17 +158,24 @@ function terapkan(c,opt){
   /* === JALAN GELAP === */
   if(opt&&opt.dark==='ransom'){
     const tebus=Math.round(ri(2,8)*1e8*(1+(P.ransomPaid||0)*0.4));   /* langganan = tebusan makin mahal */
-    P.money-=tebus; P.ransomPaid=(P.ransomPaid||0)+1;
-    addLog('Anda membayar tebusan '+rp(tebus)+' dalam kripto. Kunci dekripsi datang — kali ini. Anda baru saja mendanai sindikat untuk menyerang korban berikutnya (dan mengecap diri sebagai pembayar).'+ix(c.target,+12)+fx({heat:+5,stres:+4}),'bad');
+    P.ransomPaid=(P.ransomPaid||0)+1;
+    /* tebusan adalah biaya PERUSAHAAN. Membayarnya bukan pidana, tapi tak etis & mengecap korban sebagai "pembayar" */
+    if(P.founder){ P.money-=tebus;
+      addLog('Kas startup-mu menguras '+rp(tebus)+' untuk tebusan kripto. Kunci dekripsi datang — kali ini. Kamu baru saja mendanai sindikat untuk menyerang korban berikutnya (dan mengecap startup-mu sebagai pembayar).'+ix(c.target,+12)+fx({stres:+4}),'bad'); }
+    else addLog('Manajemen membayar tebusan '+rp(tebus)+' dalam kripto atas rekomendasimu. Kunci dekripsi datang — kali ini. Perusahaan baru saja mendanai sindikat dan dicap sebagai pembayar; rekan-rekan tahu itu usulmu.'+ix(c.target,+12)+fx({reputasi:-3,stres:+4}),'bad');
     leg(-6,-1); milestone('Bayar tebusan ransomware'); return;   /* membayar tebusan bukan "beres" yang bersih — tak dihitung di rasio karya */
   }
   if(opt&&opt.dark==='tutup'){
     P.dataHilang++; P.coverUps=(P.coverUps||0)+1;
-    addLog('Anda menutup insiden diam-diam tanpa lapor regulator maupun user. Layanan "normal" lagi, tapi data pengguna sudah di luar sana.'+ix(c.target,+10)+fx({heat:+6}),'bad');
+    addLog('Anda menutup insiden diam-diam tanpa lapor regulator maupun user. Layanan "normal" lagi, tapi data pengguna sudah di luar sana.'+ix(c.target,+10)+fx({heat:+2}),'bad');
     leg(-7,1);   /* penutupan bukan resolusi bersih — tak menambah rasio karya */
     /* makin sering menutup-nutupi, makin besar peluang terbongkar (postur keamanan baik sedikit meredam) */
     const expo=clamp(0.22+(P.coverUps||0)*0.08-(P.bluTeam||0)/300,0.22,0.85);
-    if(r()<expo){ addLog('Bocoran itu akhirnya terbongkar jurnalis. Publik murka, denda regulator menanti.'+fx({reputasi:-12,heat:+10,money:-ri(2,6)*1e8}),'bad'); leg(-4,-4); milestone('Penutupan kebocoran terbongkar'); }
+    if(r()<expo){
+      const denda=ri(2,6)*1e8;   /* sanksi administratif (UU PDP) dijatuhkan ke perusahaan sebagai pengendali data */
+      if(P.founder)addLog('Bocoran itu akhirnya terbongkar jurnalis. Publik murka, regulator menjatuhkan sanksi administratif '+rp(denda)+' ke startup-mu.'+fx({reputasi:-12,heat:+3,money:-denda}),'bad');
+      else addLog('Bocoran itu akhirnya terbongkar jurnalis. Publik murka, regulator menjatuhkan sanksi administratif '+rp(denda)+' ke perusahaan — dan namamu disebut sebagai yang menutupinya.'+fx({reputasi:-12,heat:+3,stres:+8}),'bad');
+      leg(-4,-4); milestone('Penutupan kebocoran terbongkar'); }
     return;
   }
   /* === peluang sukses === */
@@ -199,7 +211,7 @@ function terapkan(c,opt){
     leg(-(c.parah==='besar'?4:2),0);
     if(c.parah==='besar'){
       P.outageBesar++; stamp('OUTAGE BESAR'); milestone('Outage besar: '+c.jenis.n);
-      if(c.jenis.sec){ P.dataHilang++; addLog('Lebih buruk: dalam kekacauan, data sensitif ikut bocor.'+fx({heat:+5}),'bad'); }
+      if(c.jenis.sec){ P.dataHilang++; addLog('Lebih buruk: dalam kekacauan, data sensitif ikut bocor.'+fx({reputasi:-3}),'bad');   /* kelalaian, bukan pidana */ }
     }
   }
   if(c.parah==='besar')postmortem(c,sukses);
@@ -207,14 +219,16 @@ function terapkan(c,opt){
 function eskalasi(c){
   P.eskalasi++;
   const biaya=c.parah==='besar'?ri(80,160)*1e6:c.parah==='sedang'?ri(30,70)*1e6:ri(8,20)*1e6;
-  P.money-=biaya;
+  /* tagihan vendor dibayar perusahaan (founder: kas startup sendiri); karyawan menanggung sorotan atasan & finance */
+  if(P.founder)P.money-=biaya;
+  const siapa=P.founder?'dari kas startup-mu':'dibebankan ke anggaran divisi';
   /* untuk SEV-1, vendor pun bisa meleset dari SLA — eskalasi bukan jaminan */
   if(c.parah==='besar'&&r()<0.25){
     if(c.jenis.k==='deploy')P.deployGagal++;
-    addLog('Vendor lambat merespons SLA — insiden kritis tetap berlarut meski sudah Anda lempar. Tagihan '+rp(biaya)+' melayang sia-sia.'+ix(c.target,+ri(2,5))+fx({reputasi:-3,stres:+4}),'bad');
+    addLog('Vendor lambat merespons SLA — insiden kritis tetap berlarut meski sudah Anda lempar. Tagihan '+rp(biaya)+' '+siapa+' melayang sia-sia.'+ix(c.target,+ri(2,5))+fx(P.founder?{reputasi:-3,stres:+4}:{reputasi:-4,stres:+6}),'bad');
     P.outageBesar++; leg(-2,-1);
   } else {
-    addLog('Anda melempar insiden ke vendor/tim lain. Beres tanpa tangan Anda kotor, tapi tagihan '+rp(biaya)+' melayang dan rekan menilai Anda lepas tangan.'+ix(c.target,+ri(6,12))+fx({reputasi:-2,stres:-2}),'sys');
+    addLog('Anda melempar insiden ke vendor/tim lain. Beres tanpa tangan Anda kotor, tapi tagihan '+rp(biaya)+' '+siapa+' dan rekan menilai Anda lepas tangan.'+ix(c.target,+ri(6,12))+fx(P.founder?{reputasi:-2,stres:-2}:{reputasi:-3,stres:-1}),'sys');
     leg(-1,-1);
   }
 }

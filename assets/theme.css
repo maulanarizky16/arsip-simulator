@@ -388,4 +388,9 @@ html .tm-mini .tm-bar{margin:0}
   html .kartu:has(.tm-cv){width:min(680px,100%)}
   html .kartu .tm-list{display:grid;grid-template-columns:repeat(3,1fr)}
   html .kartu .tm-list .tm-cv{margin-top:0}
+  /* 3 kolom sempit: label kecil di atas nilai, avatar di atas nama */
+  html .kartu .tm-list .tm-row{display:block}
+  html .kartu .tm-list .tm-row span{display:block;font-size:11px;color:var(--ink2)}
+  html .kartu .tm-list .tm-row b{display:block;text-align:left}
+  html .kartu .tm-list .tm-head{flex-direction:column;align-items:flex-start;gap:4px}
 }

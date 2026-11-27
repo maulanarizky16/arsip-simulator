@@ -56,7 +56,15 @@ const INFRA_AWAL={
 };
 
 /* ===== TREN TEKNOLOGI (skena tahunan) ===== */
-const TREN=['Cloud Migration','Big Data','Mobile First','Microservices','Blockchain & Web3','Hype AI/LLM','Edge & IoT','Zero Trust Security','Serverless','Platform Engineering','Cost Optimization','AI Agents'];
+/* th = tahun mulai ramai dibicarakan, s = tahun meredup (opsional). Game mulai 2008: jangan ada tren yang belum lahir. */
+const TREN=[
+  {n:'Virtualisasi Server',th:2005,s:2015},{n:'Web 2.0 & Media Sosial',th:2005,s:2013},{n:'SOA & Web Services',th:2005,s:2012},{n:'Open Source di Enterprise',th:2005},
+  {n:'Cloud Migration',th:2010},{n:'Mobile First',th:2010},{n:'Big Data',th:2011},{n:'Microservices',th:2014},{n:'Edge & IoT',th:2015},
+  {n:'Serverless',th:2016},{n:'Blockchain & Web3',th:2017},{n:'Zero Trust Security',th:2019},{n:'Platform Engineering',th:2020},
+  {n:'Cost Optimization',th:2022},{n:'Hype AI/LLM',th:2023},{n:'AI Agents',th:2023}
+];
+function trenAktif(){ const th=N?N.tahun:2008; return TREN.filter(t=>th>=t.th&&(!t.s||th<=t.s)); }
+function pickTren(){ const a=trenAktif(); return (a.length?pick(a):TREN[0]).n; }
 
 /* ===== DIAGNOSA (pemeriksaan insiden) ===== */
 const DIAG=[
@@ -77,6 +85,7 @@ const KLU={
    tiap insiden: opsi perbaikan; tepat satu ok:true = akar masalah benar.
    petunjuk = label fix benar (fallback teks 'tepat'). sec = insiden keamanan.
    spesAff = spesialisasi yang lebih sering kena insiden ini (bobot di buatInsiden).
+   th = tahun paling awal insiden ini masuk akal (teknologinya sudah lazim), disaring di buatInsiden.
    probes = langkah diagnosa KHAS insiden ini (anti-flat); tiap probe {k,n,tepat}
             -> 'tepat' = temuan spesifik yang ditampilkan saat diagnosa kena sasaran.
    Tiap k WAJIB punya entri di SKILL_INSIDEN (03-insiden.js). */
@@ -116,7 +125,7 @@ const INSIDEN=[
       {k:'open',n:'Cek file terbuka & inode',tepat:'File log raksasa masih dipegang proses (deleted-but-open); rotasi lalu reload service akan melegakan ruang.'},
       {k:'growth',n:'Plot laju pertumbuhan disk',tepat:'Disk tumbuh konstan tiap hari — tanpa rotasi & alert, menambah disk hanya menunda jatuh berikutnya.'}
     ]},
-  {k:'cloudbill', n:'Tagihan Cloud Membengkak Mendadak', infra:'cloud', petunjuk:'resource nganggur & autoscale liar',
+  {k:'cloudbill', n:'Tagihan Cloud Membengkak Mendadak', infra:'cloud', th:2011, petunjuk:'resource nganggur & autoscale liar',
     opsi:[
       {t:'Audit resource, matikan yang nganggur, pasang budget alert',sub:'Tambal kebocoran biaya',ok:true},
       {t:'Pindah semua ke server on-prem',sub:'Migrasi besar, berisiko',ok:false},
@@ -127,7 +136,7 @@ const INSIDEN=[
       {k:'idle',n:'Audit resource menganggur',tepat:'Puluhan instance & disk sisa eksperimen lama tetap menyala — mematikannya menghentikan kebocoran biaya.'},
       {k:'scale',n:'Periksa kebijakan autoscaling',tepat:'Autoscaler salah ambang sehingga menambah node tanpa henti — perlu budget alert & batas skala.'}
     ]},
-  {k:'k8scrash', n:'Pod Kubernetes CrashLoopBackOff', infra:'cloud', petunjuk:'config / resource limit / probe', spesAff:['devops'],
+  {k:'k8scrash', n:'Pod Kubernetes CrashLoopBackOff', infra:'cloud', th:2016, petunjuk:'config / resource limit / probe', spesAff:['devops'],
     opsi:[
       {t:'Perbaiki config & resource limit, sehatkan readiness probe',sub:'Pod gagal start berulang',ok:true},
       {t:'Scale replica sebanyak mungkin',sub:'Semua ikut crashloop',ok:false},
@@ -298,7 +307,7 @@ const INSIDEN=[
       {k:'exfil',n:'Cek transfer data keluar tak wajar',tepat:'Lonjakan transfer ke host asing — eksfiltrasi berjalan; mematikan semua server membabi buta justru menghapus jejak.'},
       {k:'persist',n:'Cari mekanisme persistence',tepat:'Ditemukan cron & akun siluman yang ditanam penyerang — menutup celah seadanya takkan mengusir mereka.'}
     ]},
-  {k:'ransom', n:'Ransomware Mengunci Sistem', infra:'db', sec:true, petunjuk:'pulihkan dari backup bersih',
+  {k:'ransom', n:'Ransomware Mengunci Sistem', infra:'db', sec:true, th:2013, petunjuk:'pulihkan dari backup bersih',
     opsi:[
       {t:'Pulihkan dari backup offline yang bersih',sub:'Kalau backup terjaga',ok:true},
       {t:'Bangun ulang sistem dari nol',sub:'Lama, tapi bersih total',ok:false}
@@ -330,7 +339,7 @@ const INSIDEN=[
       {k:'usage',n:'Audit pemakaian kunci di log API',tepat:'Log API mencatat pemakaian kunci dari IP asing tak dikenal — kunci aktif disalahgunakan, bukan sekadar terekspos.'},
       {k:'bot',n:'Cek apakah sudah dipanen bot',tepat:'Akses muncul hanya menit setelah commit publik — bot pemanen secret sudah menyalinnya; menghapus commit percuma.'}
     ]},
-  {k:'supplychain', n:'Dependensi Pihak Ketiga Disusupi', infra:'app', sec:true, petunjuk:'pin & audit dependensi', spesAff:['security','backend','devops'],
+  {k:'supplychain', n:'Dependensi Pihak Ketiga Disusupi', infra:'app', sec:true, th:2018, petunjuk:'pin & audit dependensi', spesAff:['security','backend','devops'],
     opsi:[
       {t:'Pin versi bersih, audit dependensi, bangun SBOM',sub:'Putus paket beracun',ok:true},
       {t:'Update semua paket ke terbaru',sub:'Bisa menarik versi jahat lagi',ok:false},
@@ -365,18 +374,19 @@ const GRADE=[
   {g:2, n:'Professional', d:'Mampu merancang & menangani masalah kompleks secara mandiri.',    mix:[2,2,3,3,3], lulus:4, skill:50, lv:2, st:6, rep:2, bonus:0.05,  gaji:0.02},
   {g:3, n:'Expert',       d:'Level tertinggi: diakui sebagai pakar, ujian sangat sulit.',       mix:[3,3,3,3,3], lulus:4, skill:70, lv:3, st:9, rep:4, bonus:0.08,  gaji:0.05}
 ];
-/* skill = stat utama untuk syarat; stat = pembagian kenaikan skill; dom = domain insiden yang dibantu */
+/* skill = stat utama untuk syarat; stat = pembagian kenaikan skill; dom = domain insiden yang dibantu;
+   th = tahun jalur sertifikasi ini mulai tersedia (sebelum itu terkunci "belum ada") */
 const SERT_JALUR=[
-  {k:'net',   n:'Jaringan',             soal:'net',     skill:'jaringan', stat:{jaringan:1},           dom:'jaringan', biaya:[2e6,5e6,14e6,35e6],   gelar:['CCST Networking','CCNA','CCNP Enterprise','CCIE Enterprise Infrastructure']},
-  {k:'iot',   n:'Internet of Things',   soal:'iot',     skill:'jaringan', stat:{jaringan:0.6,ngoding:0.4}, dom:'jaringan', biaya:[2e6,5e6,12e6,30e6],   gelar:['IoT Fundamentals','IoT Developer Associate','IoT Solutions Professional','IoT Architect Expert']},
+  {k:'net',   n:'Jaringan',             soal:'net',     skill:'jaringan', stat:{jaringan:1},           dom:'jaringan', biaya:[2e6,5e6,14e6,35e6],   gelar:['CompTIA Network+','CCNA','CCNP Enterprise','CCIE Enterprise Infrastructure']},
+  {k:'iot',   n:'Internet of Things',   th:2014, soal:'iot',     skill:'jaringan', stat:{jaringan:0.6,ngoding:0.4}, dom:'jaringan', biaya:[2e6,5e6,12e6,30e6],   gelar:['IoT Fundamentals','IoT Developer Associate','IoT Solutions Professional','IoT Architect Expert']},
   {k:'linux', n:'Linux & Server',       soal:'linux',   skill:'sistem',   stat:{sistem:1},             dom:'sistem',   biaya:[1.5e6,5e6,12e6,30e6], gelar:['Linux Essentials','RHCSA','RHCE','RHCA']},
-  {k:'cloud', n:'Cloud',                soal:'cloud',   skill:'sistem',   stat:{sistem:0.7,ngoding:0.3},  dom:'sistem',   biaya:[1.5e6,5e6,15e6,32e6], gelar:['Cloud Practitioner','Solutions Architect – Associate','Solutions Architect – Professional','Cloud Architect Expert']},
-  {k:'k8s',   n:'Kubernetes',           soal:'k8s',     skill:'sistem',   stat:{sistem:1},             dom:'sistem',   biaya:[3e6,6e6,12e6,25e6],   gelar:['KCNA','CKAD','CKA','CKS']},
-  {k:'sec',   n:'Keamanan Siber',       soal:'sec',     skill:'keamanan', stat:{keamanan:1},           dom:'keamanan', biaya:[3e6,6e6,20e6,40e6],   gelar:['CompTIA Security+','eJPT','OSCP','OSCE³']},
-  {k:'code',  n:'Pemrograman (Python)', soal:'code',    skill:'ngoding',  stat:{ngoding:1},            dom:'ngoding',  biaya:[1e6,3e6,8e6,15e6],    gelar:['PCEP','PCAP','PCPP1','PCPP2']},
-  {k:'data',  n:'Data Engineering',     soal:'data',    skill:'ngoding',  stat:{ngoding:0.6,sistem:0.4},  dom:'ngoding',  biaya:[1.5e6,5e6,12e6,28e6], gelar:['Data Fundamentals','Data Engineer Associate','Data Engineer Professional','Data Architect Expert']},
+  {k:'cloud', n:'Cloud',                th:2013, soal:'cloud',   skill:'sistem',   stat:{sistem:0.7,ngoding:0.3},  dom:'sistem',   biaya:[1.5e6,5e6,15e6,32e6], gelar:['Cloud Practitioner','Solutions Architect – Associate','Solutions Architect – Professional','Cloud Architect Expert']},
+  {k:'k8s',   n:'Kubernetes',           th:2021, soal:'k8s',     skill:'sistem',   stat:{sistem:1},             dom:'sistem',   biaya:[3e6,6e6,12e6,25e6],   gelar:['KCNA','CKAD','CKA','CKS']},
+  {k:'sec',   n:'Keamanan Siber',       soal:'sec',     skill:'keamanan', stat:{keamanan:1},           dom:'keamanan', biaya:[3e6,6e6,20e6,40e6],   gelar:['CompTIA Security+','CEH','OSCP','OSCE']},
+  {k:'code',  n:'Pemrograman (Python)', th:2017, soal:'code',    skill:'ngoding',  stat:{ngoding:1},            dom:'ngoding',  biaya:[1e6,3e6,8e6,15e6],    gelar:['PCEP','PCAP','PCPP1','PCPP2']},
+  {k:'data',  n:'Data Engineering',     th:2016, soal:'data',    skill:'ngoding',  stat:{ngoding:0.6,sistem:0.4},  dom:'ngoding',  biaya:[1.5e6,5e6,12e6,28e6], gelar:['Data Fundamentals','Data Engineer Associate','Data Engineer Professional','Data Architect Expert']},
   {k:'pm',    n:'Manajemen Proyek',     soal:'pm',      skill:'soft',     stat:{soft:1},               dom:null,       biaya:[3e6,5e6,18e6,30e6],   gelar:['CAPM','PSM I (Scrum Master)','PMP','PgMP']},
-  {k:'itsm',  n:'Layanan TI (ITSM)',    soal:'support', skill:'soft',     stat:{soft:0.5,sistem:0.5},  dom:null,       biaya:[2e6,4e6,12e6,25e6],   gelar:['CompTIA A+','ITIL 4 Foundation','ITIL 4 Managing Professional','ITIL 4 Master']}
+  {k:'itsm',  n:'Layanan TI (ITSM)',    soal:'support', skill:'soft',     stat:{soft:0.5,sistem:0.5},  dom:null,       biaya:[2e6,4e6,12e6,25e6],   gelar:['CompTIA A+','ITIL Foundation','ITIL Expert','ITIL Master']}
 ];
 /* sertifikat dari save lama (sebelum ada grade) → id jalur+grade */
 const SERT_LAMA={cloud:'cloud1',cka:'k8s2',ccnp:'net2',oscp:'sec2',pmp:'pm2'};

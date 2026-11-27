@@ -15,7 +15,7 @@ function deathCheck(){
 function checkAch(){
   if(P.beres>=40)ach('pemadam');
   if(P.maxLv>=6)ach('cto');
-  if(P.money+P.saham>=20e9)ach('sultanTech');
+  if(P.money+P.saham+(P.ekuitas||0)>=20e9)ach('sultanTech');
   if(P.sertifikat.filter(x=>+x.slice(-1)>=1).length>=4)ach('sertifikat');
   if(P.st.ngoding>=80&&P.st.sistem>=70&&P.st.jaringan>=65)ach('polyglot');
   if(P.spes==='iot'&&infraGet('iotfleet')&&infraGet('iotfleet').sehat>=85&&P.beres>=12)ach('iotMaster');
@@ -24,7 +24,7 @@ function nilaiAkhir(){
   const handled=P.beres+P.gagal;
   const beresR=handled?P.beres/handled:0.5;   /* dihitung hanya atas insiden yang ditangani sendiri */
   const repAvg=P.years?P.sumRep/P.years:P.reputasi;   /* reputasi rata-rata sepanjang karier */
-  const harta=P.money+P.saham+(P.saasMRR||0)*24;
+  const harta=P.money+P.saham+(P.ekuitas||0)+(P.saasMRR||0)*24;   /* tunai + investasi pribadi + ekuitas startup + nilai produk SaaS */
   let karya=Math.round(34 + P.legK*0.55 + (P.reputasi-30)/3 + (repAvg-30)/8 + (beresR-0.5)*42 + (uptimeRata()-70)/4
     + P.mentorKali*1.4 + (P.openSource?5:0) + P.hackWhite*1.4 + P.ctfMenang*1.2 + clamp((P.uptimeStreak||0),0,6)
     - P.hackBlack*4 - P.exploitJual*3 - P.dataHilang*3 - P.outageBesar*2 - (P.coverUps||0)*2);
@@ -67,7 +67,8 @@ function ringkasanKarier(){
   if(P.hackWhite>0||P.bugBounty>0)plus.push('Berburu celah sebagai topi putih');
   { const st=sertTertinggi(); if(P.sertifikat.length>=3||(st&&st.g>=2))plus.push('Mengantongi '+P.sertifikat.length+' sertifikasi'+(st?', tertinggi '+sertNama(st.j,st.g):'')); }
   if(P.pelatihanAI)plus.push('Bertahan & berkembang di gelombang AI');
-  if(P.saham>0||P.ach.exit)plus.push('Meraup cuan dari saham/exit');
+  if(P.ach.exit)plus.push('Meraup cuan dari exit startup');
+  else if(P.saham>=1e9)plus.push('Membangun portofolio investasi '+rp(P.saham));
   if(P.saasMRR>0)plus.push('Membangun produk SaaS berpenghasilan pasif');
   if((P.uptimeStreak||0)>=3)plus.push('Menjaga uptime tinggi bertahun-tahun beruntun');
   if(P.vonis)minus.push('Divonis penjara atas kejahatan siber');

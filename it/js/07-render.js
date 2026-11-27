@@ -56,6 +56,7 @@ function jabLabel(){
   if(P.penjara>0)return 'Terpidana siber ('+P.penjara+' th)';
   if(P.dipecat)return 'Tercoreng · eks-engineer';
   if(P.retired)return 'Pensiun · '+JAB[P.jab].n+' '+P.spesN;
+  if(P.menganggur)return 'Menganggur · eks-'+JAB[P.jab].n+' '+P.spesN;
   return JAB[P.jab].n+' '+P.spesN+' · '+P.tempatN;
 }
 const TOPI_LBL={putih:'Topi Putih',abu:'Topi Abu-abu',hitam:'Topi Hitam'};
@@ -68,7 +69,8 @@ function render(){
   $('iSpes').textContent=P.spesN||'—';
   $('iLatar').textContent=P.latarN||'—';
   $('iJab').textContent=jabLabel();
-  const u=$('iUang'); u.textContent=rp(P.money)+(P.saham>0?(' (+'+rp(P.saham)+' saham)'):'')+((P.saasMRR||0)>0?(' · MRR '+rp(P.saasMRR)+'/bln'):''); u.classList.toggle('neg',P.money<0);
+  const inv=[]; if(P.saham>0)inv.push('+'+rp(P.saham)+' investasi'); if((P.ekuitas||0)>0)inv.push('+'+rp(P.ekuitas)+' ekuitas startup'+(P.startupSaham?'':' (tak aktif)'));
+  const u=$('iUang'); u.textContent=rp(P.money)+(inv.length?(' ('+inv.join(', ')+')'):'')+((P.saasMRR||0)>0?(' · MRR '+rp(P.saasMRR)+'/bln'):''); u.classList.toggle('neg',P.money<0);
   $('iGelap').textContent=P.gelap>0?rp(P.gelap):'—';
   $('stats').innerHTML=bar('Coding & Scripting',P.st.ngoding)+bar('Server & Cloud',P.st.sistem)+
     bar('Jaringan & IoT',P.st.jaringan)+bar('Keamanan Siber',P.st.keamanan)+bar('Soft Skill',P.st.soft)+bar('Budaya tim',P.budaya!=null?P.budaya:50)+
@@ -113,7 +115,7 @@ function render(){
     if(!av.ok&&a.cond&&!a.cond()&&!av.used&&av.why==='Syarat belum terpenuhi')continue;
     const dis=busy||!av.ok;
     html+='<button data-act="'+a.k+'" '+(dis?'disabled':'')+' class="'+(av.used?'used':'')+'" title="'+(av.ok?'':av.why||'')+'">'+
-      '<b>'+a.lbl+(a.multi?' ↻':'')+'</b><span>'+((typeof a.sub==='function'?a.sub():a.sub)||'')+'</span></button>';
+      '<b>'+a.lbl+(a.multi?(a.maks?' ↻'+a.maks+'×':' ↻'):'')+'</b><span>'+((typeof a.sub==='function'?a.sub():a.sub)||'')+'</span></button>';
   }
   if(!html)html='<div class="empty">Tidak ada aksi tersedia di laci ini.</div>';
   $('acts').innerHTML=html;

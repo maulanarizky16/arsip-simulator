@@ -107,12 +107,22 @@ function fx(o){
 function leg(harta,nama){ P.legH=clamp(P.legH+harta,-80,80); P.legN=clamp(P.legN+nama,-80,80); }
 
 /* ================= EKONOMI USAHA ================= */
-/* skala memberi imbal-hasil menurun (bukan kelipatan linear) supaya pertumbuhan terkendali */
-function skalaFaktor(u){ return 1+0.35*((u.skala||1)-1); }
+/* skala hanya sedikit menaikkan imbal hasil per rupiah modal (efisiensi skala): Mikro 1,0 → Konglomerasi 1,4.
+   Dulu 1,0 → 2,75, sehingga "naik kelas" beruntun melipatgandakan laba & nilai usaha jauh di atas biayanya (kekayaan meledak). */
+function skalaFaktor(u){ return 1+0.08*((u.skala||1)-1); }
+/* skala mengikuti besar modal usaha (mengacu kriteria UMKM), bukan berapa kali tombol "naik kelas" ditekan */
+const SKALA_MODAL=[0,0,150e6,1e9,10e9,60e9,250e9];
+function skalaModal(modal){ let k=1; for(let i=2;i<=6;i++)if(modal>=SKALA_MODAL[i])k=i; return k; }
+/* pemilik usaha mikro/kecil ikut bekerja sendiri: hasil kerjanya adalah nafkah utama (di luar laba atas modal) */
+function hasilKerjaSendiri(){
+  const u=P.usaha.filter(x=>x.skala<=2).sort((a,b)=>b.kinerja-a.kinerja)[0];
+  if(!u)return 0;
+  return Math.round((16e6+P.st.bisnis*0.2e6+P.st.operasi*0.1e6)*(0.5+u.kinerja/140)*(N.ekonomi==='resesi'?0.8:1));
+}
 function bukaUsahaObj(k,modal,opts){
   opts=opts||{};
   const s=SEKTOR_MAP[k];
-  const sk=opts.skala||1;
+  const sk=opts.skala||skalaModal(modal);
   const u={k, n:opts.nama||namaUsaha(s,sk), skala:sk, modal:Math.round(modal),
     karyawan:opts.karyawan!=null?opts.karyawan:ri(1,3)+Math.round(sk*s.padat),
     kinerja:opts.kinerja||ri(55,72), brand:opts.brand||ri(8,22), milik:opts.milik!=null?opts.milik:1, umur:0,
@@ -215,6 +225,8 @@ function drift(){
   }
   /* === P&L tiap usaha === */
   let labaTotal=0; const tutup=[];
+  const kerja=hasilKerjaSendiri();
+  if(kerja>0){ P.kas+=kerja; labaTotal+=kerja; addLog('Anda turun tangan sendiri di usaha — hasil kerja setahun '+rp(kerja)+'.','sys'); }
   for(const u of P.usaha){
     u.umur++;
     let laba=Math.round(labaUsaha(u)*(u.milik!=null?u.milik:1));   /* hanya porsi kepemilikan yang masuk kantong */

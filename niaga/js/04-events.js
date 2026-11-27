@@ -11,7 +11,7 @@ function events(){
   const nw=netWorth();
   if(nw>=1e9)ach('miliarder');
   if(nw>=1e12)ach('triliuner');
-  if(nw>=20e12)ach('sultan');
+  if(nw>=5e12)ach('sultan');
 
   /* === KONDISI MAKRO MENGHAJAR/MENGANGKAT (event interaktif sesekali) === */
   if(N.ekonomi==='resesi'&&P.usaha.length&&r()<0.4){
@@ -42,7 +42,7 @@ function events(){
     ask({title:'SERANGAN PESAING',text:'Pemain baru membakar uang untuk merebut pelangganmu di '+u.n+' (pangsa pasar kini '+u.share+'%).',opts:[
       {t:'Tingkatkan kualitas & layanan',sub:'Modal '+rp(Math.round(u.modal*0.2)),cond:()=>P.kas>=u.modal*0.2,e:()=>{P.kas-=Math.round(u.modal*0.2);u.kinerja=clamp(u.kinerja+ri(8,15),0,100);u.brand=clamp(u.brand+ri(4,8),0,100);u.share=clamp(u.share+ri(3,7),1,100);addLog('Anda menjawab dengan mutu, bukan banting harga. Pelanggan setia bertahan dan pangsa pasar pulih.'+fx({reputasi:+2}),'good');leg(1,1);}},
       {t:'Ikut perang harga',e:()=>{u.brand=clamp(u.brand-ri(3,7),0,100);u.share=clamp(u.share+ri(1,4),1,100);addLog('Anda meladeni perang harga — pangsa pasar tertahan, tapi margin tergerus dan pasar jadi tidak sehat.'+fx({stres:+4}),'bad');leg(0,-1);}},
-      {t:'Akuisisi saja pesaingnya',sub:'Kalau tak bisa dilawan, beli',cond:()=>P.kas>=u.modal*0.8,e:()=>{P.kas-=Math.round(u.modal*0.8);u.modal=Math.min(1e12,Math.round(u.modal*1.35));u.skala=Math.min(6,u.skala+1);u.karyawan+=ri(3,8);u.share=clamp(u.share+ri(8,16),1,100);P.akuisisiKali++;addLog('Daripada perang, Anda caplok pesaingnya. '+u.n+' kini lebih besar dan menguasai pasar.','good');if(P.akuisisiKali>=3)ach('akuisitor');leg(2,0);cekSkalaAch();}}
+      {t:'Akuisisi saja pesaingnya',sub:'Kalau tak bisa dilawan, beli',cond:()=>P.kas>=u.modal*0.8,e:()=>{P.kas-=Math.round(u.modal*0.8);u.modal=Math.min(1e12,Math.round(u.modal*1.35));u.skala=Math.max(u.skala,skalaModal(u.modal));u.karyawan+=ri(3,8);u.share=clamp(u.share+ri(8,16),1,100);P.akuisisiKali++;addLog('Daripada perang, Anda caplok pesaingnya. '+u.n+' kini lebih besar dan menguasai pasar.','good');if(P.akuisisiKali>=3)ach('akuisitor');leg(2,0);cekSkalaAch();}}
     ]});
   }
   /* === VIRAL / SKANDAL MEREK === */

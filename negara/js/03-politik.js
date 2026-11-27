@@ -83,6 +83,7 @@ function bangunProyekDa(p){
 }
 function syaratMaju(k){
   const s=P.st, d=P.partai?P.partai.dukungan:0;
+  if(P.age<(JAB[k].minU||0))return false;   /* batas umur calon */
   if(k==='dprd')return true;
   if(k==='dpr')return s.popularitas>=32||(P.terms.dprd||0)>0;
   if(k==='walikota')return s.popularitas>=35&&(P.terms.walikota||0)<2;
@@ -97,6 +98,7 @@ function syaratPresKurang(){
   if(s.pengaruh<45)miss.push('Pengaruh '+s.pengaruh+'/45');
   if(d<55)miss.push('Dukungan partai '+d+'/55');
   if(P.maxLv<2)miss.push('belum pernah jadi min. Wali Kota/DPR');
+  if(P.age<JAB.presiden.minU)miss.push('umur minimal '+JAB.presiden.minU+' tahun (Anda '+P.age+')');
   if((P.terms.presiden||0)>=2&&!P.tigaOk)miss.push('sudah 2 periode');
   return miss;
 }
@@ -106,11 +108,11 @@ function peluang(k,tier,fajar){
   if(P.petahana===k)c+=0.08;
   if(fajar)c+=0.12;
   if(P.heat>=50)c-=0.10;
-  c-=JAB[k].lv*0.025;
+  c-=[0,0.02,0.08,0.18,0.18,0.42][JAB[k].lv]||0;   /* kursi makin tinggi makin sulit: pemilihan presiden diikuti tokoh-tokoh terkuat se-negeri */
   c-=(P._lawanKuat||0);
   c+=(P._debatBonus||0);
   c+=(P._cawElekt||0);
-  return clamp(c,0.04,0.90);
+  return clamp(c,0.04,k==='presiden'?0.55:0.90);
 }
 function labelPeluang(p){ return p>=0.7?'besar':p>=0.45?'sedang':p>=0.25?'tipis':'kecil'; }
 function kampanye(){
@@ -410,16 +412,20 @@ function drift(){
       P.study=null;
     } else addLog('Studi '+P.study.target+' berjalan — sisa '+P.study.sisa+' tahun.','sys');
   }
-  /* gaji & jabatan */
+  /* gaji & jabatan — yang tersisa jadi tabungan ±40% (sisanya biaya hidup, pajak, iuran partai & konstituen) */
   if(P.jab){
     const j=JAB[P.jab.k];
-    P.money+=j.gaji;
+    P.money+=Math.round(j.gaji*0.4);
     P.jab.sisa--;
     if(P.jab.sisa<=0){
       if(P.jab.k==='menteri')endJab('kabinet dirombak seiring pergantian periode');
       else endJab(isPemilu()?'pemilu digelar tahun ini':'periode habis');
     }
-  } else if(P.petahana&&!isPemilu()){ P.petahana=null; }
+  } else {
+    if(P.petahana&&!isPemilu())P.petahana=null;
+    /* di luar jabatan: hidup dari pekerjaan sesuai latar; pensiunan politik & yang sedang studi menabung lebih sedikit */
+    if(!P.retired)P.money+=Math.round((NAFKAH[P.latar]||30e6)*(P.study?0.15:0.3));
+  }
   /* deposito */
   if(P.depo>0)P.depo=Math.round(P.depo*1.04);
   /* LHKPN: harta tak wajar */
@@ -434,6 +440,18 @@ function drift(){
 /* ================= KASUS HUKUM ================= */
 function kasusCheck(){
   if(P.penjara>0||G.over)return;
+  /* tak pernah menerima uang gelap = tak ada "aliran dana" untuk ditemukan. Sorotan tinggi pada orang bersih berarti serangan balik
+     dari pihak yang ia bongkar: laporan pencemaran nama / pasal karet, bukan vonis korupsi. */
+  if(P.gelapTotal<=0){
+    if(P.heat>=35&&r()<(P.heat-25)/220){
+      ask({title:'DILAPORKAN BALIK',text:'Pihak-pihak yang Anda bongkar melawan: Anda dilaporkan ke polisi atas pencemaran nama baik dan "menyebarkan kabar bohong". Surat panggilan sudah di tangan.',opts:[
+        {t:'Hadapi terbuka, buka semua data',e:()=>{ if(r()<0.45+P.st.integritas/250+N.kebebasan/400){ addLog('Publik dan pers berdiri di belakang Anda. Laporan itu dihentikan karena tidak cukup bukti — dan nama pelapornya justru makin disorot.'+fx({heat:-25,popularitas:+6,stres:+5})+nx({kebebasan:+1}),'good'); leg(4,0); }
+          else { P.tapol=true; ach('tapol'); addLog('Proses berjalan cepat sekali untuk ukuran negeri ini. Anda ditahan beberapa bulan dengan pasal karet sebelum akhirnya dibebaskan.'+fx({heat:-20,popularitas:+8,stres:+12,kesehatan:-4})+nx({kebebasan:-2}),'bad'); milestone('Ditahan lewat pasal karet'); leg(5,-6); } }},
+        {t:'Minta maaf & cabut pernyataan',e:()=>{ addLog('Anda menarik pernyataan demi keselamatan keluarga. Laporan dicabut, tetapi para pendukung kecewa.'+fx({heat:-30,popularitas:-8,integritas:-5,stres:-2}),'bad'); leg(-4,1); }}
+      ]});
+    }
+    return;
+  }
   const kpk=(100-N.korupsi)/100, pers=N.kebebasan/100;
   /* media yang bersahabat (N.pers tinggi) memperlambat terbukanya kasus; media galak mempercepat */
   const pelu=(P.heat-25)/130*(0.5+kpk*0.5+pers*0.3)*(1+(50-N.pers)/120);
@@ -458,10 +476,13 @@ function sidang(pengacara,tambahan){
   ach('ott');
   let th=ri(3,8)+(tambahan||0)-(pengacara?2:0);
   th=Math.max(th,2);
-  const sita=P.gelap; P.gelap=0;
+  /* uang yang sudah dicuci (kas & deposito) tetap dilacak dan disita: 70% dari uang gelap yang pernah diterima */
+  const cuci=Math.min(Math.max(P.money,0)+P.depo,Math.round(Math.max(0,P.gelapTotal-P.gelap)*0.7));
+  const dariDepo=Math.min(P.depo,cuci); P.depo-=dariDepo; P.money-=(cuci-dariDepo);
+  const sita=P.gelap+cuci; P.gelap=0;
   P.vonis=true; P.penjara=th;
   if(P.jab)endJab('dicopot karena status terdakwa');
-  addLog('Palu hakim diketuk: <b>vonis '+th+' tahun penjara</b>, harta gelap '+rp(sita)+' disita negara. Rompi oranye menanti.'+fx({popularitas:-18,pengaruh:-25,stres:+15}),'bad');
+  addLog('Palu hakim diketuk: <b>vonis '+th+' tahun penjara</b>, harta hasil korupsi '+rp(sita)+' disita negara. Rompi oranye menanti.'+fx({popularitas:-18,pengaruh:-25,stres:+15}),'bad');
   stamp('VONIS '+th+' TAHUN');
   milestone('Divonis korupsi '+th+' tahun');
   leg(-15,-20);

@@ -18,7 +18,7 @@ function newGame(){
     study:0,
     heat:0, vonis:false, penjara:0, dipecat:false, retired:false,
     keadilanLeg:0, kuasaLeg:0, sumRep:0, years:0,
-    koneksi:0, mundur:0, taatKaidah:0,
+    koneksi:0, mundur:0, taatKaidah:0, bidik:0,
     keluarga:false, anak:0,
     riwayat:[], ach:{}, used:{}
   };
@@ -104,6 +104,12 @@ function choose(i){
   render();
 }
 
+/* gaji setahun. Sebelum reformasi tunjangan hakim (PP 94/2012) penghasilan hakim jauh lebih kecil. */
+function gajiNow(){ return Math.round(JAB[P.jab].gaji*(N.tahun<2013?0.4:1)); }
+/* biaya hidup keluarga hakim: 55% gaji + 5% per anak, plus pajak 10% → sisa tabungan 20–35% gaji */
+function biayaHidup(g){ return Math.round(g*(0.65+0.05*Math.min(P.anak||0,3))); }
+/* skala uang suap menurut jenjang: PN ratusan juta, MA miliaran */
+function skalaSuap(){ return [0,1,3,8,14][lvNow()]||1; }
 /* ================= DRIFT PRIBADI & PERADILAN ================= */
 function drift(){
   const s=P.st;
@@ -111,7 +117,8 @@ function drift(){
   if(P.age>55)s.kesehatan=clamp(s.kesehatan-1,0,100);
   if(P.age>68)s.kesehatan=clamp(s.kesehatan-1,0,100);
   if(s.stres>70)s.kesehatan=clamp(s.kesehatan-3,0,100);
-  s.stres=clamp(s.stres-2,0,100);
+  /* stres mereda makin cepat saat makin tinggi (dulu −2/thn: hakim teliti macet di 100 lalu mati sakit) */
+  s.stres=clamp(s.stres-2-Math.floor(Math.max(0,s.stres-40)/10),0,100);
   s.reputasi=clamp(Math.round(s.reputasi+(26-s.reputasi)*0.04),0,100);
   P.heat=clamp(P.heat-3,0,100);
   /* di penjara */
@@ -121,8 +128,8 @@ function drift(){
     if(P.penjara<=0){ addLog('<b>Anda bebas</b> dari lapas. Tapi nama besar sebagai hakim sudah jadi abu.','sys'); stamp('BEBAS','green'); milestone('Bebas dari lapas'); }
     return;
   }
-  /* gaji jabatan */
-  if(P.jab&&!P.retired){ P.money+=JAB[P.jab].gaji; P.tahunJab++; }
+  /* gaji jabatan dikurangi biaya hidup keluarga (tabungan bersih ±1/3 gaji); pensiunan menerima uang pensiun yang pas untuk hidup */
+  if(P.jab&&!P.retired){ const g=gajiNow(); P.money+=g-biayaHidup(g); P.tahunJab++; }
   /* studi doktoral berjalan */
   if(P.study>0){
     P.study--;

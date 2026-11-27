@@ -43,7 +43,7 @@ function dueDiligence(c){
   else ring='<br><span class="d">Belum diperiksa. Pilih aspek yang mau ditelusuri (memakan biaya & waktu).</span>';
   const opts=DD.filter(d=>!c.checked[d.k]).map(d=>({t:d.n,e:()=>{
     c.checked[d.k]=true; P.ddKali++;
-    P.kas-=ri(2,8)*1e6;                  /* biaya konsultan/riset */
+    P.kas-=Math.max(300e3,Math.round(c.cost*ri(3,8)/1000));   /* biaya konsultan/riset 0,3–0,8% nilai deal (dulu flat 2–8 jt: mencekik pemain bermodal 40 jt) */
     c.clues.push(ambilPetunjuk(c,d.k));
     if(P.ddKali>=10)ach('dueDiligence');
     dueDiligence(c);
@@ -88,8 +88,7 @@ function eksekusiDeal(c,mode){
         addLog('Setelah deal diteken, topengnya lepas: <b>'+u.n+'</b> jauh lebih jelek dari yang dijanjikan, lengkap dengan utang tersembunyi.'+fx({stres:+7}),'bad'); leg(-2,-1);
       } else {
         const kin=q==='bagus'?ri(68,85):ri(54,68), br=q==='bagus'?ri(25,40):ri(12,24);
-        const sk=q==='bagus'&&cost>800e6?2:1;
-        const u=bukaUsahaObj(s.k,Math.round(cost*(neg?0.9:1.2)),{kinerja:kin,brand:br,skala:sk});
+        const u=bukaUsahaObj(s.k,Math.round(cost*(neg?0.9:1.2)),{kinerja:kin,brand:br});
         P.usaha.push(u); P.usahaDibuka++;
         addLog('Anda menambah <b>'+u.n+'</b> ('+s.n+', '+SKALA_LBL[u.skala]+') ke portofolio. '+(q==='bagus'?'Arus kasnya emas, langsung produktif.':'Lumayan, tinggal dibesarkan.')+fx({reputasi:+ (q==='bagus'?2:1)}),'good'); leg(q==='bagus'?3:1,0);
       }
@@ -123,7 +122,7 @@ function eksekusiDeal(c,mode){
     }
     case 'mitra':{
       if(q==='jebakan'){ addLog('Mitra Anda membawa kabur modal patungan dan menghilang ke luar kota. Pelajaran mahal soal kepercayaan.'+fx({stres:+8,relasi:-3}),'bad'); leg(-2,-2); }
-      else { const s=c.sektor; const u=bukaUsahaObj(s.k,Math.round(cost*1.6),{kinerja:ri(60,78),brand:ri(15,30),milik:0.55,skala:cost>500e6?2:1}); P.usaha.push(u); P.usahaDibuka++;
+      else { const s=c.sektor; const u=bukaUsahaObj(s.k,Math.round(cost*1.6),{kinerja:ri(60,78),brand:ri(15,30),milik:0.55}); P.usaha.push(u); P.usahaDibuka++;
         addLog('Joint venture <b>'+u.n+'</b> ('+s.n+') berdiri. Anda pegang 55%, mitra menanggung sisanya — modal & risiko dibagi.'+fx({relasi:+3}),'good'); leg(2,1); cekSkalaAch(); }
       break;
     }

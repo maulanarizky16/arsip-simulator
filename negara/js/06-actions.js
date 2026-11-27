@@ -14,7 +14,7 @@ const ACTS=[
       milestone('Mulai studi '+next.t);}},
     {t:'Batal',e:()=>{}}
   ]});}},
-{k:'medsos',tab:'diri',lbl:'Rawat media sosial',sub:'Popularitas +2',multi:true,e:()=>addLog('Konten Anda hari ini: makan di warteg, dipotret 12 kamera.'+fx({popularitas:+2}))},
+{k:'medsos',tab:'diri',get lbl(){ return N&&N.tahun<2010?'Rawat citra di media lokal':'Rawat media sosial'; },sub:'Popularitas +2',e:()=>addLog(N.tahun<2010?'Anda rajin mengirim rilis dan foto kegiatan ke koran & radio lokal.'+fx({popularitas:+2}):'Konten Anda hari ini: makan di warteg, dipotret 12 kamera.'+fx({popularitas:+2}))},
 {k:'nikah',tab:'diri',lbl:'Menikah',sub:'Membangun keluarga',cond:()=>!P.keluarga&&P.age>=25,e:()=>{
   P.keluarga=true;
   addLog('Anda menikah. Pasangan Anda berjanji tabah mendampingi dunia yang keras ini.'+fx({stres:-5,popularitas:+3}),'good');
@@ -60,7 +60,7 @@ const ACTS=[
     addLog('Investigasi Anda membongkar permainan anggaran. Beberapa pejabat terseret.'+fx({popularitas:+8,heat:+4})+nx({korupsi:-2,mood:+2}),'good');
     leg(4,-3);
   } else addLog('Jejak dokumen menguap, saksi kunci bungkam. Investigasi mentok.'+fx({stres:+4}));}},
-{k:'opini',tab:'gerakan',lbl:'Tulis opini media',sub:'Bangun wacana publik',multi:true,e:()=>
+{k:'opini',tab:'gerakan',lbl:'Tulis opini media',sub:'Bangun wacana publik',e:()=>
   addLog('Opini Anda tayang di koran nasional dan dikutip ke mana-mana.'+fx({popularitas:+3,kompetensi:+1}))},
 {k:'advokasi',tab:'gerakan',lbl:'Dampingi warga tergusur',sub:'Advokasi akar rumput',cond:()=>!P.retired,e:()=>{
   addLog('Anda mendampingi warga melawan penggusuran. Mereka mengingat siapa yang datang.'+fx({integritas:+2,popularitas:+4}),'good');leg(3,-1);}},
@@ -339,7 +339,7 @@ const ACTS=[
 {k:'gajiPns',tab:'kebijakan',lbl:'Naikkan gaji ASN',sub:'Rp 40 T · mesin birokrasi senang',cond:()=>isPres()&&N.kas>-50,e:()=>
   addLog('Gaji aparatur negara naik. Birokrasi mendadak rajin, setidaknya seminggu.'+nx({kas:-40,mood:+2})+fx({pengaruh:+4}))},
 /* ---- SIASAT ---- */
-{k:'titipan',tab:'siasat',lbl:'Terima "titipan" proyek',sub:'Amplop tebal tanpa kuitansi',multi:true,cond:()=>!!P.jab,e:()=>{
+{k:'titipan',tab:'siasat',lbl:'Terima "titipan" proyek',sub:'Amplop tebal tanpa kuitansi',cond:()=>!!P.jab,e:()=>{
   const u=ri(1,4)*1e9*Math.max(lvNow(),1);
   const narasi=pick([
     'Seorang "rekan pengusaha" menitipkan tanda terima kasih atas kelancaran proyeknya. Amplop coklat itu cukup tebal untuk berdiri sendiri.',
@@ -348,7 +348,7 @@ const ACTS=[
     'Sang pengusaha berkata, "Ini bukan suap, Pak, ini hadiah." Anda mengangguk. Definisi memang penting.'
   ]);
   addLog(narasi+fx({gelap:+u,integritas:-8,heat:+8}),'bad');leg(-3,0);}},
-{k:'markup',tab:'siasat',lbl:'Mark-up anggaran',sub:'Gelembungkan, sisanya masuk kantong',multi:true,cond:()=>!!P.jab&&lvNow()>=2,e:()=>{
+{k:'markup',tab:'siasat',lbl:'Mark-up anggaran',sub:'Gelembungkan, sisanya masuk kantong',cond:()=>!!P.jab&&lvNow()>=2,e:()=>{
   const u=ri(3,8)*1e9*(lvNow()-1);
   const narasi=pick([
     'Anggaran proyek menggelembung di atas kertas. Selisihnya menguap ke rekening cangkang di pulau yang tidak ada di peta sekolah dasar.',
@@ -357,14 +357,14 @@ const ACTS=[
     'Mark-up dieksekusi dengan rapi. Bahkan koruptor kelas internasional mungkin akan memberi acungan jempol kecil.'
   ]);
   addLog(narasi+fx({gelap:+u,integritas:-10,heat:+10}),'bad');leg(-4,0);}},
-{k:'cuci',tab:'siasat',lbl:'Cuci uang gelap',sub:'Lewat kafe, kripto & yayasan',multi:true,cond:()=>P.gelap>=1e9,e:()=>{
+{k:'cuci',tab:'siasat',lbl:'Cuci uang gelap',get sub(){ return N&&N.tahun<2016?'Lewat kafe, properti & yayasan':'Lewat kafe, kripto & yayasan'; },cond:()=>P.gelap>=1e9,e:()=>{
   const x=P.gelap, bersih=Math.round(x*0.7);
   P.gelap=0; P.money+=bersih;
   addLog('Uang gelap '+rp(x)+' diputar lewat bisnis kafe dan yayasan. Yang kembali "bersih": '+rp(bersih)+'.'+fx({heat:+5,integritas:-4}),'bad');}},
 {k:'suapHukum',tab:'siasat',lbl:'"Kondisikan" penegak hukum',sub:'Rp 3 M gelap · redam sorotan',cond:()=>P.heat>=25&&P.gelap>=3e9,e:()=>{
   P.gelap-=3e9;
   addLog('Beberapa makan malam mahal kemudian, berkas tentang Anda berpindah ke laci paling bawah.'+fx({heat:-18,integritas:-6}),'bad');}},
-{k:'buzzer',tab:'siasat',lbl:'Pasang pasukan buzzer',sub:'Rp 300 jt · banjiri linimasa',multi:true,cond:()=>P.money>=300e6,e:()=>{
+{k:'buzzer',tab:'siasat',lbl:'Pasang pasukan buzzer',sub:'Rp 300 jt · banjiri linimasa',cond:()=>P.money>=300e6&&N.tahun>=2012,e:()=>{
   P.money-=300e6;P.buzzed++;
   const narasi=pick([
     'Ribuan akun anonim mendadak memuji Anda dengan kalimat yang persis sama. Salah satu lupa edit, kata "[NAMA TOKOH]" masih nempel di komentarnya.',
@@ -412,14 +412,14 @@ const ACTS=[
   P.money-=200e6;
   addLog('Konsultan merapikan laporan harta Anda. Semua "wajar dan dapat dijelaskan", asal yang menjelaskan adalah si konsultan, bukan auditor.'+fx({heat:-6}),'sys');}},
 {k:'wawancara',tab:'politik',lbl:'Wawancara TV prime-time',sub:'Jawaban Anda menentukan citra',cond:()=>!P.retired,e:()=>wawancara()},
-{k:'pidato',tab:'politik',lbl:'Pidato kenegaraan',sub:'Janji-janji baru, retorika lama',multi:true,cond:()=>!!P.jab,e:()=>{
+{k:'pidato',tab:'politik',lbl:'Pidato kenegaraan',sub:'Janji-janji baru, retorika lama',cond:()=>!!P.jab,e:()=>{
   const narasi=pick([
     'Anda berpidato berapi-api soal "kebangkitan bangsa". Editor stasiun TV pemerintah memotong di bagian yang paling dramatis.',
     'Anda mengulang janji yang sama dari pidato tahun lalu, hanya tanggal dan persentasenya yang Anda perbarui.',
     'Pidato Anda dipenuhi diksi puitis: "gemah ripah loh jinawi". Penonton di rumah tertidur di tengah jalan.'
   ]);
   addLog(narasi+fx({popularitas:+2,stres:+2}));}},
-{k:'kelilingDaerah',tab:'politik',lbl:'Kunjungan kerja ke daerah',sub:'Salam komando, foto-foto',multi:true,cond:()=>!P.retired,e:()=>{
+{k:'kelilingDaerah',tab:'politik',lbl:'Kunjungan kerja ke daerah',sub:'Salam komando, foto-foto',cond:()=>!P.retired,e:()=>{
   addLog('Anda mengunjungi daerah terpencil. Foto Anda menggendong anak warga viral — anaknya menangis, tapi caption-nya tetap "kehangatan".'+fx({popularitas:+3,kesehatan:-1}));leg(2,1);}},
 {k:'bukuMemoar',tab:'diri',lbl:'Tulis memoar politik',sub:'Rp 30 jt · jadi penulis',cond:()=>P.age>=50&&P.money>=30e6&&!P.ach.penulis,e:()=>{
   P.money-=30e6;ach('penulis');

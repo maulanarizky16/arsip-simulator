@@ -17,7 +17,7 @@ function checkAch(){
   const nw=netWorth();
   if(nw>=1e9)ach('miliarder');
   if(nw>=1e12)ach('triliuner');
-  if(nw>=20e12)ach('sultan');
+  if(nw>=5e12)ach('sultan');
   cekSkalaAch();
   if(P.bangkrutTotal>0&&nw>=2e9)ach('bangkrutBangkit');
   if(nw>=1e12&&(P.gelapTotal>=2e9||P.suapKali>=2||P.buruh<=35))ach('taipanHitam');

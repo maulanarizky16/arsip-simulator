@@ -19,13 +19,15 @@ const LATAR=[
   {k:'guru',n:'Guru honorer',d:'Gaji kecil, nurani besar, dikenal sekampung',st:{integritas:84,popularitas:22,pengaruh:6,kompetensi:58},money:2e6}
 ];
 const JAB={
-  dprd:{n:'Anggota DPRD',lv:1,gaji:300e6,leg:true},
-  walikota:{n:'Wali Kota',lv:2,gaji:450e6,eks:true,max2:true},
-  dpr:{n:'Anggota DPR RI',lv:2,gaji:1.1e9,leg:true},
-  gubernur:{n:'Gubernur',lv:3,gaji:700e6,eks:true,max2:true},
+  dprd:{n:'Anggota DPRD',lv:1,gaji:300e6,leg:true,minU:21},
+  walikota:{n:'Wali Kota',lv:2,gaji:450e6,eks:true,max2:true,minU:25},
+  dpr:{n:'Anggota DPR RI',lv:2,gaji:1.1e9,leg:true,minU:21},
+  gubernur:{n:'Gubernur',lv:3,gaji:700e6,eks:true,max2:true,minU:30},
   menteri:{n:'Menteri',lv:4,gaji:1.4e9},
-  presiden:{n:'Presiden',lv:5,gaji:2e9,eks:true,max2:true}
-};
+  presiden:{n:'Presiden',lv:5,gaji:2e9,eks:true,max2:true,minU:40}
+};   /* minU = umur minimal calon menurut undang-undang */
+/* penghasilan setahun di luar jabatan publik, menurut latar (dulu: nol rupiah seumur hidup) */
+const NAFKAH={aktivis:36e6,dinasti:240e6,jurnalis:72e6,pengusaha:600e6,guru:24e6};
 /* komisi DPR/DPRD — tiap komisi mengikat satu sektor kebijakan */
 const KOMISI=[
   {k:'hukum',     n:'Komisi III — Hukum, HAM & Keamanan', sektor:'korupsi'},

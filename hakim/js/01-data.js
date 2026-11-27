@@ -14,19 +14,21 @@ const JAB={
   ketua:{n:'Ketua Mahkamah Agung',sing:'Ketua MA',lv:4,gaji:1.4e9}
 };
 
-/* jenis perkara + daftar terdakwa yang masuk akal untuk tiap jenis */
+/* perkara yang bukan pidana: pihaknya tergugat (bukan terdakwa), putusannya gugatan dikabulkan / ditolak */
+const PERDATA=['perdata','tanah','pemilu'];
+/* jenis perkara + daftar terdakwa yang masuk akal untuk tiap jenis. sejak = tahun aturan/jenis perkaranya mulai ada */
 const JENIS=[
   {k:'pidana',n:'Pidana Umum',        td:['rakyat','preman','pengusaha']},
   {k:'perdata',n:'Perdata',           td:['pengusaha','rakyat','pejabat']},
   {k:'narkoba',n:'Narkoba',           td:['bandar','preman','rakyat']},
   {k:'korupsi',n:'Tindak Pidana Korupsi', td:['pejabat','pengusaha','korporasi']},
   {k:'tanah',n:'Sengketa Tanah',      td:['korporasi','pengusaha','pejabat']},
-  {k:'ite',n:'Pencemaran Nama / UU ITE', td:['rakyat','aktivis']},
+  {k:'ite',n:'Pencemaran Nama / UU ITE', td:['rakyat','aktivis'], sejak:2008},
   {k:'lingkungan',n:'Kejahatan Lingkungan', td:['korporasi','pengusaha']},
   {k:'ham',n:'Pelanggaran HAM',       td:['aparat','pejabat']},
   {k:'pemilu',n:'Sengketa Pemilu',    td:['politisi','pejabat']},
   {k:'asusila',n:'Kekerasan Seksual & KDRT', td:['pejabat','pengusaha','rakyat','aparat']},
-  {k:'siber',n:'Kejahatan Siber',     td:['bandar','pengusaha','rakyat']}
+  {k:'siber',n:'Kejahatan Siber',     td:['bandar','pengusaha','rakyat'], sejak:2008}
 ];
 const TUDUHAN={
   pidana:['pembunuhan berencana','penganiayaan berat hingga korban cacat','pencurian dengan kekerasan','penipuan investasi berantai','pemalsuan dokumen negara','pembunuhan dengan dalih pembelaan diri','penembakan yang direkayasa seolah perampokan'],
@@ -41,12 +43,16 @@ const TUDUHAN={
   asusila:['kekerasan seksual oleh atasan terhadap bawahannya','KDRT bertahun-tahun yang akhirnya dilaporkan','pelecehan dengan relasi kuasa di kampus','kekerasan seksual yang korbannya justru diintimidasi'],
   siber:['penipuan investasi kripto berkedok trading','jaringan judi online yang dikendalikan dari luar negeri','pembobolan data nasabah bank','peretasan situs pemerintah oleh remaja otodidak']
 };
+/* tuduhan yang baru masuk akal mulai tahun tertentu */
+const TUDUHAN_SEJAK={'penipuan investasi kripto berkedok trading':2017,'jaringan judi online yang dikendalikan dari luar negeri':2012,'ulasan jujur pelanggan yang digugat pemilik usaha':2012};
+/* hukuman mati hanya untuk kejahatan paling berat */
+const TUDUHAN_MATI=['pembunuhan berencana','penembakan yang direkayasa seolah perampokan','jaringan peredaran lintas provinsi','bandar yang mengendalikan dari lapas'];
 /* kaidah/asas hukum: penuntun putusan yang adil. Sebagian MENGALAHKAN sekadar "kekuatan bukti". */
 const KAIDAH=[
   {k:'tegas',   n:'Bukti yang terang benderang',          d:'Bila bukti kuat dan sah, hukum ditegakkan tanpa pandang bulu.', applies:c=>c.bukti==='kuat', adil:'bersalah'},
   {k:'equality',n:'Equality before the law',              d:'Semua sama di hadapan hukum, sekuat apa pun terdakwa.',         applies:c=>c.bukti==='kuat'&&c.td.kuasa>=0.6, adil:'bersalah'},
-  {k:'inDubio', n:'In dubio pro reo',                     d:'Bila ragu, putuskan untuk keuntungan terdakwa.',                applies:c=>c.bukti==='lemah'||c.bukti==='berimbang', adil:'bebas'},
-  {k:'praduga', n:'Praduga tak bersalah',                 d:'Tak bersalah sampai terbukti secara sah & meyakinkan.',          applies:c=>c.bukti!=='kuat', adil:'bebas'},
+  {k:'inDubio', n:'In dubio pro reo',                     d:'Bila ragu, putuskan untuk keuntungan terdakwa.',                applies:c=>(c.bukti==='lemah'||c.bukti==='berimbang')&&!PERDATA.includes(c.jenis.k), adil:'bebas'},
+  {k:'praduga', n:'Praduga tak bersalah',                 d:'Tak bersalah sampai terbukti secara sah & meyakinkan.',          applies:c=>c.bukti!=='kuat'&&!PERDATA.includes(c.jenis.k), adil:'bebas'},
   {k:'legalitas',n:'Asas legalitas (nullum delictum)',    d:'Tiada pidana tanpa aturan yang lebih dulu mengaturnya.',         applies:c=>c.jenis.k==='ite', adil:'bebas'},
   {k:'ultimum', n:'Ultimum remedium',                     d:'Pidana adalah jalan terakhir, bukan alat membungkam kritik.',    applies:c=>c.jenis.k==='ite'||c.td.k==='aktivis', adil:'bebas'},
   {k:'restoratif',n:'Keadilan restoratif',               d:'Untuk pelaku kecil, pemulihan lebih utama dari pemenjaraan.',     applies:c=>c.td.k==='rakyat'&&c.jenis.k!=='korupsi', adil:null},

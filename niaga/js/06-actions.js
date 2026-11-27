@@ -8,6 +8,8 @@ function pilihUsaha(title,fn,filter){
   ask({title,text:'Pilih usaha:',opts:list.map(u=>({t:u.n,sub:SEKTOR_MAP[u.k].n+' · '+SKALA_LBL[u.skala]+' · kinerja '+u.kinerja+'%',e:()=>fn(u)}))});
 }
 
+/* suntik modal: belum mentok (Rp 1 T), kas cukup, dan belum dikembangkan tahun ini (ekspansi butuh waktu) */
+function bisaKembang(u){ return u.modal<1e12&&u.kembangTh!==N.tahun&&P.kas>=Math.round(u.modal*(0.6+0.1*u.skala)); }
 const ACTS=[
 /* ---- DIRI ---- */
 {k:'rehat',tab:'diri',lbl:'Rehat sejenak',sub:'Stres −8',e:()=>addLog('Anda menutup buku kas sebentar, menghirup udara tanpa memikirkan omzet.'+fx({stres:-8}))},
@@ -21,6 +23,9 @@ const ACTS=[
     {t:'Keuangan & pembukuan',e:()=>addLog('Anda belajar membaca neraca, arus kas, dan pajak.'+fx({finansial:+5,stres:+1}),'good')},
     {t:'Jejaring & lobi',e:()=>addLog('Anda rajin hadir di forum pengusaha & menjalin relasi.'+fx({relasi:+5,stres:+1}),'good')}
   ]});}},
+{k:'kerja',tab:'diri',lbl:'Kerja dulu, kumpulkan modal',sub:'Jadi karyawan/serabutan setahun · hanya saat tak punya usaha',cond:()=>!P.retired&&P.usaha.length===0,e:()=>{
+  const g=Math.round(ri(30,55)*1e6*(1+P.st.bisnis/200));
+  addLog('Tanpa usaha yang berjalan, Anda kembali makan gaji sambil menabung modal dan mengamati pasar. Gengsi ditelan dulu.'+fx({kas:g,bisnis:+1,stres:+3}),'sys');}},
 {k:'tutup',tab:'diri',lbl:'Tutup berkas (akhiri)',sub:'Akhiri perjalanan & lihat penilaian',cond:()=>P.retired||(P.usaha.length===0&&P.age>=35),e:()=>{
   ask({title:'TUTUP BERKAS?',text:'Akhiri kisah ini sekarang dan lihat penilaian akhir?',opts:[
     {t:'Ya, tutup berkas',e:()=>{P.alive=false;P.sebab=null;G.over=true;addLog('Anda menutup buku besar terakhir, menatap semua yang telah dibangun.','sys');stamp('BERKAS DITUTUP');showEpilog();}},
@@ -35,16 +40,18 @@ const ACTS=[
     addLog('Anda membuka <b>'+u.n+'</b> ('+s.n+', '+SKALA_LBL[u.skala]+'). Spanduk dipasang, doa dipanjatkan.'+fx({stres:+3}),'good');
     milestone('Buka usaha: '+u.n+' ('+s.n+')'); ach('pertama'); cekSkalaAch();
   }}))});}},
-{k:'kembangkan',tab:'usaha',lbl:'Kembangkan & naik kelas',sub:'Tambah modal, naikkan skala',multi:true,cond:()=>!P.retired&&P.usaha.some(u=>u.skala<6&&P.kas>=Math.round(u.modal*(0.6+0.1*u.skala))),e:()=>{
+{k:'kembangkan',tab:'usaha',lbl:'Kembangkan & naik kelas',sub:'Suntik modal +55% · skala ikut besar modal · 1× per usaha per tahun',multi:true,cond:()=>!P.retired&&P.usaha.some(u=>bisaKembang(u)),e:()=>{
   pilihUsaha('KEMBANGKAN USAHA',u=>{
     const cost=Math.round(u.modal*(0.6+0.1*u.skala));
     if(P.kas<cost){addLog('Kas tak cukup untuk membesarkan '+u.n+' (butuh '+rp(cost)+').','sys');return;}
-    P.kas-=cost; u.modal=Math.min(1e12,Math.round(u.modal*1.55)); u.skala=Math.min(6,u.skala+1); u.karyawan+=ri(2,6)+u.skala; u.kinerja=clamp(u.kinerja-ri(2,6),0,100);
+    const skLama=u.skala;
+    P.kas-=cost; u.modal=Math.min(1e12,Math.round(u.modal*1.55)); u.skala=Math.max(u.skala,skalaModal(u.modal)); u.kembangTh=N.tahun; u.karyawan+=ri(2,6)+u.skala; u.kinerja=clamp(u.kinerja-ri(2,6),0,100);
     if(u.k==='properti'||u.k==='manufaktur')u.proyek=Math.max(u.proyek||0,ri(1,2));   /* ekspansi = proyek baru, modal terikat sementara */
     if(u.k==='tek'&&(u.runway||0)>0)u.runway+=1;                                       /* suntikan modal memperpanjang runway */
-    addLog('Anda menyuntik modal & memperbesar '+u.n+' jadi skala <b>'+SKALA_LBL[u.skala]+'</b>. Lebih besar, lebih berisiko.'+fx({stres:+3}),'good');
-    milestone(u.n+' naik kelas: '+SKALA_LBL[u.skala]); cekSkalaAch();
-  },u=>u.skala<6&&P.kas>=Math.round(u.modal*(0.6+0.1*u.skala)));}},
+    if(u.skala>skLama){ addLog('Anda menyuntik modal & memperbesar '+u.n+' (modal kini '+rp(u.modal)+') — naik kelas jadi skala <b>'+SKALA_LBL[u.skala]+'</b>. Lebih besar, lebih berisiko.'+fx({stres:+3}),'good'); milestone(u.n+' naik kelas: '+SKALA_LBL[u.skala]); }
+    else addLog('Anda menyuntik modal ke '+u.n+' (modal kini '+rp(u.modal)+'). Kapasitas bertambah'+(u.skala<6?'; naik ke skala '+SKALA_LBL[u.skala+1]+' butuh modal '+rp(SKALA_MODAL[u.skala+1])+'.':'.')+fx({stres:+2}),'good');
+    cekSkalaAch();
+  },u=>bisaKembang(u));}},
 {k:'pemasaran',tab:'usaha',lbl:'Kampanye pemasaran',sub:'Dongkrak merek & pangsa pasar',multi:true,cond:()=>!P.retired&&P.usaha.length&&P.kas>=20e6,e:()=>{
   pilihUsaha('KAMPANYE PEMASARAN',u=>{ const cost=Math.round(Math.max(20e6,u.modal*0.08)); if(P.kas<cost){addLog('Kas tak cukup.','sys');return;}
     P.kas-=cost; const gain=Math.round(ri(8,16)*(1-u.brand/130));   /* hasil mengecil saat merek sudah kuat */
@@ -75,25 +82,25 @@ const ACTS=[
 
 /* ---- EKSPANSI & STRATEGI ---- */
 {k:'cariPeluang',tab:'ekspansi',lbl:'Cari peluang aktif',sub:'Pancing tawaran/deal baru',cond:()=>!P.retired,e:()=>{ addLog('Anda turun ke lapangan, menghadiri pameran & forum, mencari peluang.','sys'); tawarkanPeluang(buatPeluang()); }},
-{k:'franchise',tab:'ekspansi',lbl:'Waralabakan usaha',sub:'Jual lisensi · royalti tahunan pasif',cond:()=>!P.retired&&P.usaha.some(u=>u.skala>=3&&u.brand>=40&&!u.waralaba),e:()=>{
+{k:'franchise',tab:'ekspansi',lbl:'Waralabakan usaha',sub:'Jual lisensi · royalti tahunan pasif',cond:()=>!P.retired&&P.usaha.some(u=>u.skala>=2&&u.brand>=40&&!u.waralaba),e:()=>{
   pilihUsaha('WARALABAKAN USAHA',u=>{ if(u.waralaba){addLog(u.n+' sudah diwaralabakan.','sys');return;}
     u.waralaba=true; const fee=Math.round(nilaiUsaha(u)*u.milik*ri(8,14)/100); P.kas+=fee; u.share=clamp((u.share||5)+ri(2,5),1,100); P.franchiseKali++;
-    addLog('<b>'+u.n+'</b> kini diwaralabakan — biaya lisensi awal '+rp(fee)+' masuk, dan tiap tahun royalti gerai mitra mengalir ke kas (pendapatan pasif).'+fx({reputasi:+2}),'good'); milestone('Waralabakan '+u.n); if(P.franchiseKali>=2)ach('waralabaRaja'); leg(2,0);},u=>u.skala>=3&&u.brand>=40&&!u.waralaba);}},
-{k:'ekspor',tab:'ekspansi',lbl:'Tembus pasar ekspor',sub:'Go international',multi:true,cond:()=>!P.retired&&P.usaha.some(u=>u.skala>=4),e:()=>{
+    addLog('<b>'+u.n+'</b> kini diwaralabakan — biaya lisensi awal '+rp(fee)+' masuk, dan tiap tahun royalti gerai mitra mengalir ke kas (pendapatan pasif).'+fx({reputasi:+2}),'good'); milestone('Waralabakan '+u.n); if(P.franchiseKali>=2)ach('waralabaRaja'); leg(2,0);},u=>u.skala>=2&&u.brand>=40&&!u.waralaba);}},
+{k:'ekspor',tab:'ekspansi',lbl:'Tembus pasar ekspor',sub:'Go international',multi:true,cond:()=>!P.retired&&P.usaha.some(u=>u.skala>=3),e:()=>{
   pilihUsaha('EKSPOR PRODUK',u=>{ const cost=Math.round(u.modal*0.15); if(P.kas<cost){addLog('Kas tak cukup untuk ekspansi ekspor.','sys');return;}
     P.kas-=cost; if(r()<0.65){u.brand=clamp(u.brand+ri(8,16),0,100);u.kinerja=clamp(u.kinerja+ri(4,8),0,100);P.eksporKali++;addLog(u.n+' menembus pasar luar negeri! Order dari mancanegara berdatangan.'+fx({reputasi:+3}),'good');ach('ekspor');leg(2,1);}
-    else addLog('Ekspor '+u.n+' terganjal regulasi & standar mutu negara tujuan. Belum berhasil.'+fx({stres:+3}),'bad');},u=>u.skala>=4);}},
-{k:'ipo',tab:'ekspansi',lbl:'Bawa perusahaan IPO',sub:'Melantai di bursa, raih dana segar',cond:()=>!P.retired&&P.usaha.some(u=>u.skala>=5&&u.milik>=0.5),e:()=>{
-  pilihUsaha('IPO — MELANTAI DI BURSA',u=>{ const sold=0.3; const dana=Math.round(nilaiUsaha(u)*sold); P.kas+=dana; u.milik=clamp(u.milik-sold,0.2,1); u.modal=Math.min(1e12,Math.round(u.modal*1.15)); P.ipoKali++;
-    addLog('<b>IPO!</b> '+u.n+' resmi melantai di bursa. Anda lepas '+Math.round(sold*100)+'% saham senilai '+rp(dana)+'; modal segar dari pasar memperbesar kapasitas perusahaan, Anda tetap pengendali.'+fx({reputasi:+5}),'good'); stamp('IPO','green'); milestone('IPO: '+u.n); ach('ipo'); cekSkalaAch(); leg(4,1);},u=>u.skala>=5&&u.milik>=0.5);}},
+    else addLog('Ekspor '+u.n+' terganjal regulasi & standar mutu negara tujuan. Belum berhasil.'+fx({stres:+3}),'bad');},u=>u.skala>=3);}},
+{k:'ipo',tab:'ekspansi',lbl:'Bawa perusahaan IPO',sub:'Melantai di bursa, raih dana segar',cond:()=>!P.retired&&P.usaha.some(u=>u.skala>=4&&u.milik>=0.5&&!u.tbk),e:()=>{
+  pilihUsaha('IPO — MELANTAI DI BURSA',u=>{ const sold=0.3; const dana=Math.round(nilaiUsaha(u)*sold); P.kas+=dana; u.milik=clamp(u.milik-sold,0.2,1); u.modal=Math.min(1e12,Math.round(u.modal*1.15)); u.skala=Math.max(u.skala,skalaModal(u.modal)); u.tbk=true; P.ipoKali++;
+    addLog('<b>IPO!</b> '+u.n+' resmi melantai di bursa. Anda lepas '+Math.round(sold*100)+'% saham senilai '+rp(dana)+'; modal segar dari pasar memperbesar kapasitas perusahaan, Anda tetap pengendali.'+fx({reputasi:+5}),'good'); stamp('IPO','green'); milestone('IPO: '+u.n); ach('ipo'); cekSkalaAch(); leg(4,1);},u=>u.skala>=4&&u.milik>=0.5&&!u.tbk);}},
 
 /* ---- MODAL & SIASAT ---- */
 {k:'pinjam',tab:'siasat',lbl:'Pinjam modal ke bank',sub:'Suntik kas, tambah utang',cond:()=>!P.retired&&P.utang<Math.max(netWorth(),0)&&netWorth()>0,e:()=>{
-  const pinjam=Math.round(clamp(netWorth()*0.4,80e6,2e12)); P.kas+=pinjam; P.utang+=pinjam;
+  const pinjam=Math.round(clamp(netWorth()*0.4,5e6,2e12));   /* plafon 40% kekayaan bersih (dulu minimal 80 jt walau aset cuma sejuta) */ P.kas+=pinjam; P.utang+=pinjam;
   addLog('Bank menyetujui kredit '+rp(pinjam)+' dengan agunan aset usaha. Kas gemuk, kewajiban bertambah.'+fx({stres:+3}),'sys'); milestone('Pinjam modal '+rp(pinjam));}},
-{k:'investorMasuk',tab:'siasat',lbl:'Cari investor (lepas saham)',sub:'Cairkan sebagian saham jadi kas',cond:()=>!P.retired&&P.usaha.some(u=>u.skala>=3&&u.milik>=0.4),e:()=>{
+{k:'investorMasuk',tab:'siasat',lbl:'Cari investor (lepas saham)',sub:'Cairkan sebagian saham jadi kas',cond:()=>!P.retired&&P.usaha.some(u=>u.skala>=2&&u.milik>=0.4),e:()=>{
   pilihUsaha('CARI INVESTOR',u=>{ const sold=0.15; const dana=Math.round(nilaiUsaha(u)*sold); P.kas+=dana; u.milik=clamp(u.milik-sold,0.25,1);
-    addLog('Investor masuk ke '+u.n+': '+Math.round(sold*100)+'% saham senilai '+rp(dana)+' Anda cairkan jadi kas segar untuk diputar ke peluang lain.'+fx({relasi:+2}),'good');},u=>u.skala>=3&&u.milik>=0.4);}},
+    addLog('Investor masuk ke '+u.n+': '+Math.round(sold*100)+'% saham senilai '+rp(dana)+' Anda cairkan jadi kas segar untuk diputar ke peluang lain.'+fx({relasi:+2}),'good');},u=>u.skala>=2&&u.milik>=0.4);}},
 {k:'bayarUtang',tab:'siasat',lbl:'Lunasi utang',sub:'Kurangi beban bunga',cond:()=>P.utang>0&&P.kas>=Math.min(P.utang,50e6),e:()=>{
   const bayar=Math.min(P.utang,P.kas); P.utang-=bayar; P.kas-=bayar;
   addLog('Anda melunasi '+rp(bayar)+' utang. Neraca lebih sehat, tidur lebih nyenyak.'+fx({stres:-3}),'good');}},
@@ -102,19 +109,23 @@ const ACTS=[
     {t:'Patuh & transparan',e:()=>{P.modusPajak='patuh';addLog('Anda memilih taat pajak. Setoran besar, tapi tidur tenang dan nama bersih.'+'','good');leg(0,1);}},
     {t:'"Optimasi" agresif (hindari pajak)',sub:'Hemat besar · sorotan & tunggakan',e:()=>{P.modusPajak='hindar';addLog('Anda mainkan faktur, transfer pricing, dan perusahaan cangkang. Hemat pajak besar, risiko mengintai.'+fx({heat:+4}),'bad');ach('penghindarPajak');leg(1,-3);}}
   ]});}},
-{k:'suapTender',tab:'siasat',lbl:'Suap demi tender/proyek',sub:'Proyek besar · sorotan & dosa',multi:true,cond:()=>!P.retired&&P.kas>=150e6&&P.st.relasi>=40,e:()=>{
-  const suap=Math.round(clamp(netWorth()*0.05,100e6,5e11)); const proyek=Math.round(suap*ri(4,9));
-  P.kas-=suap; P.kas+=proyek; P.gelap+=Math.round(proyek*0.1); P.gelapTotal+=Math.round(proyek*0.1); P.suapKali++; P.heat=clamp(P.heat+ri(8,16),0,100);
-  addLog('Amplop & "komitmen fee" berpindah ke oknum pejabat. Tender proyek '+rp(proyek)+' jatuh ke tangan Anda. Cuan besar, jejak basah.'+fx({stres:+4}),'bad');
+{k:'suapTender',tab:'siasat',lbl:'Suap demi tender/proyek',sub:'Butuh usaha skala Kecil ke atas · 1× setahun · sorotan & dosa',cond:()=>!P.retired&&P.kas>=100e6&&P.st.relasi>=40&&P.usaha.some(u=>u.skala>=2),e:()=>{
+  const suap=Math.round(clamp(netWorth()*0.04,100e6,5e11));
+  P.kas-=suap; P.suapKali++; P.heat=clamp(P.heat+ri(8,16),0,100);
+  if(r()<0.2){ addLog('Amplop '+rp(suap)+' sudah berpindah, tapi tender jatuh ke perusahaan lain yang "setorannya" lebih tebal. Uang hangus, jejak tetap basah.'+fx({stres:+6}),'bad'); milestone('Suap tender gagal'); if(P.suapKali>=2)ach('mafiaTender'); leg(0,-5); return; }
+  /* yang masuk kantong adalah laba proyek (±1,5–3× uang suap), bukan seluruh nilai kontrak */
+  const proyek=Math.round(suap*ri(15,30)/10);
+  P.kas+=proyek; P.gelap+=Math.round(proyek*0.1); P.gelapTotal+=Math.round(proyek*0.1);
+  addLog('Amplop & "komitmen fee" berpindah ke oknum pejabat. Tender jatuh ke tangan Anda, laba proyek '+rp(proyek)+'. Cuan besar, jejak basah.'+fx({stres:+4}),'bad');
   milestone('Menangkan tender lewat suap'); if(P.suapKali>=2)ach('mafiaTender'); leg(3,-5);}},
 {k:'kartel',tab:'siasat',lbl:'Atur harga / kartel',sub:'Kongkalikong pesaing · margin naik',cond:()=>!P.retired&&P.usaha.length>=2&&P.st.relasi>=50,e:()=>{
   for(const u of P.usaha)u.brand=clamp(u.brand+ri(3,7),0,100);
   P.heat=clamp(P.heat+ri(5,10),0,100);
   addLog('Diam-diam Anda dan pesaing sepakat menahan harga & membagi pasar. Margin semua pihak naik, konsumen yang buntung.'+fx({stres:+3,reputasi:-3}),'bad'); milestone('Bermain kartel harga'); leg(2,-5);}},
-{k:'upahMurah',tab:'siasat',lbl:'Tekan upah & outsourcing',sub:'Hemat biaya · pekerja menderita',multi:true,cond:()=>!P.retired&&totalKaryawan()>=5,e:()=>{
+{k:'upahMurah',tab:'siasat',lbl:'Tekan upah & outsourcing',sub:'Hemat biaya · pekerja menderita',cond:()=>!P.retired&&totalKaryawan()>=5,e:()=>{
   const hemat=Math.round(totalKaryawan()*ri(8,18)*1e6); P.kas+=hemat; P.buruh=clamp(P.buruh-ri(8,15),0,100);
   addLog('Anda pangkas upah, hapus tunjangan, ganti karyawan tetap dengan harian lepas. Hemat '+rp(hemat)+', tapi pekerja makin tertekan.'+fx({reputasi:-3}),'bad'); if(P.buruh<=35)ach('pemerasBuruh'); leg(1,-4);}},
-{k:'abaiLingkungan',tab:'siasat',lbl:'Abaikan dampak lingkungan',sub:'Pangkas biaya · rusak alam',multi:true,cond:()=>!P.retired&&P.usaha.some(u=>['tambang','manufaktur','agro'].includes(u.k)),e:()=>{
+{k:'abaiLingkungan',tab:'siasat',lbl:'Abaikan dampak lingkungan',sub:'Pangkas biaya · rusak alam',cond:()=>!P.retired&&P.usaha.some(u=>['tambang','manufaktur','agro'].includes(u.k)),e:()=>{
   const u=P.usaha.find(x=>['tambang','manufaktur','agro'].includes(x.k));
   const hemat=Math.round(u.modal*ri(8,16)/100); P.kas+=hemat; P.heat=clamp(P.heat+ri(5,12),0,100);
   addLog('Limbah dibuang sembarangan, izin lingkungan diakali. '+u.n+' hemat '+rp(hemat)+', tapi sungai & warga sekitar yang menanggung.'+fx({reputasi:-4}),'bad'); milestone('Abaikan dampak lingkungan'); leg(1,-5);}},

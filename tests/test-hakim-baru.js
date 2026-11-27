@@ -50,7 +50,7 @@ vm.runInContext(`
   globalThis.__teladan = !!P.ach.teladan;
 
   // 5) JENIS PERKARA BARU benar-benar bisa muncul + mediasi tak salah sasaran
-  var jset={}, n=0;
+  var jset={}, n=0; N.tahun=2020;   // jenis perkara mengikuti tahun (UU ITE & siber baru ada 2008)
   for(var k=0;k<4000;k++){ var c3=buatKasus(); jset[c3.jenis.k]=(jset[c3.jenis.k]||0)+1; }
   globalThis.__jenis = { pemilu:!!jset.pemilu, asusila:!!jset.asusila, siber:!!jset.siber, total:Object.keys(jset).length };
 

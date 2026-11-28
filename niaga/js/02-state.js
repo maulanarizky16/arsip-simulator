@@ -25,6 +25,7 @@ function newGame(){
     heat:0, vonis:false, penjara:0, retired:false, bangkrutTotal:0,
     keluarga:false, anak:0, hajiDone:false,
     evWarisan:false, evPandemi:false, evKrisis98:false, evPreman:false, evTawarAkuisisi:false, evTipu:false,
+    skalaV2:true,   /* skala usaha mengikuti besar modal (save lama dimigrasi di 08-save.js) */
     riwayat:[], ach:{}, used:{}
   };
   if(ID.nama)P.nama=ID.nama;

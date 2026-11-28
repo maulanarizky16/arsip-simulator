@@ -211,3 +211,27 @@ aside{width:344px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
 .pd-neg.kita text.pd-nama{fill:var(--navy)} .pd-neg.lawan text.pd-nama{fill:var(--red)}
 .pd-leg{justify-content:center}
 .peta-box .butuh{text-align:center;border-top:none}
+.pd-geser{overflow-x:auto;border-radius:6px}
+@media (max-width:640px){
+  .peta-box .peta-dunia{min-width:560px;max-height:none}
+  .peta-box summary small{display:block;margin:2px 0 0}
+}
+/* peta bentuk negara */
+.peta-dunia{background:#dfe9ee}
+.pd-lain{fill:#ece5d4;stroke:#c9c0aa;stroke-width:.6}
+.pd-ng{fill:#f7f2e4;stroke:#8d8674;stroke-width:.8}
+.pd-ng.kita{fill:var(--navy);stroke:#22382b}
+.pd-ng.lawan{fill:var(--red);stroke:#6b1616}
+.pd-ng.mati{fill:#a9a59b;stroke:#8d897f}
+.pd-perang{stroke:var(--red);stroke-width:2.4;stroke-dasharray:7 4;stroke-linecap:round}
+.pd-tuntun{stroke:var(--ink2);stroke-width:.6}
+.pd-titik{fill:var(--paper);stroke:var(--ink2);stroke-width:.7}
+.pd-titik.kita{fill:var(--navy)} .pd-titik.lawan{fill:var(--red)} .pd-titik.mati{fill:#a9a59b}
+.pd-lbl rect{fill:var(--paper);stroke:var(--ink2);stroke-width:.6;opacity:.94}
+.pd-lbl text{font:600 8px var(--ui);text-anchor:middle;fill:var(--ink)}
+.pd-lbl.kita rect{fill:var(--navy);stroke:var(--navy)} .pd-lbl.kita text{fill:#fff}
+.pd-lbl.lawan rect{fill:var(--red);stroke:var(--red)} .pd-lbl.lawan text{fill:#fff}
+.pd-lbl.mati rect{fill:#c9c5bb;stroke:#8d897f} .pd-lbl.mati text{fill:#6f6b63}
+.pd-coret{stroke:#6f6b63;stroke-width:1}
+.peta-box .peta-dunia{max-height:340px}
+@media (max-width:640px){ .peta-box .peta-dunia{min-width:760px;max-height:none} }

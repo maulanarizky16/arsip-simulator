@@ -91,7 +91,7 @@ function render(){
   if(P.sampingan)usaha+='<div class="idrow"><span class="lab">Usaha sampingan</span><b>'+P.sampingan.n+'</b></div>';
   if(P.sh){ usaha+='<div class="idrow"><span class="lab">Software house</span><b>'+P.sh.n+(P.sh.penuh?'':' (sambilan)')+'</b></div>'+
     '<div class="idrow"><span class="lab">Tenaga / beban proyek</span><b'+(bebanSH()>tenagaSH()?' style="color:var(--red)"':'')+'>'+tenagaSH()+' / '+bebanSH()+'</b></div>';
-    for(const c of P.sh.klien)usaha+='<div class="idrow"><span class="lab">'+c.n+' <small>('+c.tipeN+', '+c.sisa+' th)</small></span><b>'+rp(c.nilai)+' · puas '+c.puas+'</b></div>';
+    for(const c of P.sh.klien)usaha+='<div class="klien-row"><b>'+c.n+'</b><span>'+c.tipeN+' · kontrak '+c.sisa+' th · '+rp(c.nilai)+'/thn · <i class="'+(c.puas<40?'low':c.puas<60?'mid':'')+'">puas '+c.puas+'</i></span></div>';
     if(!P.sh.klien.length)usaha+='<div class="idrow"><span class="lab">Klien</span><b>belum ada</b></div>'; }
   $('skena').innerHTML=usaha+
     '<div class="idrow"><span class="lab">Pasar kerja</span><b>'+(PASAR_LBL[N.pasar]||'—')+'</b></div>'+

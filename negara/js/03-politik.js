@@ -88,7 +88,7 @@ function syaratMaju(k){
   if(k==='dpr')return s.popularitas>=32||(P.terms.dprd||0)>0;
   if(k==='walikota')return s.popularitas>=35&&(P.terms.walikota||0)<2;
   if(k==='gubernur')return s.popularitas>=48&&s.pengaruh>=35&&(P.terms.gubernur||0)<2;
-  if(k==='presiden')return s.popularitas>=50&&s.pengaruh>=45&&d>=55&&P.maxLv>=2&&((P.terms.presiden||0)<2||P.tigaOk);
+  if(k==='presiden')return s.popularitas>=50&&s.pengaruh>=45&&d>=55&&P.maxLv>=3&&(P.kalahPilpres||0)<2&&((P.terms.presiden||0)<2||P.tigaOk);   /* tiket capres: pernah jadi Gubernur/Menteri & belum dua kali kalah pilpres */
   return false;
 }
 /* apa yang masih kurang untuk maju Presiden (untuk ditampilkan ke pemain) */
@@ -97,7 +97,8 @@ function syaratPresKurang(){
   if(s.popularitas<50)miss.push('Popularitas '+Math.round(s.popularitas)+'/50');
   if(s.pengaruh<45)miss.push('Pengaruh '+s.pengaruh+'/45');
   if(d<55)miss.push('Dukungan partai '+d+'/55');
-  if(P.maxLv<2)miss.push('belum pernah jadi min. Wali Kota/DPR');
+  if(P.maxLv<3)miss.push('belum pernah jadi Gubernur atau Menteri');
+  if((P.kalahPilpres||0)>=2)miss.push('sudah dua kali kalah pilpres — partai tak mau mengusung lagi');
   if(P.age<JAB.presiden.minU)miss.push('umur minimal '+JAB.presiden.minU+' tahun (Anda '+P.age+')');
   if((P.terms.presiden||0)>=2&&!P.tigaOk)miss.push('sudah 2 periode');
   return miss;
@@ -112,7 +113,8 @@ function peluang(k,tier,fajar){
   c-=(P._lawanKuat||0);
   c+=(P._debatBonus||0);
   c+=(P._cawElekt||0);
-  return clamp(c,0.04,k==='presiden'?0.55:0.90);
+  if(k==='presiden')c-=(P.kalahPilpres||0)*0.06;   /* capres yang pernah kalah makin sulit dijual */
+  return clamp(c,0.04,k==='presiden'?0.4:0.90);
 }
 function labelPeluang(p){ return p>=0.7?'besar':p>=0.45?'sedang':p>=0.25?'tipis':'kecil'; }
 function kampanye(){
@@ -270,6 +272,8 @@ function hasilPemilu(k,tier,fajar){
     addLog('Hasil rekapitulasi: <b>Anda KALAH</b> dari '+lawanNama+'. Pesaing unggul di kotak suara. Baliho-baliho itu kini hanya kenangan mahal.'+fx({popularitas:-3,stres:+10,pengaruh:-3}),'bad');
     milestone('Kalah pemilu '+JAB[k].n);
     leg(-1,0);
+    if(k==='presiden'){ P.kalahPilpres=(P.kalahPilpres||0)+1; if(P.partai)P.partai.dukungan=clamp(P.partai.dukungan-15,0,100);
+      addLog('Partai mulai melirik nama lain untuk pemilihan berikutnya. <span class="d">(Dukungan partai −15)</span>'+fx({pengaruh:-8}),'bad'); }
     P.pendingJanji=null;
   }
 }

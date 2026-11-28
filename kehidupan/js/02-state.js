@@ -55,6 +55,7 @@ function caraMain(){
     '<b>1.</b> Tiap tahun, pilih aksi di <b>Meja Aksi</b> (laci Diri, Asmara, Karier, Usaha, Uang, Hobi).<br>'+
     '<b>2.</b> Kalau sudah, tekan <b>"Jalani Umur +1"</b> untuk maju setahun.<br>'+
     '<b>3.</b> Tiap pilihan berdampak ke kesehatan, kebahagiaan, uang, dan relasi. Tidak ada jalan yang "benar", bikin saja ceritamu sendiri.<br><br>'+
+    'Semua nilai uang memakai rupiah masa kini: harga tidak naik dari tahun ke tahun, jadi gaji dan bunga di sini adalah kenaikan nyata.<br><br>'+
     'Progres tersimpan otomatis dan bisa dilanjut kapan saja. Selamat menjalani hidup.',
     opts:[{t:'Mulai hidup »',e:()=>{}}]});
 }
@@ -325,7 +326,7 @@ function drift(){
   if(a>=18){
     let masuk=0, keluar=0;
     let kenaPajak=0, rutin=0;
-    if(P.job){ P.job.g=Math.round(P.job.g*1.03); masuk+=P.job.g; kenaPajak+=P.job.g;
+    if(P.job){ P.job.g=Math.round(P.job.g*1.015); masuk+=P.job.g; kenaPajak+=P.job.g;   /* kenaikan berkala riil ±1,5%/thn (harga di game tidak naik) */
       /* performa & reputasi kerja: lembur menjaganya; menganggur-pasif menggerusnya pelan */
       if(P._lemburTahunIni)P.reputasiKerja=clamp(P.reputasiKerja+1,0,100);
       else { if(r()<0.5)P.perf=clamp(P.perf-1,0,3); P.reputasiKerja=clamp(P.reputasiKerja-1,0,100); }
@@ -352,10 +353,10 @@ function drift(){
     }
     /* investasi */
     let dInv=0;
-    if(P.inv.depo>0){ const d=Math.round(P.inv.depo*0.04); P.inv.depo+=d; dInv+=d; }
-    if(P.inv.emas>0){ const pct=ri(-4,14)+(G.mkt.label==='boom'?2:G.mkt.label==='krisis'?-5:0);
+    if(P.inv.depo>0){ const d=Math.round(P.inv.depo*0.015); P.inv.depo+=d; dInv+=d; }
+    if(P.inv.emas>0){ const pct=ri(-7,11)+(G.mkt.label==='boom'?2:G.mkt.label==='krisis'?-5:0);
       const d=Math.round(P.inv.emas*pct/100); P.inv.emas+=d; dInv+=d; }
-    if(P.inv.saham>0){ let pct=G.mkt.label==='krisis'?ri(-45,-10):G.mkt.label==='boom'?ri(5,55):ri(-22,38);
+    if(P.inv.saham>0){ let pct=G.mkt.label==='krisis'?ri(-45,-10):G.mkt.label==='boom'?ri(2,52):ri(-25,35);
       pct+=Math.round(P.finansialIQ/22)+Math.round((s.smart-50)/16)+(P.jur==='ekonomi'?3:0);   /* literasi & kecerdasan = edge */
       const d=Math.round(P.inv.saham*pct/100); P.inv.saham+=d; dInv+=d; }
     if(P.inv.kripto>0){ let pct=G.mkt.label==='krisis'?ri(-75,-20):ri(-70,110);

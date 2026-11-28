@@ -187,3 +187,9 @@ header h1{font-family:var(--disp)}
 .infra-row .ibar{width:74px;flex-shrink:0}
 .infra-row .ibar .sbar{height:7px}
 .mono{font-family:var(--type)}
+/* daftar klien software house: dua baris supaya nama panjang tidak terpotong */
+.klien-row{border-bottom:1px dotted var(--line);padding:4px 0;font-size:12.5px}
+.klien-row b{display:block;font-weight:600}
+.klien-row span{display:block;font-size:11.5px;color:var(--ink2)}
+.klien-row i{font-style:normal;color:var(--green);font-weight:600}
+.klien-row i.mid{color:var(--gold)} .klien-row i.low{color:var(--red)}

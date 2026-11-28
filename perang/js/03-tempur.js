@@ -108,7 +108,8 @@ function tempur(){
   /* ---------- MORAL, RAKYAT, TEKAD ---------- */
   A.st.moral=clamp(A.st.moral+delta*0.5-rA*250+(A.st.logistik<30?-3:A.st.logistik>70?0.5:0)+(N.front<0?0.8:0)-0.3,0,100);
   B.st.moral=clamp(B.st.moral-delta*0.5-rB*250+(B.st.logistik<30?-3:B.st.logistik>70?0.5:0)+(N.front>0?0.8:0)-0.3,0,100);
-  P.st.publik=clamp(P.st.publik+delta*0.35-rA*120-(P.agresor?0.35:0.1)+(N.front<-20?0.6:0),0,100);
+  /* rakyat lelah perang pelan-pelan; kehilangan prajurit lebih menyakitkan bagi penyerang daripada bagi yang membela tanah air */
+  P.st.publik=clamp(P.st.publik+delta*0.35-rA*(P.agresor?100:60)-(P.agresor?0.25:0.05)+(N.front<-20?0.6:0),0,100);
   B.st.tekad=clamp(B.st.tekad-delta*0.4-rB*120-0.2+(N.front>20&&N.minggu<10?0.5:0)-(B.st.moral<25?1:0),0,100);
   P.st.dunia=clamp(P.st.dunia+(P.agresor?-0.2:0.2),0,100);
   /* ---------- LAPORAN MINGGUAN ---------- */

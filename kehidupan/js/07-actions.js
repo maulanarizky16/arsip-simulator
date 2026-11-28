@@ -313,7 +313,7 @@ const ACTS=[
 /* ---- HOBI ---- */
 {k:'mulaiHobi',tab:'hobi',lbl:'Mulai hobi baru',sub:'Maks. 4 hobi aktif',min:10,multi:true,cond:()=>P.hobi.length<4,e:()=>{
   ask({title:'HOBI BARU',text:'Hidup bukan cuma kerja. Mau menekuni apa?',
-    opts:HOBI.filter(h=>!P.hobi.some(x=>x.k===h.k)&&(!h.g||h.g===P.gender)&&(!h.sejak||tahunIni()>=h.sejak)).map(h=>({t:h.n,
+    opts:HOBI.filter(h=>!P.hobi.some(x=>x.k===h.k)&&(!h.sejak||tahunIni()>=h.sejak))   /* semua hobi terbuka untuk semua gender */.map(h=>({t:h.n,
       sub:(h.mulai>0?'Modal awal '+rp(h.mulai):'Tanpa modal awal')+(h.b>0?' · biaya '+rp(h.b)+'/thn':''),
       cond:()=>P.age<18||P.money>=h.mulai,
       e:()=>{ if(P.age>=18)P.money-=h.mulai;

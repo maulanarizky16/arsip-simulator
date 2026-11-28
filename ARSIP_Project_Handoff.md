@@ -3,7 +3,7 @@
 > **Konteks singkat untuk melanjutkan project ini di sesi baru.**
 > Disusun oleh: Maulana (Balikpapan, IoT/fleet monitoring).
 > Bahasa default: Bahasa Indonesia kasual. Hindari over-formatting & emoji yang gak perlu.
-> Terakhir diperbarui: Juni 2026 (5 game lengkap: kehidupan, negara, hakim, it, niaga; polish mobile/a11y; ekspansi konten hakim).
+> Terakhir diperbarui: November 2026 (7 game: kehidupan, negara, hakim, it, niaga, wni, perang; QA/QC keseimbangan semua game; IT mulai tanpa kerja + software house; simulator perang dengan peta dunia).
 
 ---
 
@@ -11,9 +11,9 @@
 
 Koleksi single-page HTML game berbahasa Indonesia bergaya estetika "berkas/arsip rahasia" (paper/dossier aesthetic). Setiap game adalah simulator hidup yang dimainkan dari titik nol sampai berkas ditutup, dengan banyak pilihan & konsekuensi.
 
-Sudah ada **5 game lengkap** (kehidupan, negara, hakim, it, niaga) + **1 dokumen panduan** + **1 hub website** (landing, leaderboard, halaman donasi). Semuanya bisa di-deploy ke VPS sebagai static files (nginx/Caddy) — **tanpa build step**.
+Sudah ada **7 game lengkap** (kehidupan, negara, hakim, it, niaga, wni, perang) + **1 dokumen panduan** + **1 hub website** (landing, leaderboard, halaman donasi). Semuanya bisa di-deploy ke VPS sebagai static files (nginx/Caddy) — **tanpa build step**.
 
-**Penting — sejak refactor:** tiap game punya satu file shell HTML tipis (`kehidupan.html`, `negara.html`, `hakim.html`, `it.html`, `niaga.html`), tapi CSS & JS-nya **dipecah ke folder per-game** (`kehidupan/`, `negara/`, `hakim/`, `it/`, `niaga/`) jadi modul per-bagian bernomor `00-` … `09-`. Tujuannya: gampang revisi per bagian tanpa baca seluruh kode. Kelima game pakai pola yang sama persis (lihat bagian 3 & 5), jadi paham satu = paham semua.
+**Penting — sejak refactor:** tiap game punya satu file shell HTML tipis (`kehidupan.html`, `negara.html`, `hakim.html`, `it.html`, `niaga.html`, `wni.html`, `perang.html`), tapi CSS & JS-nya **dipecah ke folder per-game** (`kehidupan/`, `negara/`, `hakim/`, `it/`, `niaga/`) jadi modul per-bagian bernomor `00-` … `09-`. Tujuannya: gampang revisi per bagian tanpa baca seluruh kode. Kelima game pakai pola yang sama persis (lihat bagian 3 & 5), jadi paham satu = paham semua.
 
 ---
 
@@ -130,6 +130,28 @@ Simulator warga +62 bertahan hidup **per bulan** (36 bulan, Jan 2026–Des 2028)
 - **Kalender** (`kalender()`): UMR naik Januari, Ramadan/bukber, Lebaran (THR, mudik, salam tempel, "kapan nikah?") via `RAMADAN`/`LEBARAN`, SPT Maret, Agustusan, Harbolnas. **~40 kejadian acak** di `EVENTS` (`04-events.js`, tiap event punya bobot `w` & jeda `cd`).
 - **Stat:** Kewarasan, Kesehatan, Gengsi, Nrimo (meredam pukulan mental di `fx`), Relasi + Skill. **Akhir cerita** (`akhir(kind)`, `ENDING`): tahan 36 bulan, pulang (kewarasan 0), tumbang (kesehatan 0), dc (utang ≥ batas), diaspora (#KaburAjaDulu), tutup.
 - **Skor GANDA:** **Dompet** + **Kewarasan** (`nilaiAkhir`). `handleResult` key `wni`, fields `skorDompet`+`skorWaras`, `julukanDompet`/`gelarWaras`, `meta` (baris info kartu hasil). Tes: `tests/test-wni.js`.
+
+### E4. ARSIP PERANG (`perang.html` + folder `perang/`)
+Simulator panglima perang. **Giliran per MINGGU** (bukan per tahun), maksimal 78 minggu.
+- **Penyiapan:** pilih negara (25 negara nyata, `NEGARA` di `01-data.js`) → pilih lawan → tujuan perang (`bertahan` / `sengketa` / `total`). Kekuatan awal = data perkiraan; sumber & status verifikasi di `perang/DATA.md`.
+- **State:** `P` = pihak pemain (`P.f` pasukan & alutsista, `P.st` moral/logistik/amunisi/publik/dunia, `P.post` postur darat/udara/laut, `P.dana` kas perang dalam JUTA US$), `N` = keadaan perang (`N.front` −100…+100, `N.udara`, `N.laut`, `N.eskalasi`, `N.e` = pihak lawan).
+- **Mesin tempur (`03-tempur.js`, `tempur()` tiap minggu):** kekuatan darat/udara/laut × teknologi × moral × logistik × amunisi. Penyerang baru maju bila unggul nyata atas pembela (`dorong()`); makin dalam masuk wilayah lawan makin berat; perang seberang laut dibatasi daya angkut & kendali laut; medan (pegunungan/kepulauan) menguntungkan pembela.
+- **Aksi (`06-actions.js`):** postur gratis (bertanda `postur:true`) + **maks. 3 perintah khusus per minggu** (`MAKS_PERINTAH`).
+- **Lawan (`aiMusuh()`):** watak agresif / hati-hati / licik; posturnya hanya tampil bila `P.intel>0`.
+- **Nuklir:** negara bernuklir tidak bisa ditundukkan total tanpa melewati kartu `AMBANG NUKLIR` (`cekAkhir()` di `04-events.js`).
+- **Akhir (`HASIL`):** menang, menangTerbatas, damai, damaiRugi, beku, jatuh, kalah, kiamat. Dua skor: **Kemenangan** & **Kemanusiaan** (`skorMenang`, `skorManusia`).
+- **Peta dunia:** `petaDunia()` di `07-render.js` menggambar SVG dari `01b-peta.js` (garis negara Natural Earth, dibuat otomatis, jangan disunting tangan). Catatan negara yang kalah total disimpan terpisah di `localStorage` kunci `arsip_perang_dunia_v1` (`dunia()`, `tandaiKalah()`, `pulihkanDunia()`): negara itu abu-abu dan tak bisa dipilih lagi sampai peta dipulihkan.
+- Tes: `tests/test-perang.js`. Bot keseimbangan: `node qa/bot-perang.js 30`.
+
+### E5. Perubahan besar November 2026 (QA/QC)
+- **Alat QA:** `node qa/analis.js <game> [n]` memainkan n hidup per profil (acak & "wajar") dan menulis `qa/laporan/<game>.md`. Review tiap game ada di `qa/laporan/<game>-review.md` (temuan, perbaikan, dan yang sengaja tidak diubah). Bot strategi: `qa/bot-niaga.js`, `qa/bot-negara.js`, `qa/bot-perang.js`.
+- **Kehidupan:** utang ditagih (`tagihUtang()`), pajak & biaya hidup ikut penghasilan, penjara (`P.penjara`), batas umur profesi negara, konten mengikuti tahun (`eraNama()`, `adaPinjol()`).
+- **Hakim:** gaji dikurangi biaya hidup (`gajiNow()`, `biayaHidup()`), promosi butuh masa kerja, OTT hanya untuk yang pernah menerima uang haram, perkara perdata memakai istilah gugatan (`lblV()`).
+- **Niaga:** skala usaha mengikuti besar modal (`skalaModal()`), pemilik usaha kecil mendapat hasil kerja sendiri, aksi "Kerja dulu".
+- **Negara:** batas umur calon (`JAB[k].minU`), nafkah di luar jabatan (`NAFKAH`), kartu Dilaporkan Balik untuk orang bersih.
+- **WNI:** gaji mengikuti UMR kota (`gajiKota()`, `P.umrF`).
+- **IT (`it/js/03d-usaha.js`):** karier dimulai **tanpa pekerjaan** (`mulaiTanpaKerja()` → aksi Lamar kerja → `panggilanWawancara()` → `terimaKerja()`), aksi Resign, usaha sampingan (`P.sampingan`), software house dengan klien (`P.sh`, `cariKlien()`, `shTahunan()`, `kejadianSH()`), gaji mengikuti zaman (`eraGaji()`), pajak & biaya hidup (`nafkahTahunan()`), batas utang (`tagihUtangIT()`). **Tes lama IT memakai bendera `globalThis.__IT_LANGSUNG_KERJA` (diset di `tests/_seed.js`) supaya langsung bekerja; tes alur baru ada di `tests/test-it-usaha.js`.**
+- **Menjalankan tes di laptop:** satu per satu. `tests/play-all.js` (jsdom) butuh ±2 menit; menjalankan banyak simulasi berbarengan membuat laptop panas dan tes melambat >10×.
 
 ### E3. Mini-game bersama (`assets/kuis.js`)
 Dipakai WNI, Kehidupan & IT (dimuat setelah `art.js`; di tes ikut dimuat lewat `tests/_seed.js`). Butuh global game `ask/addLog/rp/r/hasDoc`. `Kuis.lembar()` = form pilihan ganda maks. 5 soal (soal biasa `a`=indeks benar, soal berbobot `w`=poin per opsi, soal `lucu` tidak dinilai). **Penting:** `choose()` tiap game mengosongkan `#kartu` sebelum handler tombol jalan, jadi jawaban dicatat saat dipilih (event `change` → `JAWAB`), bukan dibaca dari DOM saat dikumpulkan. Form wajib dijawab semua: klik tombol/angka 1–9 ditahan (fase capture) dan soal kosong ditandai `.kz-miss` + `.kz-warn`. `renderKartu()` tidak me-render ulang kartu yang sama (centang tak hilang saat pindah laci). Tes DOM: `tests/test-kuis-dom.js`. Di browser, form bernilai (bukan `diam`) diikuti **kartu hasil** (`kartuHasil`: skor, LULUS/BELUM bila ada `o.lulus`, tiap soal ✓/✗ + jawaban benar + pembahasan); akibat (`done`) baru jalan setelah "Lanjut". Di tes vm tanpa DOM kartu hasil dilewati. `keAtas()` menggulung pop-up form ke atas & melepas sorotan tombol Kumpulkan.

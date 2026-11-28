@@ -23,6 +23,7 @@ Tidak ada error dan tidak ada teks rusak, sebelum maupun sesudah.
 3. **Tanda jasa "Tolak Serangan Fajar" tidak punya pemicu sama sekali** (tidak ada pemilu nasional di 2026–2028). → Kartu baru **Serangan Fajar** (pemilihan kepala desa / ketua RW): tolak, ambil saja, atau ambil dan menurut.
 
 ## Catatan keseimbangan (tidak diubah)
-- Pemain acak dan pemain "opsi pertama" rata-rata hanya bertahan 16 dari 36 bulan, kebanyakan karena kewarasan habis. Ini sesuai tema ("semoga beruntung, kamu akan butuh itu"), tetapi saya belum mengukurnya dengan bot yang bermain hemat seperti di Niaga dan Negara. Kalau terasa terlalu berat bagi pemain sungguhan, tuas pertamanya ada di `drift()` (`wni/js/02-state.js`): penurunan kewarasan dasar −2 per bulan.
+- Pemain acak dan pemain "opsi pertama" rata-rata hanya bertahan 16 dari 36 bulan, kebanyakan karena kewarasan habis.
+- **Bot warga hemat** (`node qa/bot-wni.js 120`: gaya hidup hemat, masak sendiri, jaga kewarasan dengan cara gratis, cari tambahan saat seret, tanpa pinjol, memilih opsi kartu terbaik dengan melihat satu langkah ke depan) **bertahan 36 bulan di 99% hidup**, di semua kota. Jadi permainannya tidak terlalu berat bagi yang berhati-hati; yang menjatuhkan adalah keputusan sembrono. Kekayaan bersih akhirnya tetap tipis untuk latar bawah (generasi sandwich & anak petani ±Rp 4 jt setelah 3 tahun; keluarga menengah ±Rp 11 jt; anak pejabat ±Rp 58 jt), sesuai tema. Tidak ada yang diubah.
 - Setelah perubahan UMR, pemain acak yang bertahan 36 bulan turun (41 → 12 dari 300 di `tests/test-wni.js`) karena kota murah tidak lagi jadi mode mudah.
 - Tanda jasa yang jarang didapat pemain acak: Healing Garis Keras, Jago Tawar, Mandiri Sejati. Semuanya punya pemicu.

@@ -65,8 +65,8 @@ Tidak ada error dan tidak ada teks rusak (undefined/NaN), sebelum maupun sesudah
 - Judul kartu yang berupa awalan (mis. `DRAMA `, `MINTA BANTUAN `) tidak lagi dilaporkan "tak pernah muncul".
 
 ## Sengaja tidak diubah
-- **Nominal tetap 1998–2090** (tidak ada inflasi harga). Gaji naik 3%/tahun, harga tidak. Mengubahnya berarti menyetel ulang seluruh angka.
-- **Hobi per gender** (gym/futsal hanya laki-laki, baking/kerajinan hanya perempuan): pilihan desain, bukan bug. Secara realisme sebaiknya dibuka untuk semua.
+- ~~Nominal tetap, gaji naik 3%/tahun sementara harga tidak.~~ **Diselesaikan (28 Nov 2026):** semua nilai uang ditetapkan sebagai rupiah masa kini (harga tetap), dan angka pertumbuhan diubah jadi riil: kenaikan gaji berkala 1,5%/tahun, deposito 1,5%, emas −7…+11%, saham −25…+35%, nilai properti 1,5–4%/tahun. Kartu Cara Main menjelaskannya.
+- ~~Hobi per gender.~~ **Diselesaikan:** semua hobi terbuka untuk semua gender.
 - **Kerja di luar negeri** hanya menaikkan gaji; pemain tetap tinggal, berbisnis, dan berpolitik di kota asal.
 - Pekerjaan, 3 usaha, dan jabatan RT/RW bisa dirangkap tanpa biaya waktu.
 

@@ -53,7 +53,7 @@ function tagihUtangIT(){
   if(P.money>=-batas)return;
   if(P.founder&&P.tim&&P.tim.anggota.length){ const n=P.tim.anggota.length; P.tim.anggota=[]; addLog('Gaji telat berbulan-bulan. Seluruh '+n+' anggota tim mengundurkan diri.'+fx({reputasi:-3}),'bad'); }
   if(P.sampingan){ P.money+=bulatJt(P.sampingan.modal*0.3); addLog('Peralatan <b>'+P.sampingan.n+'</b> dijual untuk menutup utang.','bad'); P.sampingan=null; }
-  if(P.sh&&P.money<-batas){ const nama=P.sh.n, penuh=P.sh.penuh; P.sh=null; addLog('<b>'+nama+'</b> tidak sanggup lagi membayar tagihan dan ditutup.','bad'); milestone('Software house '+nama+' bangkrut'); if(penuh)jadiMenganggur(); }
+  if(P.sh&&P.money<-batas){ const nama=P.sh.n, penuh=P.sh.penuh; catatSH(); P.sh=null; addLog('<b>'+nama+'</b> tidak sanggup lagi membayar tagihan dan ditutup.','bad'); milestone('Software house '+nama+' bangkrut'); if(penuh)jadiMenganggur(); }
   if(P.money<-batas){
     const hapus=-P.money-batas; P.money=-batas; P.bangkrutKali=(P.bangkrutKali||0)+1;
     addLog('Utang Anda sudah '+rp(hapus+batas)+'. Bank merestrukturisasi: '+rp(hapus)+' dihapus, sisanya dicicil, dan nama Anda masuk daftar hitam kredit.'+fx({reputasi:-4,stres:+8}),'bad');
@@ -148,6 +148,8 @@ const KLIEN_TIPE=[
 const NAMA_SH=['Kode Nusantara','Lentera Digital','Arunika Labs','Sagara Tech','Rintis Studio','Benang Merah Software','Pijar Sistem','Tanah Air Devs'];
 const NAMA_KLIEN={umkm:['Toko Batik Laksmi','Bengkel Jaya Motor','Klinik Sehat Sentosa','Katering Bu Rini','Koperasi Mekar'],startup:['Antarin','PasarKita','BelajarYuk','SewaAja','Kasbon.id'],
   korporat:['PT Sinar Logistik','Bank Arta Mulia','Grup Ritel Nusantara','PT Asuransi Bersama'],pemerintah:['Dinas Kominfo','Dinas Pendidikan','RSUD Kota','Badan Pendapatan Daerah'],luar:['Northwind GmbH','Kiwi Retail Ltd','Sakura Systems','Bluebird Health Inc']};
+/* rekam jejak software house disimpan untuk penilaian akhir walau usahanya sudah dijual/ditutup */
+function catatSH(){ if(P.sh)P.shLalu={n:P.sh.n,total:P.sh.total,klienTotal:P.sh.klienTotal,thn:P.sh.thn}; }
 function tenagaSH(){
   if(!P.sh)return 0;
   let t=(P.sh.penuh?1:0.4)*(0.6+P.st.ngoding/120);
@@ -206,7 +208,7 @@ function tutupSH(){
   ask({title:'TUTUP / JUAL SOFTWARE HOUSE?',text:'<b>'+sh.n+'</b> punya '+sh.klien.length+' klien dengan omzet '+rp(omz)+'/tahun. '+(laku?'Ada peminat yang mau membeli seharga ±'+rp(laku)+'.':'Tanpa basis klien, tidak ada yang mau membelinya.'),opts:[
     {t:laku?'Jual':'Tutup',e:()=>{ if(laku){ P.money+=laku; ach('exitSH'); leg(0,3); }
       addLog(laku?'<b>'+sh.n+'</b> berpindah tangan seharga '+rp(laku)+'. Klien dan tim ikut pemilik baru.':'<b>'+sh.n+'</b> ditutup. Papan nama diturunkan.','sys'); milestone((laku?'Menjual ':'Menutup ')+sh.n);
-      const penuh=sh.penuh; P.sh=null; if(penuh){ jadiMenganggur(); addLog('Anda kini tanpa pekerjaan tetap.','sys'); } }},
+      const penuh=sh.penuh; catatSH(); P.sh=null; if(penuh){ jadiMenganggur(); addLog('Anda kini tanpa pekerjaan tetap.','sys'); } }},
     {t:'Batal',e:()=>{}}
   ]});
 }
@@ -264,7 +266,7 @@ function kejadianSH(){
   } else if(sh.klien.length>=3&&P.reputasi>=55&&!sh.ditawar){
     sh.ditawar=true; const harga=bulatJt(omzetSH()*(1.5+r()));
     ask({title:'TAWARAN AKUISISI',text:'Sebuah perusahaan teknologi besar ingin membeli <b>'+sh.n+'</b> seharga '+rp(harga)+' — klien, tim, dan namanya.',opts:[
-      {t:'Jual',e:()=>{ P.money+=harga; ach('exitSH'); leg(1,5); addLog('<b>'+sh.n+'</b> diakuisisi seharga '+rp(harga)+'. Anda keluar membawa hasil kerja bertahun-tahun.','good'); milestone('Menjual '+sh.n+' ('+rp(harga)+')'); const penuh=sh.penuh; P.sh=null; if(penuh)jadiMenganggur(); }},
+      {t:'Jual',e:()=>{ P.money+=harga; ach('exitSH'); leg(1,5); addLog('<b>'+sh.n+'</b> diakuisisi seharga '+rp(harga)+'. Anda keluar membawa hasil kerja bertahun-tahun.','good'); milestone('Menjual '+sh.n+' ('+rp(harga)+')'); const penuh=sh.penuh; catatSH(); P.sh=null; if(penuh)jadiMenganggur(); }},
       {t:'Tolak, ini anak sendiri',e:()=>addLog('Anda menolak. '+sh.n+' tetap milik Anda sepenuhnya.'+fx({reputasi:+1}))}
     ]});
   }

@@ -70,7 +70,7 @@ const USAHA=[
   ['Bengkel motor',35e6,1.0],['Startup aplikasi',60e6,2.2],['Ekspedisi lokal',80e6,1.2],
   ['Kafe kekinian',90e6,1.5],['Rental mobil',150e6,1.1],['Kebun sawit',250e6,0.9],['Kos-kosan',400e6,0.6]
 ];
-/* hobi: g = 'L'/'P' kalau condong ke satu gender, kosong/'all' = untuk semua */
+/* hobi: semua terbuka untuk semua gender (penanda g lama tidak lagi membatasi apa pun) */
 const HOBI=[
   {k:'musik',n:'Main musik',mulai:2.5e6,b:1e6,fx:{charm:2,happy:3}},
   {k:'mancing',n:'Memancing',mulai:1.5e6,b:1e6,fx:{stress:-6,happy:3},g:'L'},
@@ -110,24 +110,26 @@ const KERJA_CALON=[
 ];
 const TEMPAT_CALON=['perusahaan swasta','kantor pemerintah','BUMN','sebuah startup','UMKM sendiri','rumah sakit','sekolah swasta','bank lokal','pabrik'];
 const INV=[
-  {k:'depo',n:'Deposito',desc:'Aman, ±4% per tahun'},
-  {k:'emas',n:'Emas',desc:'Stabil, −4% s.d. +14% per tahun'},
-  {k:'saham',n:'Saham',desc:'Naik-turun, −22% s.d. +38%'},
+  {k:'depo',n:'Deposito',desc:'Aman, ±1,5% per tahun di atas inflasi'},
+  {k:'emas',n:'Emas',desc:'Stabil, −7% s.d. +11% per tahun'},
+  {k:'saham',n:'Saham',desc:'Naik-turun, −25% s.d. +35%'},
   {k:'kripto',n:'Kripto',desc:'Liar, −70% s.d. +110%',sejak:2014}
 ];
-/* katalog aset yang bisa dibeli & dikoleksi tanpa batas. sewa = pendapatan sewa/thn saat terisi penuh (imbal 4,5–7,5%), tumbuh = perubahan nilai/thn
+/* SEMUA NILAI UANG di game ini dalam rupiah masa kini (harga tetap, tanpa inflasi). Karena itu kenaikan gaji tahunan, bunga deposito,
+   dan kenaikan nilai properti di bawah ini adalah angka RIIL (sudah dikurangi inflasi), bukan angka nominal.
+   katalog aset yang bisa dibeli & dikoleksi tanpa batas. sewa = pendapatan sewa/thn saat terisi penuh (imbal 4,5–7,5%), tumbuh = perubahan nilai/thn
    (kendaraan menyusut, properti naik), kpr = bisa dicicil */
 const ASET=[
   {k:'motor',    n:'Motor',         harga:18e6,  kelas:'kendaraan', tumbuh:-0.10},
   {k:'mobil',    n:'Mobil',         harga:160e6, kelas:'kendaraan', tumbuh:-0.08},
   {k:'moge',     n:'Moge',          harga:280e6, kelas:'kendaraan', tumbuh:-0.08},
   {k:'mewah',    n:'Mobil mewah',   harga:850e6, kelas:'kendaraan', tumbuh:-0.10},
-  {k:'tanah',    n:'Tanah kavling', harga:100e6, kelas:'properti', tumbuh:0.08},
-  {k:'rumah',    n:'Rumah',         harga:400e6, kelas:'properti', tumbuh:0.05, kpr:true},
-  {k:'apartemen',n:'Apartemen',     harga:550e6, kelas:'properti', tumbuh:0.04, sewa:25e6, kpr:true},
-  {k:'ruko',     n:'Ruko',          harga:650e6, kelas:'properti', tumbuh:0.05, sewa:39e6, kpr:true},
-  {k:'kos',      n:'Kos-kosan',     harga:800e6, kelas:'properti', tumbuh:0.04, sewa:60e6, kpr:true},
-  {k:'vila',     n:'Vila',          harga:1.2e9, kelas:'properti', tumbuh:0.05, sewa:65e6, kpr:true}
+  {k:'tanah',    n:'Tanah kavling', harga:100e6, kelas:'properti', tumbuh:0.04},
+  {k:'rumah',    n:'Rumah',         harga:400e6, kelas:'properti', tumbuh:0.025, kpr:true},
+  {k:'apartemen',n:'Apartemen',     harga:550e6, kelas:'properti', tumbuh:0.015, sewa:25e6, kpr:true},
+  {k:'ruko',     n:'Ruko',          harga:650e6, kelas:'properti', tumbuh:0.025, sewa:39e6, kpr:true},
+  {k:'kos',      n:'Kos-kosan',     harga:800e6, kelas:'properti', tumbuh:0.02, sewa:60e6, kpr:true},
+  {k:'vila',     n:'Vila',          harga:1.2e9, kelas:'properti', tumbuh:0.025, sewa:65e6, kpr:true}
 ];
 /* nama yang mengikuti zaman: hal yang belum ada di tahun itu diganti padanannya (lihat tahunIni() di 03c-sekolah.js) */
 const ERA_NAMA=[

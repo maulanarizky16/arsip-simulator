@@ -41,25 +41,29 @@ function dwiBar(label,val,kiri,kanan){
     '<div class="dbar"><i style="width:'+pct+'%"></i><em style="left:50%"></em></div>'+
     '<div class="dl"><span>'+kiri+'</span><span>'+kanan+'</span></div></div>';
 }
-/* peta dunia skematis (SVG): biru-hijau = negara Anda · merah = lawan · abu-abu = sudah kalah perang */
+/* peta dunia (SVG, garis negara dari Natural Earth — lihat 01b-peta.js): biru = negara Anda · merah = lawan · abu-abu = sudah kalah */
+const PD_VB=[40,36,1040,404];                 /* x, y, lebar, tinggi bagian peta yang ditampilkan */
+/* geser label supaya tidak bertumpuk di kawasan padat */
+const PD_GESER={prk:[-8,-11],kor:[-2,8],jpn:[18,0],mys:[-38,-14],tha:[-16,-6],vnm:[15,-3],sgp:[-24,11],idn:[12,9],phl:[16,0],isr:[-22,-3],egy:[-8,11],
+  pak:[0,-5],ind:[0,7],ukr:[5,-3],deu:[7,-9],fra:[-9,7],gbr:[-11,-9],chn:[-12,5],tur:[2,-3]};
 function petaDunia(){
   const d=dunia().kalah;
-  let s='<svg class="peta-dunia" viewBox="56 16 290 124" role="img" aria-label="Peta dunia: negara yang sudah kalah berwarna abu-abu">';
-  for(const y of [40,75,110])s+='<line class="pd-grid" x1="50" y1="'+y+'" x2="350" y2="'+y+'"/>';
-  for(const x of [100,150,200,250,300])s+='<line class="pd-grid" x1="'+x+'" y1="14" x2="'+x+'" y2="140"/>';
-  /* garis perbatasan darat */
-  for(const p of BATAS_DARAT){ const [a,b]=p.split('-'); if(!POS[a]||!POS[b])continue;
-    const perang=P&&P.neg&&P.lawan&&((a===P.neg&&b===P.lawan)||(b===P.neg&&a===P.lawan));
-    s+='<line class="pd-batas'+(perang?' perang':'')+'" x1="'+POS[a][0]+'" y1="'+POS[a][1]+'" x2="'+POS[b][0]+'" y2="'+POS[b][1]+'"/>'; }
-  /* garis perang untuk lawan yang terpisah laut */
-  if(P&&P.neg&&P.lawan&&!berbatasan(P.neg,P.lawan)&&POS[P.neg]&&POS[P.lawan])
-    s+='<line class="pd-batas perang laut" x1="'+POS[P.neg][0]+'" y1="'+POS[P.neg][1]+'" x2="'+POS[P.lawan][0]+'" y2="'+POS[P.lawan][1]+'"/>';
-  for(const c of NEGARA){ const q=POS[c.k]; if(!q)continue;
-    const cls=d[c.k]?'mati':(P&&c.k===P.neg)?'kita':(P&&c.k===P.lawan)?'lawan':'';
-    const ket=c.n+(d[c.k]?' — sudah kalah ('+d[c.k].sebab+')':cls==='kita'?' — negara Anda':cls==='lawan'?' — lawan':'');
-    s+='<g class="pd-neg '+cls+'"><title>'+ket+'</title><rect x="'+(q[0]-9)+'" y="'+(q[1]-4.6)+'" width="18" height="9.2" rx="2"/>'+
-      '<text x="'+q[0]+'" y="'+(q[1]+2.2)+'">'+KODE[c.k]+'</text>'+(cls==='kita'||cls==='lawan'?'<text class="pd-nama" x="'+q[0]+'" y="'+(q[1]+9.6)+'">'+c.n+'</text>':'')+(d[c.k]?'<line class="pd-coret" x1="'+(q[0]-8)+'" y1="'+(q[1]+3.6)+'" x2="'+(q[0]+8)+'" y2="'+(q[1]-3.6)+'"/>':'')+'</g>'; }
-  s+='</svg>';
+  const kelas=k=>d[k]?'mati':(P&&k===P.neg)?'kita':(P&&k===P.lawan)?'lawan':'';
+  let s='<div class="pd-geser"><svg class="peta-dunia" viewBox="'+PD_VB.join(' ')+'" role="img" aria-label="Peta dunia: negara yang sudah kalah berwarna abu-abu">';
+  s+='<path class="pd-lain" d="'+PETA.lain+'"/>';
+  for(const c of NEGARA){ if(!PETA.neg[c.k])continue;
+    const cls=kelas(c.k);
+    s+='<path class="pd-ng '+cls+'" d="'+PETA.neg[c.k]+'"><title>'+c.n+(d[c.k]?' — sudah kalah ('+d[c.k].sebab+')':cls==='kita'?' — negara Anda':cls==='lawan'?' — lawan':'')+'</title></path>'; }
+  /* garis perang */
+  if(P&&P.neg&&P.lawan&&PETA.titik[P.neg]&&PETA.titik[P.lawan]){ const a=PETA.titik[P.neg], b=PETA.titik[P.lawan];
+    s+='<line class="pd-perang" x1="'+a[0]+'" y1="'+a[1]+'" x2="'+b[0]+'" y2="'+b[1]+'"/>'; }
+  /* label kode negara */
+  for(const c of NEGARA){ const q=PETA.titik[c.k]; if(!q)continue;
+    const g=PD_GESER[c.k]||[0,0], x=q[0]+g[0], y=q[1]+g[1], cls=kelas(c.k);
+    if(Math.abs(g[0])+Math.abs(g[1])>=14||!PETA.neg[c.k])s+='<line class="pd-tuntun" x1="'+q[0]+'" y1="'+q[1]+'" x2="'+x+'" y2="'+y+'"/><circle class="pd-titik '+cls+'" cx="'+q[0]+'" cy="'+q[1]+'" r="2.2"/>';
+    s+='<g class="pd-lbl '+cls+'"><rect x="'+(x-13)+'" y="'+(y-6.5)+'" width="26" height="13" rx="3"/><text x="'+x+'" y="'+(y+3.4)+'">'+KODE[c.k]+'</text>'+
+      (d[c.k]?'<line class="pd-coret" x1="'+(x-11)+'" y1="'+(y+5)+'" x2="'+(x+11)+'" y2="'+(y-5)+'"/>':'')+'</g>'; }
+  s+='</svg></div>';
   const mati=Object.keys(d);
   s+='<div class="pd-leg"><span><i class="kita"></i>Anda</span><span><i class="lawan"></i>lawan</span><span><i class="mati"></i>sudah kalah</span></div>';
   s+=mati.length?'<div class="butuh" style="color:var(--ink2)">Sudah kalah: '+mati.map(k=>NEG[k]?NEG[k].n:k).join(', ')+'. <button type="button" class="pd-reset" data-pulih="1">Pulihkan peta</button></div>'
@@ -76,6 +80,8 @@ function render(){
   const siap=!!P.f;
   $('hdrNow').textContent=siap?tanggalPerang():'PENYIAPAN';
   $('dunia').innerHTML=petaDunia();
+  /* layar sempit: peta lebih lebar dari layar & bisa digeser; mulai dari negara pemain */
+  { const g=$('dunia').querySelector('.pd-geser'); if(g&&g.scrollWidth>g.clientWidth+4){ const q=PETA.titik[P.neg||'idn']; g.scrollLeft=Math.max(0,(q[0]-PD_VB[0])/PD_VB[2]*g.scrollWidth-g.clientWidth/2); } }
   $('iNama').textContent='Jenderal '+P.nama;
   $('iNeg').textContent=P.neg?NEG[P.neg].n:'—';
   $('iLawan').textContent=P.lawan?NEG[P.lawan].n:'—';

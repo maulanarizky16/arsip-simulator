@@ -61,7 +61,7 @@ const ACTS=[
     opts:paket.map(p=>({t:p.n,sub:usd(Math.round(p.harga*h)),cond:()=>P.dana>=p.harga*h,e:()=>{ P.dana-=Math.round(p.harga*h); P.pesanan.push({tiba:N.minggu+3,apa:p.apa,n:p.n}); addLog('Pesanan <b>'+p.n+'</b> diteken, tiba tiga minggu lagi.','sys'); }}))
       .concat([{t:'Batal',e:()=>{ G.acted=Math.max(0,G.acted-1); }}])}); }},
 {k:'pajak',tab:'negeri',lbl:'Pajak & obligasi perang',sub:'Dana segar · rakyat mengeluh',cond:()=>siap('pajak',8),e:()=>{
-  pakai('pajak'); const x=Math.round(NEG[P.neg].pdb*4); addLog('Parlemen mengesahkan pajak perang dan menjual obligasi patriotik.'+fx({dana:x,publik:-6}),'sys'); }},
+  pakai('pajak'); const x=Math.round(NEG[P.neg].pdb*4); addLog('Parlemen mengesahkan pajak perang dan menjual obligasi patriotik.'+fx({dana:x,publik:P.agresor?-5:-3}),'sys'); }},
 {k:'propaganda',tab:'negeri',lbl:'Pidato & siaran semangat',sub:'Dukungan rakyat naik',cond:()=>siap('propaganda',3),e:()=>{
   pakai('propaganda'); const g=P.kejahatan>=2?2:P.agresor?4:6; addLog('Pidato Anda disiarkan ke seluruh negeri. '+(P.kejahatan>=2?'Tetapi foto-foto dari garis depan berbicara lebih keras.':'Antrean donor darah dan relawan memanjang.')+fx({publik:+g,moral:+2}),'good'); }},
 {k:'evakuasi',tab:'negeri',lbl:'Evakuasi warga & bunker',sub:'Korban sipil dari bom lawan turun 6 minggu',cond:()=>P.evakuasi<=0&&P.dana>=biayaSkala(0.4),e:()=>{

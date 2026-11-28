@@ -63,7 +63,7 @@ __CHK.takBisaDipilih=!!G.current&&!G.current.opts.some(o=>o.t==='Brasil')&&G.cur
 __mulai('mys','idn','total'); akhiri('kalah','uji'); __CHK.kitaAbu=sudahKalah('mys');
 __mulai('ind','pak','total'); akhiri('kiamat','uji'); __CHK.duaAbu=sudahKalah('ind')&&sudahKalah('pak');
 __mulai('idn','aus','sengketa'); akhiri('menangTerbatas','uji'); __CHK.terbatasTidak=!sudahKalah('aus');
-__CHK.peta=typeof petaDunia==='function'&&NEGARA.every(c=>POS[c.k]&&KODE[c.k])&&/class="pd-neg mati"/.test(petaDunia());
+__CHK.peta=typeof petaDunia==='function'&&NEGARA.every(c=>PETA.titik[c.k]&&KODE[c.k]&&(PETA.neg[c.k]||c.k==='sgp'))&&/class="pd-ng mati"/.test(petaDunia())&&/class="pd-lbl mati"/.test(petaDunia());
 pulihkanDunia(); __CHK.pulih=!sudahKalah('bra')&&negaraHidup().length===NEGARA.length;
 /* 7) basis data utuh */
 __CHK.negara=NEGARA.length; __CHK.dataRusak=NEGARA.filter(c=>!(c.aktif>0&&c.pdb>0&&c.tek>0&&MEDAN[c.geo])).map(c=>c.k);

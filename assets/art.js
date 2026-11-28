@@ -32,6 +32,7 @@ function toneOf(P){ return (P&&P.skin)||'medium'; }
 
 /* ---------- ikon statistik (berdasarkan label bar) ---------- */
 const STAT={
+  'moral pasukan':'flexed-biceps','logistik':'delivery-truck','amunisi':'bomb','dukungan rakyat':'megaphone','dukungan dunia':'globe-showing-asia-australia','eskalasi nuklir':'collision',
   'kesehatan':'red-heart','kebahagiaan':'smiling-face-with-smiling-eyes','kecerdasan':'brain',
   'karisma':'sparkles','relasi':'handshake','relasi & koneksi':'handshake',
   'daya tahan mental':'flexed-biceps','stres':'face-with-steam-from-nose',
@@ -58,7 +59,8 @@ const TAB={
   kebijakan:'scroll', siasat:'chess-pawn', skill:'laptop', infra:'desktop-computer', siber:'shield',
   ekspansi:'rocket', pribadi:'money-bag', kerja:'briefcase', sosial:'people-hugging', warga:'identification-card'
 };
-const TAB_GAME={ hakim:{karier:'balance-scale'}, niaga:{usaha:'factory', siasat:'bank'} };
+const TAB_GAME={ hakim:{karier:'balance-scale'}, niaga:{usaha:'factory', siasat:'bank'},
+  perang:{darat:'military-helmet', udara:'airplane', laut:'ship', negeri:'delivery-truck', diplomasi:'handshake'} };
 
 /* ---------- ikon judul kartu samping ---------- */
 const H3={
@@ -177,6 +179,8 @@ const WHO={
     if((P.penjara||0)>0)return {who:g,role:'Terpidana siber'};
     if(P.dipecat)return {who:g,role:'Eks-engineer'};
     if(P.retired)return {who:oldOf(P),role:'Pensiunan',badge:'laptop'};
+    if(P.menganggur)return {who:g,role:P.pernahKerja===false?'Pencari kerja':'Sedang menganggur'};
+    if(P.tempat==='softwarehouse')return {who:g+'-office-worker',role:'Pemilik software house',badge:'briefcase'};
     if(P.topi==='hitam')return {who:'ninja',role:role,badge:'anxious-face-with-sweat'};
     const badge=P.jab==='cto'?'crown':P.spes==='security'?'shield':P.spes==='iot'?'satellite-antenna':P.spes==='network'?'satellite-antenna':null;
     return {who:g+'-technologist',role:role,badge:badge};
@@ -718,7 +722,9 @@ function trackDeltas(P){
    Di layar sempit kartu profil berada jauh di bawah meja aksi. Strip kecil yang menempel di atas
    menampilkan uang + 3 stat terpenting tiap game; ketuk untuk melompat ke profil lengkap. */
 const HUD={it:['stres','kesehatan','reputasi teknis'],wni:['kewarasan','kesehatan','skill'],kehidupan:['kebahagiaan','kesehatan','stres'],
-  hakim:['integritas','reputasi','stres'],negara:['popularitas','integritas','stres'],niaga:['reputasi','kesehatan','stres']};
+  hakim:['integritas','reputasi','stres'],negara:['popularitas','integritas','stres'],niaga:['reputasi','kesehatan','stres'],
+  perang:['moral pasukan','logistik','amunisi','dukungan rakyat']};
+const HUD_TANPA_UANG=new Set(['perang']);   /* kas perang berdolar & sudah tampil di profil; strip cukup memuat statistik */
 function rpPlain(v){ if(Math.abs(v)<1e3)return 'Rp '+Math.round(v); const t=rpShort(v); return v<0?t:t.slice(1); }
 function mountHud(game,P){
   const keys=HUD[game]; if(!keys||!P)return;
@@ -730,7 +736,7 @@ function mountHud(game,P){
   }
   const st={}; const raw=readStats(); for(const l in raw)st[l.toLowerCase()]=raw[l];
   const m=moneyOf(P);
-  let html='<span class="aa-hc'+(m<0?' bad':'')+'">'+img(m<0?'money-with-wings':'money-bag','himg')+'<b>'+esc(rpPlain(m))+'</b></span>';
+  let html=HUD_TANPA_UANG.has(game)?'':'<span class="aa-hc'+(m<0?' bad':'')+'">'+img(m<0?'money-with-wings':'money-bag','himg')+'<b>'+esc(rpPlain(m))+'</b></span>';
   const lbl=[];
   for(const k of keys){
     if(!(k in st))continue;
@@ -740,7 +746,7 @@ function mountHud(game,P){
   }
   html+='<span class="aa-hmore">profil ▾</span>';
   if(h.innerHTML!==html)h.innerHTML=html;
-  h.setAttribute('aria-label','Ringkasan: uang '+rpPlain(m)+', '+lbl.join(', ')+'. Ketuk untuk melihat profil lengkap.');
+  h.setAttribute('aria-label','Ringkasan: '+(HUD_TANPA_UANG.has(game)?'':'uang '+rpPlain(m)+', ')+lbl.join(', ')+'. Ketuk untuk melihat profil lengkap.');
 }
 /* ================= LOG DI HP: tanpa scroll ganda =================
    CSS di layar sempit hanya menampilkan beberapa catatan terakhir; tombol ini membuka/menutup sisanya. */

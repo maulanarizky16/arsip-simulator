@@ -18,6 +18,9 @@ function renderFeedItem(f){
 }
 function resumeGame(s){
   P=s.P; N=s.N;
+  /* save lama: skala usaha dulu naik lewat tombol, kini mengikuti besar modal → hitung ulang sekali */
+  let turun=0;
+  if(!P.skalaV2){ for(const u of (P.usaha||[])){ const sk=skalaModal(u.modal); if(sk!==u.skala){ if(sk<u.skala)turun++; u.skala=sk; } } P.skalaV2=true; }
   G.current=null; G.queue=[]; G.over=s.over||false; G.feed=s.feed||[]; G.tab=s.tab||'usaha'; G.acted=0;
   if(hasDoc){
     $('feed').innerHTML=''; $('kartu').innerHTML='';
@@ -26,6 +29,7 @@ function resumeGame(s){
     for(const f of G.feed)renderFeedItem(f);
     $('feed').scrollTop=$('feed').scrollHeight;
   }
+  if(turun)addLog('Catatan pembaruan: skala usaha kini mengikuti besar modal. '+turun+' usaha Anda disesuaikan labelnya; modal, karyawan, dan kinerjanya tidak berubah.','sys');
   render();
 }
 function showResumePrompt(s){

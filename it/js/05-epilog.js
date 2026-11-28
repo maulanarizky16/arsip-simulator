@@ -24,13 +24,14 @@ function nilaiAkhir(){
   const handled=P.beres+P.gagal;
   const beresR=handled?P.beres/handled:0.5;   /* dihitung hanya atas insiden yang ditangani sendiri */
   const repAvg=P.years?P.sumRep/P.years:P.reputasi;   /* reputasi rata-rata sepanjang karier */
-  const harta=P.money+P.saham+(P.ekuitas||0)+(P.saasMRR||0)*24;   /* tunai + investasi pribadi + ekuitas startup + nilai produk SaaS */
+  const harta=P.money+P.saham+(P.ekuitas||0)+(P.saasMRR||0)*24+(P.sh?Math.round(omzetSH()*0.6):0);   /* + nilai jual software house yang masih berjalan */   /* tunai + investasi pribadi + ekuitas startup + nilai produk SaaS */
   let karya=Math.round(34 + P.legK*0.55 + (P.reputasi-30)/3 + (repAvg-30)/8 + (beresR-0.5)*42 + (uptimeRata()-70)/4
     + P.mentorKali*1.4 + (P.openSource?5:0) + P.hackWhite*1.4 + P.ctfMenang*1.2 + clamp((P.uptimeStreak||0),0,6)
     - P.hackBlack*4 - P.exploitJual*3 - P.dataHilang*3 - P.outageBesar*2 - (P.coverUps||0)*2);
   if(P.vonis)karya-=30;
   karya=clamp(karya,0,100);
-  let cuan=Math.round(18 + P.maxLv*11 + P.legC*0.4 + clamp(harta/2e9,0,30) + (P.reputasi-30)/6 + clamp(P.gelapTotal/2e9,0,8));
+  let cuan=Math.round(18 + P.maxLv*11 + P.legC*0.4 + clamp(harta/2e9,0,30) + (P.reputasi-30)/6 + clamp(P.gelapTotal/2e9,0,8)
+    + clamp(((P.sh||P.shLalu||{}).klienTotal||0)*2,0,12));   /* membangun usaha sendiri juga jalur karier */
   if(P.dipecat&&!P.buronan)cuan-=12;
   if(P.buronan)cuan=Math.max(cuan,55);   /* buronan kaya: harta besar walau karier resmi tamat */
   cuan=clamp(cuan,0,100);
@@ -70,6 +71,11 @@ function ringkasanKarier(){
   if(P.ach.exit)plus.push('Meraup cuan dari exit startup');
   else if(P.saham>=1e9)plus.push('Membangun portofolio investasi '+rp(P.saham));
   if(P.saasMRR>0)plus.push('Membangun produk SaaS berpenghasilan pasif');
+  { const sh=P.sh||P.shLalu; if(sh&&sh.klienTotal>=1)plus.push((P.ach.exitSH?'Membangun lalu menjual software house ':'Membangun software house ')+sh.n+' ('+sh.klienTotal+' klien, omzet total '+rp(sh.total)+')');
+    else if(sh)minus.push('Software house '+sh.n+' tak pernah mendapat klien'); }
+  if(P.sampingan&&(P.sampingan.total||0)>0)plus.push('Menghidupi usaha sampingan '+P.sampingan.n);
+  if((P.bangkrutKali||0)>0)minus.push('Terlilit utang sampai direstrukturisasi bank');
+  if((P.suapTender||0)>0)minus.push('Memenangkan tender lewat suap ('+P.suapTender+'×)');
   if((P.uptimeStreak||0)>=3)plus.push('Menjaga uptime tinggi bertahun-tahun beruntun');
   if(P.vonis)minus.push('Divonis penjara atas kejahatan siber');
   if(P.buronan)minus.push('Kabur jadi buronan siber, tak bisa pulang');
@@ -116,6 +122,7 @@ function showEpilog(){
   if(window.Platform){
     try{ Platform.handleResult({
       game:'it', nama:P.nama, age:P.age, lahir:P.lahir, tahun:N.tahun, kota:P.kota, sebab:P.sebab,
+      softwareHouse:(P.sh||P.shLalu||{}).n||null, klien:(P.sh||P.shLalu||{}).klienTotal||0,
       spesialisasi:P.spesN, skorKarya:v.karya, skorCuan:v.cuan, julukanKarya:v.jk, gelarCuan:v.gc,
       jabatanTertinggi:jabTop.n+' '+P.spesN, topi:P.topi,
       insiden:P.insidenTotal, beres:P.beres, uptime:uptimeRata(), harta:v.harta, gelapTotal:P.gelapTotal, vonis:P.vonis,

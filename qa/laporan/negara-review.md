@@ -8,7 +8,7 @@ Catatan metode: pemain acak hampir tak pernah menang pemilu (91% tidak pernah me
 ## Angka bot politisi tekun, sebelum → sesudah (200–300 karier)
 | Ukuran | Sebelum | Sesudah |
 |---|---|---|
-| Menjadi presiden (bot bersih) | 98% | 67% |
+| Menjadi presiden (bot bersih) | 98% | 46% |
 | Umur termuda / median saat pertama jadi presiden | 28 / 33 | 43 / 48 |
 | Divonis korupsi padahal tak pernah menerima uang gelap | 1–2% | 0% |
 | Harta akhir median (bot bersih) | Rp 11,6 M | Rp 3,5 M |
@@ -23,8 +23,8 @@ Tidak ada error dan tidak ada teks rusak, sebelum maupun sesudah.
    → Batas umur sesuai undang-undang: DPRD/DPR 21, Wali Kota 25, Gubernur 30, Presiden 40. Kartu syarat presiden ikut menampilkannya.
 3. **Peniup peluit yang bersih dipenjara karena korupsi.** "Investigasi korupsi" dan "Bongkar skandal besar" menaikkan sorotan hukum, lalu penyidik "menemukan jejak aliran dana" pada orang yang tak pernah menerima uang gelap.
    → OTT hanya untuk yang pernah menerima uang gelap. Orang bersih dengan sorotan tinggi mendapat kartu **Dilaporkan Balik** (pencemaran nama / pasal karet): dihentikan, atau ditahan sebentar sebagai tahanan politik.
-4. **Pemilihan presiden hampir sama mudahnya dengan DPRD.** Penalti peluang hanya 2,5% per jenjang.
-   → Penalti naik tajam per jenjang dan peluang maksimal pemilihan presiden 55%.
+4. **Pemilihan presiden hampir sama mudahnya dengan DPRD.** Penalti peluang hanya 2,5% per jenjang, dan pemain bisa mencoba di setiap pemilu sampai tua.
+   → Penalti naik tajam per jenjang; peluang maksimal pemilihan presiden 40%; tiket capres hanya untuk yang pernah jadi Gubernur atau Menteri; setiap kekalahan menggerus dukungan partai, dan setelah dua kali kalah partai tidak mengusung lagi.
 
 ## P2 — Tidak realistis
 5. **Tidak ada penghasilan di luar jabatan dan tidak ada biaya hidup.** Guru honorer tetap memegang Rp 2 jt selama puluhan tahun; pejabat menabung 100% gajinya.
@@ -35,6 +35,6 @@ Tidak ada error dan tidak ada teks rusak, sebelum maupun sesudah.
 
 ## Sengaja tidak diubah
 - Semua pemilu (DPRD sampai presiden) serentak tiap 5 tahun dan hanya boleh memilih satu kursi.
-- Bot tekun masih menjadi presiden di 67% karier. Ia mencoba di setiap pemilu sampai tua (±7 kali) dengan strategi optimal; pemain sungguhan akan lebih rendah. Kalau mau lebih sulit lagi, angka penalti jenjang ada di `peluang()` (`negara/js/03-politik.js`).
+- Bot tekun masih menjadi presiden di 46% karier dengan strategi optimal; pemain sungguhan akan lebih rendah. Kalau mau lebih sulit lagi, angka penalti jenjang ada di `peluang()` (`negara/js/03-politik.js`).
 - Stres hampir selalu 0 bagi pemain yang tidak menjabat. Tidak merusak apa pun.
 - Kartu yang masih jarang muncul di bot: Cukong Menagih, Galang Koalisi, Godaan Dinasti (syaratnya sempit).

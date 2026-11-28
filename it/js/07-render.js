@@ -56,7 +56,8 @@ function jabLabel(){
   if(P.penjara>0)return 'Terpidana siber ('+P.penjara+' th)';
   if(P.dipecat)return 'Tercoreng · eks-engineer';
   if(P.retired)return 'Pensiun · '+JAB[P.jab].n+' '+P.spesN;
-  if(P.menganggur)return 'Menganggur · eks-'+JAB[P.jab].n+' '+P.spesN;
+  if(P.menganggur)return P.pernahKerja===false?'Pencari kerja · '+(P.spesN||'fresh graduate'):'Menganggur · eks-'+JAB[P.jab].n+' '+P.spesN;
+  if(P.tempat==='softwarehouse')return 'Pemilik '+(P.sh?P.sh.n:'software house')+' · '+P.spesN;
   return JAB[P.jab].n+' '+P.spesN+' · '+P.tempatN;
 }
 const TOPI_LBL={putih:'Topi Putih',abu:'Topi Abu-abu',hitam:'Topi Hitam'};
@@ -85,8 +86,14 @@ function render(){
   $('infraList').innerHTML=il;
   const up=uptimeRata();
   $('infraNote').textContent='Uptime '+up+'%'+((P.uptimeStreak||0)>0?(' · streak '+P.uptimeStreak+' th'):'')+((P.bluTeam||0)>=20?(' · blue-team '+P.bluTeam):'')+(P.obsv?' · monitoring✓':'')+(P.backupKuat?' · backup✓':'')+' — '+(up>=92?'sistem sehat & andal.':up>=75?'masih oke, tapi butuh perawatan.':'rapuh, satu insiden lagi bisa fatal.');
-  /* skena & pasar */
-  $('skena').innerHTML=
+  /* skena & pasar (+ usaha sendiri) */
+  let usaha='';
+  if(P.sampingan)usaha+='<div class="idrow"><span class="lab">Usaha sampingan</span><b>'+P.sampingan.n+'</b></div>';
+  if(P.sh){ usaha+='<div class="idrow"><span class="lab">Software house</span><b>'+P.sh.n+(P.sh.penuh?'':' (sambilan)')+'</b></div>'+
+    '<div class="idrow"><span class="lab">Tenaga / beban proyek</span><b'+(bebanSH()>tenagaSH()?' style="color:var(--red)"':'')+'>'+tenagaSH()+' / '+bebanSH()+'</b></div>';
+    for(const c of P.sh.klien)usaha+='<div class="idrow"><span class="lab">'+c.n+' <small>('+c.tipeN+', '+c.sisa+' th)</small></span><b>'+rp(c.nilai)+' · puas '+c.puas+'</b></div>';
+    if(!P.sh.klien.length)usaha+='<div class="idrow"><span class="lab">Klien</span><b>belum ada</b></div>'; }
+  $('skena').innerHTML=usaha+
     '<div class="idrow"><span class="lab">Pasar kerja</span><b>'+(PASAR_LBL[N.pasar]||'—')+'</b></div>'+
     '<div class="idrow"><span class="lab">Tren panas</span><b>'+N.tren+'</b></div>'+
     '<div class="idrow"><span class="lab">Etika (topi)</span><b><span class="topi '+P.topi+'">'+(TOPI_LBL[P.topi]||'—')+'</span></b></div>'+

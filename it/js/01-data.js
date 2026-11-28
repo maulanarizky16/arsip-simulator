@@ -392,6 +392,7 @@ const SERT_JALUR=[
 const SERT_LAMA={cloud:'cloud1',cka:'k8s2',ccnp:'net2',oscp:'sec2',pmp:'pm2'};
 
 const ACH_DEF={
+  softwareHouse:'Punya Software House', klienBesar:'Dipercaya Banyak Klien', exitSH:'Menjual Software House', sampingan:'Cuan Sampingan',
   junior:'Commit Pertama', medior:'Naik Medior', senior:'Engineer Senior', lead:'Memimpin Tim',
   principal:'Principal Engineer', cto:'Naik ke Kursi CTO',
   pemadam:'Pemadam Kebakaran Digital', rajaUptime:'Raja Uptime', otomasi:'Otomatiskan Segalanya',

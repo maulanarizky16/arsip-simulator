@@ -29,6 +29,7 @@ function newGame(){
     tenure:0, jobHops:0, coverUps:0, uptimeStreak:0, saasMRR:0, bluTeam:0, usedSkill:{},
     evAkuisisi:false, evMoonlight:false, evCounterOffer:false,
     latar:null, latarN:'—', budaya:50, pip:0, cd:{},
+    pernahKerja:false, sampingan:null, sh:null,   /* karier dimulai tanpa pekerjaan; usaha sampingan & software house (03d-usaha.js) */
     riwayat:[], ach:{}, used:{}
   };
   if(ID.nama)P.nama=ID.nama;
@@ -52,14 +53,15 @@ function newGame(){
       for(const k in s.boost)P.st[k]=clamp(P.st[k]+s.boost[k],0,100);
       addLog('Anda menapaki jalur <b>'+s.n+'</b>. '+s.d,'sys');
       milestone('Spesialisasi: '+s.short);
-      pilihTempat();
+      /* karier dimulai tanpa pekerjaan: melamar & wawancara dulu. (Tes lama memakai __IT_LANGSUNG_KERJA untuk langsung bekerja.) */
+      if(typeof globalThis!=='undefined'&&globalThis.__IT_LANGSUNG_KERJA)pilihTempat(); else mulaiTanpaKerja();
     }}))});
   render();
 }
 function pilihTempat(){
   ask({title:'TEMPAT KERJA PERTAMA',text:'Tawaran kerja pertama datang. Tempat kerja menentukan gaji, gaya hidup, dan tekanan:',
     opts:TEMPAT.map(t=>({t:t.n,sub:t.d,e:()=>{
-      P.tempat=t.k; P.tempatN=t.n; P.menganggur=false; P.gajiAdj=1;
+      P.tempat=t.k; P.tempatN=t.n; P.menganggur=false; P.gajiAdj=1; P.pernahKerja=true;
       P.startupSaham=t.k==='startup'; if(P.startupSaham)P.ekuitas=esopBaru(0.2,0.5);   /* ESOP kecil untuk junior */
       P.infra=bangunInfra('awal');
       addLog('Anda diterima di <b>'+t.n+'</b> sebagai '+JAB.junior.n+' '+P.spesN+'. '+t.d,'good');
@@ -138,7 +140,8 @@ function setTopi(){
   if(P.topi==='putih'&&(P.hackWhite>=3||P.bugBounty>=1))ach('topiPutih');
 }
 function gajiTahun(){
-  let g=JAB[P.jab].gaji;
+  if(P.tempat==='softwarehouse')return 0;   /* pemilik software house hidup dari tagihan klien, bukan gaji */
+  let g=JAB[P.jab].gaji*eraGaji();           /* tabel gaji = angka ±2024; tahun-tahun awal lebih kecil (03d-usaha.js) */
   const tm=TEMPAT.find(t=>t.k===P.tempat); if(tm)g*=tm.gajiX;
   if(P.tempat==='freelance')g*=(P.flX!=null?P.flX:0.85);   /* freelance: proyek tak menentu, diacak 0,4–1,3 tiap tahun (lihat drift) */
   g*=(P.gajiAdj||1);   /* kenaikan gaji persisten (headhunt, counter-offer, 1-on-1) */
@@ -148,7 +151,7 @@ function gajiTahun(){
   return Math.round(g);
 }
 /* ESOP saat diterima di startup: proporsional gaji jenjang (junior puluhan juta, CTO ratusan juta) */
-function esopBaru(a,b){ return Math.round(JAB[P.jab].gaji*(a+r()*(b-a))/1e6)*1e6; }
+function esopBaru(a,b){ return Math.round(JAB[P.jab].gaji*eraGaji()*(a+r()*(b-a))/1e6)*1e6; }
 /* sistem yang dikelola di kantor baru: kondisi & utang teknis tergantung jenis tempat */
 const INFRA_KONDISI={korporat:[70,90,15,40],bumn:[55,80,25,55],startup:[60,85,10,35],agency:[60,85,15,40],remote:[75,95,5,25],freelance:[65,90,10,30],founder:[85,96,0,8],awal:[78,95,0,15]};
 function infraNama(k){ if(k==='cloud')return N.tahun<2011?'Cluster Virtualisasi (VM)':N.tahun<2016?'Cluster Cloud (VM)':INFRA_DEF.cloud.n; return INFRA_DEF[k].n; }
@@ -193,7 +196,9 @@ function drift(){
   }
   /* gaji & saham + masa kerja (tenure) */
   if(P.tempat==='freelance')P.flX=0.4+r()*0.9;   /* pendapatan freelance tahun ini */
-  if(!P.retired&&P.jab&&!P.menganggur&&!P.dipecat){ P.money+=gajiTahun(); P.tahunJab++; P.tenure=(P.tenure||0)+1; }
+  nafkahTahunan();      /* gaji − pajak − biaya hidup (03d-usaha.js) */
+  sampinganTahunan();   /* hasil usaha sampingan */
+  shTahunan();          /* tagihan klien & biaya software house */
   /* investasi pribadi (reksadana/saham bursa) ikut pasar */
   if(P.saham>0){
     const pct=N.pasar==='boom'?ri(0,40):N.pasar==='krisis'?ri(-45,-5):ri(-12,28);
@@ -206,7 +211,7 @@ function drift(){
   }
   /* pendapatan pasif produk sampingan (SaaS/MRR) — bisa tumbuh atau menyusut kalau ditelantarkan */
   if(P.saasMRR>0){
-    P.money+=Math.round(P.saasMRR*12);
+    P.money+=Math.round(P.saasMRR*12*0.85);   /* dipotong hosting, payment gateway & pajak */
     if(!(P.usedSkill&&P.usedSkill.saas))P.saasMRR=Math.round(P.saasMRR*(0.78+r()*0.18));   /* churn (selalu menyusut) kalau tak dirawat */
     if(P.saasMRR<1e6)P.saasMRR=0;
   }

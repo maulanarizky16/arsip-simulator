@@ -9,6 +9,8 @@ function events(){
 
   /* === MASIH MENGANGGUR: tiap tahun kembali mencoba melamar === */
   if(P.menganggur&&!P.retired&&!P.dipecat)cariKerja();
+  /* === SOFTWARE HOUSE: kejadian dengan klien (03d-usaha.js) === */
+  kejadianSH();
 
   /* === GELOMBANG AI: skill bisa usang (baru relevan sejak era LLM, 2023+) === */
   if(N.tahun>=2023&&N.tren&&N.tren.indexOf('AI')>=0&&!P.pelatihanAI&&r()<0.3){
@@ -114,18 +116,12 @@ function events(){
 /* mencari kerja setelah layoff/berhenti: selama belum diterima, P.menganggur = tanpa gaji, insiden, maupun urusan kantor */
 function cariKerja(){
   const lagi=!!P.menganggur;
-  if(!lagi)lepasEkuitas();   /* keluar dari startup: ekuitas yang belum vesting hangus */
-  P.menganggur=true; P.tempat=null; P.tempatN='Menganggur'; P.founder=false;
-  ask({title:'MENCARI KERJA',text:'Anda '+(lagi?'masih':'kini')+' menganggur, tanpa gaji. Pasar sedang '+(N.pasar==='krisis'?'beku':N.pasar==='boom'?'panas':'biasa')+'. Langkah berikutnya?',opts:[
-    {t:'Lamar & wawancara di banyak tempat',sub:'Grinding leetcode & system design',e:()=>wawancaraTeknis('Setelah lolos screening CV, kamu masuk tahap teknis.',rs=>{
-      const p=clamp(0.2+rs*0.6+(P.reputasi-30)/150+(N.pasar==='boom'?0.15:N.pasar==='krisis'?-0.15:0)-(P.latar==='smk'&&!P.s1Malam?0.1:0),0.1,0.95);
-      if(r()<p){const tm=pick(TEMPAT);P.tempat=tm.k;P.tempatN=tm.n;P.tahunJab=0;P.jobHops=(P.jobHops||0)+1;kondisiKantorBaru();
-        addLog('Setelah belasan wawancara, Anda dapat tawaran di <b>'+tm.n+'</b>. Kembali punya penghasilan.'+fx({stres:-4,reputasi:+1}),'good');milestone('Diterima kerja di '+tm.n);
-        if(tm.k==='startup'){P.ekuitas=(P.ekuitas||0)+esopBaru(0.2,0.6);P.startupSaham=true;}}
-      else addLog('Belasan lamaran, banyak "kami akan kabari". Tahun ini Anda masih menganggur, makan tabungan.'+fx({stres:+8,money:-Math.round(gajiTahun()*0.2)}),'bad');})},
-    {t:'Banting setir jadi freelance/konsultan',e:()=>{P.tempat='freelance';P.tempatN='Freelance / Konsultan';P.tahunJab=0;P.jobHops=(P.jobHops||0)+1;kondisiKantorBaru();
+  if(!lagi)jadiMenganggur();
+  ask({title:'MENCARI KERJA',text:(!P.pernahKerja?'Anda belum punya pekerjaan pertama.':'Anda '+(lagi?'masih':'kini')+' menganggur, tanpa gaji.')+' Pasar sedang '+(N.pasar==='krisis'?'beku':N.pasar==='boom'?'panas':'biasa')+'. Langkah berikutnya?',opts:[
+    {t:'Sebar lamaran & tunggu panggilan',sub:'Yang memanggil bisa dipilih, lalu wawancara teknis',e:()=>panggilanWawancara()},
+    {t:'Banting setir jadi freelance/konsultan',cond:()=>P.pernahKerja||P.st.ngoding>=45||P.st.sistem>=45,e:()=>{P.tempat='freelance';P.tempatN='Freelance / Konsultan';P.tahunJab=0;P.jobHops=(P.jobHops||0)+1;P.pernahKerja=true;kondisiKantorBaru();
       addLog('Anda jadi konsultan lepas: penghasilan naik-turun mengikuti proyek, tanpa atasan, tanpa penilaian kinerja.'+fx({stres:-2,reputasi:+1}),'sys');milestone('Jadi freelancer');}},
-    {t:'Rehat dulu, kuras tabungan',e:()=>addLog('Anda memilih jeda setahun tanpa gaji. Tabungan menipis, tapi kepala lebih jernih.'+fx({stres:-8,money:-Math.round(gajiTahun()*0.25)}),'sys')}
+    {t:P.pernahKerja?'Rehat dulu, kuras tabungan':'Belum melamar tahun ini',e:()=>addLog(P.pernahKerja?'Anda memilih jeda setahun tanpa gaji. Tabungan menipis, tapi kepala lebih jernih.'+fx({stres:-8}):'Anda menunda melamar. Tetangga mulai bertanya, "Sekarang kerja di mana?"'+fx({stres:+2}),'sys')}
   ]});
 }
 

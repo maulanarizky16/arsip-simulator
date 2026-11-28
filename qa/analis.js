@@ -38,6 +38,7 @@ sb.globalThis=sb;
 const ctx=vm.createContext(sb);
 const run=s=>vm.runInContext(s,ctx);
 run(code);
+run('globalThis.__IT_LANGSUNG_KERJA=false;');   /* QA memakai alur asli: karier IT dimulai tanpa pekerjaan */
 
 /* ---------- instrumen: kartu, log, tanda jasa, teks rusak ---------- */
 run(`

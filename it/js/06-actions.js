@@ -1,6 +1,6 @@
 'use strict';
 /* ================= AKSI ================= */
-const TABS=[['diri','DIRI'],['skill','SKILL & KARIER'],['infra','SISTEM & ASET'],['siber','SIBER & SIASAT'],['uang','UANG'],['tim','TIM']];
+const TABS=[['diri','DIRI'],['skill','SKILL & KARIER'],['infra','SISTEM & ASET'],['siber','SIBER & SIASAT'],['uang','UANG & USAHA'],['tim','TIM']];
 
 /* ================= ASET KANTOR: dibiayai perusahaan, bukan gaji pemain =================
    Monitoring & backup adalah investasi milik perusahaan. Karyawan mengajukan anggaran ke manajemen
@@ -83,20 +83,30 @@ const ACTS=[
   ]});}},
 
 /* ---- SKILL & KARIER ---- */
+{k:'lamarKerja',tab:'skill',lbl:'Lamar kerja',sub:'Sebar CV · panggilan → wawancara teknis',cond:()=>P.menganggur&&!P.retired&&!P.dipecat,e:()=>cariKerja()},
+{k:'resign',tab:'skill',lbl:'Resign',sub:'Berhenti dari tempat kerja sekarang',cond:()=>kerjaAktif()&&!!P.tempat&&!P.founder,e:()=>{
+  const fl=P.tempat==='freelance';
+  ask({title:'RESIGN?',text:(fl?'Berhenti jadi freelancer':'Mengundurkan diri dari <b>'+P.tempatN+'</b>')+' berarti tanpa penghasilan tetap sampai Anda diterima di tempat lain. Biaya hidup jalan terus.'+((P.ekuitas||0)>0&&P.startupSaham?' Ekuitas startup yang belum vesting akan hangus.':''),opts:[
+    {t:'Ya, serahkan surat resign',e:()=>{ const lama=P.tempatN; jadiMenganggur();
+      addLog((fl?'Anda menutup lapak freelance.':'Surat resign diserahkan ke HR <b>'+lama+'</b>. Kartu akses dikembalikan, laptop kantor dikosongkan.')+' Lega bercampur cemas.'+fx({stres:-8}),'sys'); milestone('Resign dari '+lama); }},
+    {t:'Batal',e:()=>{ delete P.used.resign; G.acted=Math.max(0,G.acted-1); }}
+  ]}); }},
 {k:'belajar',tab:'skill',lbl:'Belajar & upskill',sub:'Kerjakan 3 soal latihan',cond:()=>!P.retired,e:()=>belajarTeknis()},
 {k:'homelab',tab:'skill',lbl:'Bangun homelab',sub:'Rp 15 jt · ngoding & sistem',cond:()=>!P.retired&&P.money>=15e6,e:()=>{P.money-=15e6;
   addLog('Rak server bekas, mini-PC, dan kabel di pojok kamar. Lab pribadi tempat Anda merusak & memperbaiki tanpa takut produksi.'+fx({sistem:+4,ngoding:+3,jaringan:+2}),'good');}},
 {k:'sertifikasi',tab:'skill',lbl:'Ambil sertifikasi',sub:'10 jalur · grade 0–3',cond:()=>!P.retired&&SERT_JALUR.some(j=>!sertBisa(j).max),e:()=>menuSertifikasi()},
 {k:'sidepro',tab:'skill',lbl:'Bangun produk sampingan (SaaS)',sub:'Cuan lepas + MRR yang menumpuk',multi:true,maks:2,cond:()=>!P.retired&&P.st.ngoding>=40,e:()=>{
-  const u=ri(8,30)*1e6; P.usedSkill.ngoding=true; P.usedSkill.saas=true;
-  P.saasMRR=Math.min(200e6,(P.saasMRR||0)+ri(2,10)*1e6);
-  addLog('Anda menggarap & merawat produk SaaS sampingan di akhir pekan. Sekali pakai cuan '+rp(u)+' masuk, plus langganan bulanan (MRR ~'+rp(P.saasMRR)+'/bln) yang menumpuk selama dirawat.'+fx({money:+u,ngoding:+1,stres:+4}));}},
+  P.usedSkill.ngoding=true; P.usedSkill.saas=true;
+  /* kebanyakan produk sampingan tidak laku: peluang dapat pelanggan baru ikut skill & reputasi, MRR tumbuh pelan (maks. Rp 40 jt/bln) */
+  if(r()<0.35+P.st.ngoding/250+P.reputasi/400){ const naik=bulatJt(ri(3,15)*1e5*eraGaji()); P.saasMRR=Math.min(40e6,(P.saasMRR||0)+naik);
+    addLog('Akhir pekan Anda habis untuk produk SaaS sampingan. Beberapa pelanggan baru berlangganan: MRR naik '+rp(naik)+' jadi ~'+rp(P.saasMRR)+'/bln (menyusut bila tidak dirawat).'+fx({ngoding:+1,stres:+4}),'good'); }
+  else addLog('Akhir pekan Anda habis untuk produk SaaS sampingan. Fitur baru rilis, tapi belum ada pelanggan baru. Produk tetap terawat.'+fx({ngoding:+1,stres:+4}));}},
 {k:'networking',tab:'skill',lbl:'Personal branding & relasi',sub:'Rp 5 jt · reputasi naik',multi:true,cond:()=>!P.retired&&P.money>=5e6,e:()=>{P.money-=5e6;
   addLog('Anda rajin menulis blog teknis, aktif di komunitas, dan hadir di meetup. Nama Anda mulai diingat.'+fx({reputasi:+4,soft:+1}),'good');leg(1,1);}},
 {k:'remoteLN',tab:'skill',lbl:'Lamar remote ke perusahaan luar negeri',sub:'Gaji dolar · wawancara teknis',cond:()=>!P.retired&&!P.dipecat&&P.tempat!=='remote'&&P.st.soft>=40&&(P.st.ngoding>=55||P.st.sistem>=55||P.st.keamanan>=55),e:()=>lamarRemoteLN()},
 {k:'freelance',tab:'skill',lbl:'Ambil proyek freelance global',sub:'Klien luar negeri lewat platform',cond:()=>!P.retired&&(P.st.ngoding>=45||P.st.sistem>=45),e:()=>{
   if(r()<0.2){ addLog('Klien menghilang setelah kamu mengirim hasil akhir. Invoice tak terbayar, rating bintang satu menyusul.'+fx({stres:+6}),'bad'); return; }
-  const u=ri(15,60)*1e6; addLog('Proyek freelance untuk klien luar negeri selesai. Bayaran '+rp(u)+' masuk setelah dipotong fee platform.'+fx({money:+u,stres:+5,reputasi:+1}),'good');}},
+  const u=bulatJt(ri(10,40)*1e6*eraGaji()); addLog('Proyek freelance untuk klien luar negeri selesai. Bayaran '+rp(u)+' masuk setelah dipotong fee platform.'+fx({money:+u,stres:+5,reputasi:+1}),'good');}},
 {k:'ajarBootcamp',tab:'skill',lbl:'Mengajar di bootcamp',sub:'Berbagi ilmu ke calon engineer',cond:()=>!P.retired&&lvNow()>=3&&N.tahun>=2015,e:()=>{
   P.ajarKali=(P.ajarKali||0)+1; const u=ri(8,25)*1e6;
   addLog('Kamu mengajar kelas malam di bootcamp. Ada murid yang bertanya "Kak, bedanya Java dan JavaScript apa?" dan kamu menjawab dengan sabar.'+fx({money:+u,soft:+3,reputasi:+2,stres:+2}),'good');
@@ -174,7 +184,15 @@ const ACTS=[
   addLog('Workstation kelas atas, monitor ultrawide, mekanikal keyboard. Kerja jadi lebih nikmat (dan flex di meja).'+fx({stres:-6,kesehatan:+1}),'good');}},
 {k:'donasi',tab:'uang',lbl:'Donasi ke komunitas / beasiswa',sub:'Rp 25 jt · nama harum, karya positif',cond:()=>P.money>=25e6,e:()=>{P.money-=25e6;
   addLog('Anda mendanai beasiswa coding & sponsor proyek open source. Ilmu yang dibagi tak pernah habis.'+fx({reputasi:+3,stres:-2}),'good');leg(3,0);}},
-{k:'startupSendiri',tab:'uang',lbl:'Rintis startup sendiri',sub:'Rp 100 jt · taruhan besar',cond:()=>!P.retired&&!P.dipecat&&!P.founder&&P.money>=100e6&&P.st.ngoding>=55&&P.maxLv>=3,e:()=>{P.money-=100e6;
+{k:'sampingan',tab:'uang',lbl:'Buka usaha sampingan',sub:'Servis PC, les coding, pasang jaringan, dll · hasil kecil tapi rutin',cond:()=>!P.sampingan&&!P.retired,e:()=>bukaSampingan()},
+{k:'tutupSampingan',tab:'uang',lbl:'Tutup usaha sampingan',sub:()=>P.sampingan?P.sampingan.n+' · jual peralatan':'',cond:()=>!!P.sampingan,e:()=>{
+  const u=P.sampingan, sisa=bulatJt(u.modal*0.3); P.sampingan=null;
+  addLog('Anda menutup <b>'+u.n+'</b> dan menjual peralatannya.'+fx({money:sisa,stres:-3}),'sys'); milestone('Tutup sampingan: '+u.n); }},
+{k:'bukaSH',tab:'uang',lbl:'Buka software house sendiri',sub:()=>'Modal '+rp(modalSH())+' · cari klien, kerjakan proyek, rekrut tim',cond:()=>!P.sh&&!P.founder&&!P.retired&&!P.dipecat&&(P.st.ngoding>=50||P.maxLv>=3)&&P.money>=modalSH(),e:()=>bukaSoftwareHouse()},
+{k:'cariKlien',tab:'uang',lbl:'Cari klien',sub:()=>P.sh?'Tenaga '+tenagaSH()+' · terpakai '+bebanSH()+' · '+P.sh.klien.length+' klien':'',multi:true,maks:2,cond:()=>!!P.sh&&!P.retired,e:()=>cariKlien()},
+{k:'rawatKlien',tab:'uang',lbl:'Jaga hubungan klien',sub:'Kepuasan semua klien naik',cond:()=>!!P.sh&&P.sh.klien.length>0,e:()=>rawatKlien()},
+{k:'tutupSH',tab:'uang',lbl:'Jual / tutup software house',sub:()=>P.sh?P.sh.n:'',cond:()=>!!P.sh,e:()=>tutupSH()},
+{k:'startupSendiri',tab:'uang',lbl:'Rintis startup sendiri',sub:'Rp 100 jt · taruhan besar',cond:()=>!P.retired&&!P.dipecat&&!P.founder&&!P.sh&&P.money>=100e6&&P.st.ngoding>=55&&P.maxLv>=3,e:()=>{P.money-=100e6;
   ask({title:'RINTIS STARTUP SENDIRI',text:'Anda nekat keluar zona nyaman dan membangun produk sendiri. Pertaruhan tabungan, waktu, dan ego.',opts:[
     {t:'All-in, kejar pertumbuhan',e:()=>{ if(r()<0.4){P.tempat='startup';P.tempatN='Startup (Founder)';kondisiKantorBaru(true);P.ekuitas=(P.ekuitas||0)+ri(20,60)*1e8;P.startupSaham=true;   /* saham pendiri, di atas kertas */
         addLog('Produk Anda dapat traksi & pendanaan awal. Valuasi di atas kertas melonjak.'+fx({reputasi:+6,stres:+10}),'good');milestone('Mendirikan startup');leg(2,5);}

@@ -154,9 +154,9 @@ cek('A2 karyawan: sanksi kebocoran & tagihan vendor eskalasi tidak memotong uang
 // A3: menganggur = tanpa gaji, insiden, & urusan kantor; tiap tahun ditawari mencari kerja lagi
 run(`__baru(); P.saasMRR=0; P.tempat='korporat'; cariKerja(); choose(2); __drain(0);
   globalThis.__m3=P.money; globalThis.__t3=P.insidenTotal; drift(); insiden(); __drain(0);
-  globalThis.__a3=[P.menganggur,P.money===__m3,P.insidenTotal===__t3,kerjaAktif(),P.tempatN,jabLabel()];
+  globalThis.__a3=[P.menganggur,P.money<__m3,P.insidenTotal===__t3,kerjaAktif(),P.tempatN,jabLabel()];   /* tanpa gaji, tetapi biaya hidup tetap berjalan → uang berkurang */
   __J.length=0; events(); globalThis.__a3j=__J.slice(); G.current=null; G.queue=[];`);
-cek('A3 "rehat dulu" → menganggur: tanpa gaji & tanpa insiden, posisi tampil "Menganggur"',run('__a3[0]&&__a3[1]&&__a3[2]&&!__a3[3]&&__a3[4]==="Menganggur"&&/Menganggur/.test(__a3[5])'),run('__a3'));
+cek('A3 "rehat dulu" → menganggur: tanpa gaji (uang berkurang oleh biaya hidup) & tanpa insiden, posisi tampil "Menganggur"',run('__a3[0]&&__a3[1]&&__a3[2]&&!__a3[3]&&__a3[4]==="Menganggur"&&/Menganggur/.test(__a3[5])'),run('__a3'));
 cek('A3 tahun berikutnya ditawari mencari kerja, tanpa penilaian kinerja/1-on-1',run('__a3j.includes("MENCARI KERJA")&&!__a3j.includes("PENILAIAN KINERJA TAHUNAN")&&!__a3j.includes("1-ON-1 DENGAN MANAJER")'),run('__a3j'));
 run(`globalThis.__KUIS_PINTAR=true; for(let i=0;i<20&&P.menganggur;i++){ cariKerja(); __drain(0); } globalThis.__KUIS_PINTAR=false;`);
 cek('A3 diterima kerja → status menganggur hilang',run('!P.menganggur&&!!P.tempat&&kerjaAktif()'),run('[P.menganggur,P.tempat]'));

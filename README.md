@@ -12,6 +12,7 @@ arsip/
 ├── kehidupan.html      # Simulator Kehidupan      (+ folder kehidupan/)
 ├── negara.html         # Simulator Karier Politik (+ folder negara/)
 ├── hakim.html          # Simulator Hakim          (+ folder hakim/)
+├── perang.html         # Simulator Perang         (+ folder perang/)
 ├── it.html             # Simulator Karier IT      (+ folder it/)
 ├── niaga.html          # Simulator Pengusaha      (+ folder niaga/)
 ├── wni.html            # Simulator WNI (warga +62) (+ folder wni/)

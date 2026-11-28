@@ -21,7 +21,8 @@ const CFG={
   kehidupan:{uang:'P.money', satuan:'tahun', maks:110},
   hakim:    {uang:'P.money', satuan:'tahun', maks:60},
   negara:   {uang:'P.money', satuan:'tahun', maks:70},
-  niaga:    {uang:'P.kas',   satuan:'tahun', maks:70}
+  niaga:    {uang:'P.kas',   satuan:'tahun', maks:70},
+  perang:   {uang:'P.dana',  satuan:'minggu', maks:90}
 };
 if(!CFG[GAME]){ console.error('Game tidak dikenal. Pilih: '+Object.keys(CFG).join(', ')); process.exit(2); }
 const cfg=CFG[GAME];

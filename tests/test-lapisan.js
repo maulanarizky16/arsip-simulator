@@ -14,7 +14,7 @@ function zOf(sel,files){
   return z;
 }
 const hasil=[]; const cek=(n,ok,info)=>hasil.push([n,!!ok,info]);
-for(const g of ['it','wni','kehidupan','hakim','negara','niaga']){
+for(const g of ['it','wni','kehidupan','hakim','negara','niaga','perang']){
   const files=[g+'/style.css','assets/art.css','platform.css','assets/theme.css'];
   const doc=zOf('main > section.doc',files);
   cek(g+': kolom kiri sticky punya z-index',doc!=null,doc);

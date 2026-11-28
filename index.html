@@ -206,6 +206,28 @@ const SIM=[
     ]
   },
   {
+    id:'perang', file:'perang.html', avail:true,
+    title:'Simulator Perang', subtitle:'Jadi panglima: pilih negara, susun strategi',
+    teaser:'Pilih satu dari 25 negara dengan kekuatan militer mendekati aslinya, tentukan lawan dan tujuan perang, lalu atur strategi darat, udara, dan laut minggu demi minggu. Menang saja tidak cukup: korban sipil ikut dihitung.',
+    badge:'Baru',
+    meta:['~15 menit/perang','Per minggu','25 negara','Skor ganda'],
+    persuasive: [
+      'Bukan soal siapa yang tanknya paling banyak. Perang di sini dimenangkan oleh logistik, amunisi, moral pasukan, dan dukungan rakyat. Ofensif besar tanpa bensin dan peluru hanya memperpanjang daftar gugur.',
+      'Tiap minggu Anda menetapkan postur tiga matra (darat, udara, laut) dan punya tiga perintah khusus: mobilisasi cadangan, serangan rudal, operasi pasukan khusus, beli senjata, intelijen, sampai tawaran gencatan senjata.',
+      'Geografi dan nuklir ikut bicara. Menyerbu negara seberang laut mustahil tanpa menguasai laut, pegunungan menguntungkan yang bertahan, dan negara bersenjata nuklir tidak bisa dipojokkan tanpa membawa dunia ke ambang kiamat.',
+      'Di akhir, dua skor menilai Anda: Kemenangan dan Kemanusiaan. Bisa menang telak tapi tercatat sebagai penjahat perang, atau berdamai tepat waktu dan dikenang sebagai panglima yang tahu batas.'
+    ],
+    fitur: [
+      '25 negara nyata dengan perkiraan kekuatan dari data terbuka: personel, cadangan, tank, pesawat, kapal perang, kapal selam, kapal induk, anggaran, dan hulu ledak nuklir',
+      'Tiga tujuan perang: mempertahankan tanah air, merebut wilayah sengketa, atau perang total',
+      'Strategi per minggu: postur darat/udara/laut, 3 perintah khusus, kas perang, pesanan senjata yang tiba belakangan',
+      'Panglima lawan punya watak (agresif, hati-hati, licik) dan posturnya hanya terbaca lewat operasi intelijen',
+      'Dilema nyata: kota terkepung, tawanan perang, salah sasaran, pengungsi, tawaran sekutu bersyarat, mediasi PBB',
+      'Delapan akhir perang, dari kemenangan total sampai konflik membeku dan kiamat nuklir',
+      'Simulasi hipotetis: bukan gambaran hubungan nyata antarnegara dan bukan anjuran perang'
+    ]
+  },
+  {
     id:'coming-startup', file:null, avail:false,
     title:'Simulator Startup', subtitle:'Segera hadir',
     teaser:'Bangun startup dari kost-kostan: cari co-founder, kejar pendanaan, lewati death valley. (Belum tersedia.)',
@@ -298,19 +320,19 @@ function topPreview(){
   const lb=Platform.getLB();
   const root=document.getElementById('topPreview');
   root.innerHTML='';
-  ['kehidupan','negara','hakim','it','niaga','wni'].forEach(g=>{
+  ['kehidupan','negara','hakim','it','niaga','wni','perang'].forEach(g=>{
     const list=(lb[g]||[]).slice(0,3);
     const card=document.createElement('div');
     card.className='arsip-card soon';
     card.style.opacity='1';
-    const title = g==='kehidupan'?'Simulator Kehidupan':g==='negara'?'Simulator Negara':g==='hakim'?'Simulator Hakim':g==='it'?'Simulator Karier IT':g==='wni'?'Simulator WNI':'Simulator Pengusaha';
+    const title = g==='kehidupan'?'Simulator Kehidupan':g==='negara'?'Simulator Negara':g==='hakim'?'Simulator Hakim':g==='it'?'Simulator Karier IT':g==='wni'?'Simulator WNI':g==='perang'?'Simulator Perang':'Simulator Pengusaha';
     let rows='';
     if(!list.length){
       rows='<p style="color:var(--ink2);font-style:italic;margin-top:8px">Belum ada catatan. Mulai sebuah simulasi untuk memulai papan peringkat.</p>';
     } else {
       list.forEach((e,i)=>{
-        const score = g==='kehidupan'?e.skor:g==='negara'?((e.skorRakyat||0)+(e.skorNegara||0)):g==='hakim'?((e.skorAdil||0)+(e.skorKarier||0)):g==='it'?((e.skorKarya||0)+(e.skorCuan||0)):g==='wni'?((e.skorDompet||0)+(e.skorWaras||0)):((e.skorHarta||0)+(e.skorNama||0));
-        const sub = g==='kehidupan'?(e.julukan||'-'):g==='negara'?(e.julukanRakyat||'-'):g==='hakim'?(e.julukanAdil||'-'):g==='it'?(e.julukanKarya||'-'):g==='wni'?(e.julukanDompet||'-'):(e.julukanHarta||'-');
+        const score = g==='kehidupan'?e.skor:g==='negara'?((e.skorRakyat||0)+(e.skorNegara||0)):g==='hakim'?((e.skorAdil||0)+(e.skorKarier||0)):g==='it'?((e.skorKarya||0)+(e.skorCuan||0)):g==='wni'?((e.skorDompet||0)+(e.skorWaras||0)):g==='perang'?((e.skorMenang||0)+(e.skorManusia||0)):((e.skorHarta||0)+(e.skorNama||0));
+        const sub = g==='kehidupan'?(e.julukan||'-'):g==='negara'?(e.julukanRakyat||'-'):g==='hakim'?(e.julukanAdil||'-'):g==='it'?(e.julukanKarya||'-'):g==='wni'?(e.julukanDompet||'-'):g==='perang'?(e.julukanMenang||'-'):(e.julukanHarta||'-');
         const h = e.handle?'@'+e.handle:'Anonim';
         rows+=`<div style="display:flex;justify-content:space-between;border-bottom:1px dotted var(--line);padding:6px 0;font-size:13px">
           <span><b style="color:${i===0?'var(--gold)':'var(--ink2)'}">${i+1}.</b> ${h}<br><span style="color:var(--ink2);font-size:11.5px;font-family:'Special Elite',monospace">${sub}</span></span>

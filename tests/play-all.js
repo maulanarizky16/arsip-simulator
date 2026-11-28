@@ -102,7 +102,7 @@ function playHub(file){
 }
 
 /* ================= JALANKAN ================= */
-const GAMES=[['kehidupan','kehidupan.html'],['negara','negara.html'],['hakim','hakim.html'],['it','it.html'],['niaga','niaga.html'],['wni','wni.html']];
+const GAMES=[['kehidupan','kehidupan.html'],['negara','negara.html'],['hakim','hakim.html'],['it','it.html'],['niaga','niaga.html'],['wni','wni.html'],['perang','perang.html']];
 const HUBS=['index.html','leaderboard.html','donasi.html'];
 let totalErr=0;
 console.log('=== MAIN SEMUA GAME (DOM jsdom, klik tombol seperti pemain) ===\n');

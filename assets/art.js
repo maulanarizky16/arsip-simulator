@@ -73,7 +73,7 @@ const H3={
 };
 
 /* ---------- warna latar foto per game ---------- */
-const TINT={kehidupan:'#f2a37f',negara:'#e0625a',hakim:'#4fa293',it:'#6b84e6',niaga:'#f0b43c',wni:'#ef6b6b'};
+const TINT={kehidupan:'#f2a37f',negara:'#e0625a',hakim:'#4fa293',it:'#6b84e6',niaga:'#f0b43c',wni:'#ef6b6b',perang:'#7d8f5a'};
 
 /* ---------- komposisi thumbnail beranda ---------- */
 const SIM_ART={
@@ -83,6 +83,7 @@ const SIM_ART={
   it:       {bg:'linear-gradient(135deg,#9fb2ff 0%,#4b5fd1 100%)', main:'man-technologist', left:'laptop', right:'shield', deco:['satellite-antenna','gear']},
   niaga:    {bg:'linear-gradient(135deg,#ffe08a 0%,#e29a1e 100%)', main:'man-office-worker', left:'money-bag', right:'chart-increasing', deco:['coin','factory']},
   wni:      {bg:'linear-gradient(180deg,#ff8a80 0%,#f25c54 52%,#fff5f0 52%,#ffe4dc 100%)', main:'woman-raising-hand', left:'motorcycle', right:'shopping-cart', deco:['money-with-wings','light-bulb']},
+  perang:   {bg:'linear-gradient(135deg,#b9c48a 0%,#55683a 100%)', main:'man-pilot', left:'military-helmet', right:'ship', deco:['airplane','shield']},
   startup:  {bg:'linear-gradient(135deg,#d4b6ff 0%,#7b4fd0 100%)', main:'woman-technologist', left:'light-bulb', right:'rocket', deco:['sparkles','coin']},
   petani:   {bg:'linear-gradient(135deg,#c8ef9c 0%,#5aa83a 100%)', main:'man-farmer', left:'sheaf-of-rice', right:'tractor', deco:['seedling','sparkles']}
 };
@@ -179,6 +180,12 @@ const WHO={
     if(P.topi==='hitam')return {who:'ninja',role:role,badge:'anxious-face-with-sweat'};
     const badge=P.jab==='cto'?'crown':P.spes==='security'?'shield':P.spes==='iot'?'satellite-antenna':P.spes==='network'?'satellite-antenna':null;
     return {who:g+'-technologist',role:role,badge:badge};
+  },
+  perang:function(P){
+    const g=g2(P);
+    const neg=(typeof NEG!=='undefined'&&P.neg&&NEG[P.neg])?NEG[P.neg].n:'';
+    if(P.hasil==='kiamat')return {who:g,role:'Panglima tanpa negeri',badge:'skull'};
+    return {who:g+'-pilot',role:'Panglima'+(neg?' '+neg:''),badge:P.hasil==='menang'||P.hasil==='menangTerbatas'?'sports-medal':'military-helmet'};
   },
   wni:function(P){
     const g=g2(P);
@@ -484,7 +491,7 @@ function decorateActs(game){
     b.insertAdjacentHTML('afterbegin',img(k,'act'));
   });
 }
-const LOGO={kehidupan:'house-with-garden',negara:'classical-building',hakim:'balance-scale',it:'laptop',niaga:'money-bag',wni:'identification-card'};
+const LOGO={kehidupan:'house-with-garden',negara:'classical-building',hakim:'balance-scale',it:'laptop',niaga:'money-bag',wni:'identification-card',perang:'military-helmet'};
 function decorateHeader(game){
   const h=document.querySelector('header h1');
   if(!h||h.querySelector('.aa-logo'))return;
@@ -497,9 +504,9 @@ function decorateHeader(game){
    newGame mengambil pilihan lewat ArsipArt.identity() → {gender, nama, skin}. */
 const PREF_KEY='arsip_identity_pref_v1';
 const CR_SUB={kehidupan:'Siapa yang akan lahir hari ini?',negara:'Siapa tokoh yang akan terjun ke politik?',
-  hakim:'Siapa hakim baru yang dilantik hari ini?',it:'Siapa engineer yang memulai karier hari ini?',niaga:'Siapa calon pengusaha kita?',wni:'Siapa warga +62 yang akan berjuang bulan ini?'};
+  hakim:'Siapa hakim baru yang dilantik hari ini?',it:'Siapa engineer yang memulai karier hari ini?',niaga:'Siapa calon pengusaha kita?',wni:'Siapa warga +62 yang akan berjuang bulan ini?',perang:'Siapa panglima yang memimpin perang ini?'};
 const CR_WHO={kehidupan:g=>g==='L'?'boy':'girl',negara:g=>g==='L'?'man':'woman',hakim:g=>(g==='L'?'man':'woman')+'-judge',
-  it:g=>(g==='L'?'man':'woman')+'-technologist',niaga:g=>(g==='L'?'man':'woman')+'-office-worker',wni:g=>(g==='L'?'man':'woman')+'-raising-hand'};
+  it:g=>(g==='L'?'man':'woman')+'-technologist',niaga:g=>(g==='L'?'man':'woman')+'-office-worker',wni:g=>(g==='L'?'man':'woman')+'-raising-hand',perang:g=>(g==='L'?'man':'woman')+'-pilot'};
 let pendingId=null, creatorOpen=false;
 function loadPref(){ try{ return JSON.parse(localStorage.getItem(PREF_KEY))||{}; }catch(e){ return {}; } }
 function savePref(p){ try{ localStorage.setItem(PREF_KEY,JSON.stringify(p)); }catch(e){} }
@@ -752,18 +759,20 @@ function mountFeedMore(){
 }
 
 /* ================= KARTU HASIL UNTUK DIBAGIKAN ================= */
-const GAME_NAME={kehidupan:'Simulator Kehidupan',negara:'Simulator Karier Politik',hakim:'Simulator Hakim',it:'Simulator Karier IT',niaga:'Simulator Pengusaha',wni:'Simulator WNI'};
+const GAME_NAME={kehidupan:'Simulator Kehidupan',negara:'Simulator Karier Politik',hakim:'Simulator Hakim',it:'Simulator Karier IT',niaga:'Simulator Pengusaha',wni:'Simulator WNI',perang:'Simulator Panglima Perang'};
 const SCORES={
   kehidupan:r=>[{l:'Skor hidup',v:r.skor}],
   negara:r=>[{l:'Rakyat',v:r.skorRakyat},{l:'Negara',v:r.skorNegara}],
   hakim:r=>[{l:'Keadilan',v:r.skorAdil},{l:'Karier',v:r.skorKarier}],
   it:r=>[{l:'Karya',v:r.skorKarya},{l:'Cuan',v:r.skorCuan}],
   niaga:r=>[{l:'Harta',v:r.skorHarta},{l:'Nama baik',v:r.skorNama}],
-  wni:r=>[{l:'Dompet',v:r.skorDompet},{l:'Kewarasan',v:r.skorWaras}]
+  wni:r=>[{l:'Dompet',v:r.skorDompet},{l:'Kewarasan',v:r.skorWaras}],
+  perang:r=>[{l:'Kemenangan',v:r.skorMenang},{l:'Kemanusiaan',v:r.skorManusia}]
 };
 const TITLES={
   kehidupan:r=>[r.julukan,r.grade],negara:r=>[r.julukanRakyat,r.gelarNegara],hakim:r=>[r.julukanAdil,r.gelarKarier],
-  it:r=>[r.julukanKarya,r.gelarCuan],niaga:r=>[r.julukanHarta,r.gelarNama],wni:r=>[r.julukanDompet,r.gelarWaras]
+  it:r=>[r.julukanKarya,r.gelarCuan],niaga:r=>[r.julukanHarta,r.gelarNama],wni:r=>[r.julukanDompet,r.gelarWaras],
+  perang:r=>[r.julukanMenang,r.gelarManusia]
 };
 function buildShareCard(result){
   const game=result&&result.game; if(!game||!SIM_ART[game])return null;

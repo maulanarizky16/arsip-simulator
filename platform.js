@@ -28,10 +28,10 @@
   function getLB(){
     try{
       const raw = localStorage.getItem(STORE_LB);
-      if(!raw) return {kehidupan:[],negara:[],hakim:[],it:[],niaga:[],wni:[]};
+      if(!raw) return {kehidupan:[],negara:[],hakim:[],it:[],niaga:[],wni:[],perang:[]};
       const obj = JSON.parse(raw);
-      return {kehidupan:obj.kehidupan||[],negara:obj.negara||[],hakim:obj.hakim||[],it:obj.it||[],niaga:obj.niaga||[],wni:obj.wni||[]};
-    }catch(e){ return {kehidupan:[],negara:[],hakim:[],it:[],niaga:[],wni:[]}; }
+      return {kehidupan:obj.kehidupan||[],negara:obj.negara||[],hakim:obj.hakim||[],it:obj.it||[],niaga:obj.niaga||[],wni:obj.wni||[],perang:obj.perang||[]};
+    }catch(e){ return {kehidupan:[],negara:[],hakim:[],it:[],niaga:[],wni:[],perang:[]}; }
   }
   function saveLB(lb){ try{ localStorage.setItem(STORE_LB,JSON.stringify(lb)); }catch(e){} }
   function submitEntry(game,entry){
@@ -46,6 +46,7 @@
     else if(game==='it')        lb[game].sort((a,b)=> ((b.skorKarya||0)+(b.skorCuan||0)) - ((a.skorKarya||0)+(a.skorCuan||0)));
     else if(game==='niaga')     lb[game].sort((a,b)=> ((b.skorHarta||0)+(b.skorNama||0)) - ((a.skorHarta||0)+(a.skorNama||0)));
     else if(game==='wni')       lb[game].sort((a,b)=> ((b.skorDompet||0)+(b.skorWaras||0)) - ((a.skorDompet||0)+(a.skorWaras||0)));
+    else if(game==='perang')    lb[game].sort((a,b)=> ((b.skorMenang||0)+(b.skorManusia||0)) - ((a.skorMenang||0)+(a.skorManusia||0)));
     lb[game] = lb[game].slice(0,100);
     saveLB(lb);
     return entry;
@@ -179,6 +180,7 @@
     if(r.game==='kehidupan') return 'Skor '+r.skor+' · "'+(r.julukan||'-')+'" · ARSIP Kehidupan';
     if(r.game==='hakim') return 'Keadilan '+(r.skorAdil||0)+' / Karier '+(r.skorKarier||0)+' · "'+(r.julukanAdil||'-')+'" · ARSIP Keadilan';
     if(r.game==='it') return 'Karya '+(r.skorKarya||0)+' / Cuan '+(r.skorCuan||0)+' · "'+(r.julukanKarya||'-')+'" · ARSIP Siber';
+    if(r.game==='perang') return 'Kemenangan '+(r.skorMenang||0)+' / Kemanusiaan '+(r.skorManusia||0)+' · "'+(r.julukanMenang||'-')+'" · ARSIP Perang';
     if(r.game==='wni') return 'Dompet '+(r.skorDompet||0)+' / Waras '+(r.skorWaras||0)+' · "'+(r.julukanDompet||'-')+'" · ARSIP WNI';
     if(r.game==='niaga') return 'Harta '+(r.skorHarta||0)+' / Nama '+(r.skorNama||0)+' · "'+(r.julukanHarta||'-')+'" · ARSIP Niaga';
     return 'Rakyat '+(r.skorRakyat||0)+' / Negara '+(r.skorNegara||0)+' · ARSIP Negara';
